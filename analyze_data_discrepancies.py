@@ -1,12 +1,29 @@
 import os
 import numpy as np
 import pandas as pd
+import glob
 import matplotlib.pyplot as plt
 
 
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
+
+# Get paths to Bob Hall Pier data for Lighthouse and NOAA.
+bhp_lighthouse_path = 'lighthouse/Bob Hall Pier'
+bhp_noaa_path = 'NOAA/bobHallPier'
+
+# Get all csv files from Lighthouse path.
+lighthouse_csv_files = glob.glob(f"{bhp_lighthouse_path}/*.csv")
+
+# Ignore csv files for harmonic water level (harmwl) from NOAA path.
+pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
+noaa_csv_files = glob.glob(pattern)
+
+# Read the
+
+
+
 
 # Loop for each station.
     # Loop for each year.
@@ -34,12 +51,21 @@ import matplotlib.pyplot as plt
 # ***************************************************************************
 
 # Reads csv file into a dataframe.
-# Only reads a year's worth of 6-minute data (size 87840).
-def read_file(file, index_limit=87840):
+# Pass an index limit to only read file until a certain index.
+# Uses end criteria to stop reading file when valid data stops.
+# If index_limit is None and assigned None by end_file_index(), then
+# pd.read_csv will read the entire csv file.
+def read_file(file, index_limit=None):
 
     # Initialize df and error to None.
     df = None
     error = None
+
+    # If index_limit is None, find where valid data stops using
+    # end_file_index() so that the nrows parameter can be assigned in
+    # pd.read_csv().
+    if index_limit is None:
+        index_limit = end_file_index(file)
 
     # Read the file into a dataframe. If error reading or finding file,
     # append the error.
@@ -54,6 +80,60 @@ def read_file(file, index_limit=87840):
 
     return df, error
 # End read_file.
+
+
+# ***************************************************************************
+# ******************* FUNCTION END_FILE_INDEX *******************************
+# ***************************************************************************
+
+# Get the index where valid data ends. This is returned to read_file()
+# which uses the index for limiting how many rows to read into a dataframe.
+# The Lighthouse data stops when lines at the bottom begin with '#' so
+# this is default criteria char passed into this function.
+def end_file_index(filename, criteria_char='#'):
+
+    with open(filename, 'r') as file:
+        for index, line in enumerate(file):
+            if line.startswith(criteria_char):
+                return index
+
+    return None
+# End end_file_index.
+
+
+# ***************************************************************************
+# ******************* FUNCTION SPLIT_BY_YEAR ********************************
+# ***************************************************************************
+
+# Splits a dataframe into yearly dataframes. Returns a list of
+# dataframes where the keys are the years and items are the dataframes.
+# Lighthouse data files are provided in multi-year csv files but need
+# to be processed year by year so splitting them is necessary.
+def split_by_year(df, datetime_col_name):
+
+    df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
+
+    # Get an array of unique years from dt.year which extracts the year
+    # components from the datetime objects in the datetime column of
+    # the dataframe.
+    years = df[datetime_col_name].dt.year.unique()
+
+    # Split dataframe by year. For each year, filter df using boolean
+    # mask [df[datetime_col_name].dt.year == year] to create a new
+    # dataframe containing only the rows where the year matches
+    # the current year. Append these dataframes to a list.
+    data_by_year = []
+    for year in years:
+        data_by_year.append(df[df[datetime_col_name].dt.year == year])
+    # End for.
+
+    # Or use dictionary comprehension and return a dictionary where the
+    # keys are the years and the items are the corresponding dataframes.
+    # data_by_year = {year: df[df[date_col_name].dt.year == year] for year in years}
+
+    # Return the list.
+    return data_by_year
+# End split_by_year.
 
 
 # ***************************************************************************
@@ -254,7 +334,7 @@ def get_run_data(offset_column, reference_column, ref_dates, size, create_table=
     for index in range(1, size):
         current_value = offsets[index]
 
-        # Check if current value is different than previous value.
+        # Check if current value is different from previous value.
         if current_value != previous_value and not (pd.isna(current_value) and pd.isna(previous_value)):
             end_index = index - 1
             start_indices.append(start_index)
