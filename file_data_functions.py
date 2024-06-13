@@ -12,14 +12,15 @@ import numpy as np
 
 # Reads csv file into a dataframe.
 # Pass an index limit to only read file until a certain index.
-# Uses end criteria to stop reading file when valid data stops.
+# Uses end_file_index to stop reading file when valid data stops.
 # If index_limit is None and assigned None by end_file_index(), then
 # pd.read_csv will read the entire csv file.
-def read_file(file, index_limit=None):
+# Option to pass a flag and error message to be retrieved later if
+# user wants to verify that read was successful from main().
+def read_file(file, index_limit=None, flag=None, error=None):
 
-    # Initialize df and error to None.
+    # Initialize df to None.
     df = None
-    error = None
 
     # If index_limit is None, find where valid data stops using
     # end_file_index() so that the nrows parameter can be assigned in
@@ -32,13 +33,16 @@ def read_file(file, index_limit=None):
     if os.path.isfile(file):
         try:
             df = pd.read_csv(file, nrows=index_limit)
+            flag = True
         except Exception as e:
-            error = (file, str(e))
+            error = str(e)
+            flag = False
     else:
-        error = (file, "File not found.")
+        error = "File not found."
+        flag = False
     # End for.
 
-    return df, error
+    return df
 # End read_file.
 
 
