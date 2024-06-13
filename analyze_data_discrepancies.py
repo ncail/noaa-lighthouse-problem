@@ -26,9 +26,45 @@ def main():
     pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
     noaa_csv_files = glob.glob(pattern)
 
+    # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
+    lh_df_arr = []
+    noaa_df_arr = []
+
+    # For assigning column names. Only positions of certain column data are
+    # assumed instead of the name. Simulates a static variable in the for loop.
+    assign_once = False
+    lh_dt_col_name = None
+    lh_pwl_col_name = None
+
     # Read and split up the lighthouse files.
     for lh_file in lighthouse_csv_files:
-        da.read_file(lh_file)
+
+        # Initialize a flag pointer to check if read was successful.
+        flag_ptr = None
+
+        # Read the file into a dataframe.
+        df = da.read_file(lh_file, flag=flag_ptr)
+
+        # If read was successful, split into yearly data and append to lh_df_arr.
+        if flag_ptr:
+            print(f"successful read of {lh_file}\n")
+
+            # Get column names once.
+            if assign_once is False:
+                lh_dt_col_name = df.columns[0]
+                lh_pwl_col_name = df.columns[1]
+                assign_once = True
+
+            # split_df is a list of dataframes. Use extend() to add each item in the
+            # list to lh_df_arr.
+            print("now splitting...\n")
+            split_df = da.split_by_year(df, lh_dt_col_name)
+            lh_df_arr.extend(split_df)
+        # End if.
+    # End for.
+
+
+
 
     # Loop for each station.
         # Loop for each year.
@@ -46,6 +82,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************
 # ***************************************************************************

@@ -91,6 +91,9 @@ def end_file_index(filename, criteria_char='#'):
 # Lighthouse data files are provided in multi-year csv files but need
 # to be processed year by year so splitting them is necessary.
 def split_by_year(df, datetime_col_name):
+    # Case if column name is not assigned.
+    if datetime_col_name is None:
+        return df
 
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
 
@@ -101,8 +104,8 @@ def split_by_year(df, datetime_col_name):
 
     # Split dataframe by year. For each year, filter df using boolean
     # mask [df[datetime_col_name].dt.year == year] to create a new
-    # dataframe containing only the rows where the year matches
-    # the current year. Append these dataframes to a list.
+    # dataframe containing only the rows where the year (.dt.year) matches
+    # the current 'year'. Append these dataframes to a list.
     data_by_year = []
     for year in years:
         data_by_year.append(df[df[datetime_col_name].dt.year == year])
@@ -131,11 +134,10 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None, b
     # Convert to datetime.
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
 
-    # Convert primary water level and backup water level to numeric.
+    # Convert pwl, bwl, and harmwl to numeric if they are not None.
     # coerce changes invalid values to NaN.
-    df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
-
-    # Convert bwl and harmwl to numeric if they are not None.
+    if pwl_col_name is not None:
+        df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
     if harmwl_col_name is not None:
