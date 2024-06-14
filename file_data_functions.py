@@ -15,8 +15,8 @@ import numpy as np
 # Uses end_file_index to stop reading file when valid data stops.
 # If index_limit is None and assigned None by end_file_index(), then
 # pd.read_csv will read the entire csv file.
-# Option to pass a flag and error message to be retrieved later if
-# user wants to verify that read was successful from main().
+# Option to pass a flag and error message to be retrieved from main() if
+# user wants to verify that read was successful.
 def read_file(file, index_limit=None, flag=None, error=None):
 
     # Initialize df to None.
@@ -49,7 +49,7 @@ def read_file(file, index_limit=None, flag=None, error=None):
 # ***************************************************************************
 # ******************* FUNCTION END_FILE_INDEX VERSION 1 *********************
 # ***************************************************************************
-
+''' 
 # Get the index where valid data ends. This is returned to read_file()
 # which uses the index for limiting how many rows to read into a dataframe.
 # The Lighthouse data stops when lines at the bottom begin with '#' so this
@@ -101,7 +101,7 @@ def end_file_index(filename, criteria_char='#', until=False, until_not=True):
     # File closed.
 
     return None
-# End end_file_index.
+# End end_file_index.'''
 
 
 # ***************************************************************************
