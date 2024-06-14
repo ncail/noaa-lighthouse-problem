@@ -26,7 +26,7 @@ def read_file(file, index_limit=None, flag=None, error=None):
     # end_file_index() so that the nrows parameter can be assigned in
     # pd.read_csv().
     if index_limit is None:
-        index_limit = end_file_index(file) + 1
+        index_limit = end_file_index(file)
 
     # Read the file into a dataframe. If error reading or finding file,
     # append the error.
@@ -47,30 +47,52 @@ def read_file(file, index_limit=None, flag=None, error=None):
 
 
 # ***************************************************************************
-# ******************* FUNCTION END_FILE_INDEX *******************************
+# ******************* FUNCTION END_FILE_INDEX VERSION 1 *********************
 # ***************************************************************************
 
 # Get the index where valid data ends. This is returned to read_file()
 # which uses the index for limiting how many rows to read into a dataframe.
-# The Lighthouse data stops when lines at the bottom begin with '#' so
-# this is default criteria char passed into this function.
-def end_file_index(filename, criteria_char='#'):
+# The Lighthouse data stops when lines at the bottom begin with '#' so this
+# is the default criteria_char.
+# Option to specify if the criteria_char means iterate UNTIL criteria_char
+# or UNTIL_NOT criteria_char.
+
+# Note: this version returns the index of the file pointer which contains
+# all characters, not row number. So the function was rewritten to
+# read the lines correctly and calculate the row number in Version 2.
+def end_file_index(filename, criteria_char='#', until=False, until_not=True):
 
     with open(filename, 'r') as file:
         # Move the file pointer to the end of the file: start from the
         # bottom for better efficiency.
         file.seek(0, 2)
 
+        lines = file.readlines()
+
         # Get current position (end of file).
         index = file.tell()
 
-        while index >= 0:
-            file.seek(index)
-            current_char = file.read(1)
-            if current_char != criteria_char:
-                return index
-            index -= 1
-        # End while.
+        if until:
+            while index >= 0:
+                file.seek(index)
+                current_char = file.read(1)
+                if current_char == criteria_char:
+                    return index
+                index -= 1
+            # End while.
+
+        if until_not:
+            while index >= 0:
+                file.seek(index)
+                current_char = file.read(1)
+                # Skip blank lines.
+                if current_char == "":
+                    index -= 1
+                    continue
+                if current_char != criteria_char:
+                    return index
+                index -= 1
+            # End while.
 
         # Forward traversal.
         # for index, line in enumerate(file):
@@ -80,6 +102,64 @@ def end_file_index(filename, criteria_char='#'):
 
     return None
 # End end_file_index.
+
+
+# ***************************************************************************
+# ******************* FUNCTION END_FILE_INDEX VERSION 2 *********************
+# ***************************************************************************
+
+# Get the number of the last row of valid data.
+# In Lighthouse files, there are junk lines that begin with '#', so
+# the last valid row number is returned to read_file so that nrows
+# parameter in pd.read_csv() can be specified, to limit the number of
+# rows read into the dataframe.
+# This is the more efficient byte-sized approach than loading the entire
+# file into memory at once using readlines().
+def end_file_index(filename, criteria_char='#', until=False, until_not=True):
+
+    with open(filename, 'rb') as file:
+
+        file.seek(0, 2)
+        end_position = file.tell()
+
+        buffer_size = 1024
+        total_lines = 0
+        trailing_lines = 0
+        buffer = b""
+        found_valid_data = False
+
+        while end_position > 0:
+            read_position = max(0, end_position - buffer_size)
+            file.seek(read_position)
+            new_buffer = file.read(end_position - read_position)
+            buffer = new_buffer + buffer
+            end_position = read_position
+
+            lines = buffer.split(b'\n')
+
+            if read_position > 0:
+                buffer = lines[0]
+                lines = lines[1:]
+            else:
+                buffer = b""
+
+            for line in reversed(lines):
+                total_lines += 1
+                if line.strip() == b'':
+                    trailing_lines += 1
+                elif line.startswith(b'#'):
+                    trailing_lines += 1
+                else:
+                    found_valid_data = True
+                    break
+            # End for.
+
+        if not found_valid_data:
+            trailing_lines = total_lines
+    # End while.
+
+    valid_data_lines = total_lines - trailing_lines
+    return valid_data_lines
 
 
 # ***************************************************************************
