@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import glob
+from datetime import timedelta
 import matplotlib.pyplot as plt
 
 
@@ -14,7 +15,6 @@ import matplotlib.pyplot as plt
 # ***************************************************************************
 
 def main():
-
     # Assign paths to Bob Hall Pier data for Lighthouse and NOAA.
     bhp_lighthouse_path = 'data/lighthouse/Bob Hall Pier'
     bhp_noaa_path = 'data/NOAA/bobHallPier'
@@ -58,6 +58,10 @@ def main():
             print(f"failed to read file: {noaa_file}\n")
     # End for.
 
+    # ***********************************************************************
+    # ********************* CORRECT TIME SHIFT HERE *************************
+    # ***********************************************************************
+
     # Get column names. Assumes all dataframes in the list have same column names.
     # Avoids repeated assignment in the loop which does not make this assumption.
     lh_dt_col_name = lh_df_arr[0].columns[0]
@@ -78,34 +82,53 @@ def main():
             continue
 
         # Get size of dataframes.
-        lh_size = len(lh_df[lh_pwl_col_name])
-        noaa_size = len(noaa_df[noaa_pwl_col_name])
+        lh_size = len(lh_df)
+        noaa_size = len(noaa_df)
 
         if lh_size != noaa_size:
-            print("sizes are not equal: ", lh_size, " ", noaa_size, "\n")
+            print("sizes are not equal: ", lh_size, " ", noaa_size, "\nskipping to next file pair...\n")
             continue
 
-        stats_df = da.get_comparison_stats(lh_df[lh_pwl_col_name], noaa_df[noaa_pwl_col_name], noaa_size)
+        # Get comparison table.
+        stats_df = da.get_comparison_stats(lh_df[lh_pwl_col_name],
+                                           noaa_df[noaa_pwl_col_name], noaa_size)
 
-        # Write stats_df to csv with year in file name.
+        # Do get_run_data() to get a dataframe that can be filtered for
+        # duration and value.
+        runs_df = da.get_run_data(lh_df[lh_pwl_col_name], noaa_df[noaa_pwl_col_name],
+                                  noaa_df[noaa_dt_col_name], noaa_size)
+
+        # Filter for offsets (runs) >= 1 day.
+        long_offsets_df = da.filter_duration(runs_df, timedelta(days=1))
+        long_offsets_count = len(long_offsets_df)
+        if long_offsets_count == 0:
+            max_duration = np.nan
+        else:
+            max_duration = max(long_offsets_df['durations'])
+        bool_mask = long_offsets_df['durations'] == max_duration
+        max_duration_offsets = long_offsets_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+
+        # Filter by value >= 5 cm.
+        large_offsets_df = da.filter_value(runs_df, threshold=0.05)
+        large_offsets_count = len(large_offsets_df)
+        if large_offsets_count == 0:
+            max_offset = np.nan
+        else:
+            max_offset = max(large_offsets_df['offset (ref - primary, unit)'])
+        bool_mask = large_offsets_df['offset (ref - primary, unit)'] == max_offset
+        max_offset_durations = large_offsets_df.loc[bool_mask, 'durations'].to_list()
+
         year = noaa_df[noaa_dt_col_name].dt.year
-        stats_df.to_csv(f'generated_files/bobHallPier_{year[0]}_noaa_vs_lh_stats.csv', index=False)
-        break
-
-
-
-    # Loop for each station.
-        # Loop for each year.
-            # read file() into dataframe.
-            # clean dataframe() into same dataframe.
-            # write comparison stats() into .txt file.
-            # do get run data() and filter by duration() for longer than one day.
-            # count the number of rows in the filtered dataframe and write to .txt file.
-            # write the min/max duration row (includes offset, and start/end date).
-            # filter by value (larger than 5 cm).
-            # count number of rows in this dataframe.
-            # get max discrepancy and try to note the type of case (flatline, etc).
-            # write these to .txt file.
+        # Write all stats to a .txt file.
+        with open(f'generated_files/bobHallPier_1993-2023_noaa_vs_lh_stats.txt', 'a') as file:
+            file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}")
+            file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
+            file.write(f"\nMaximum duration of an offset: {max_duration}")
+            file.write(f"\nOffset value(s) with <{max_duration}> duration: {max_duration_offsets}")
+            file.write(f"\nNumber of offsets with value >= 5 cm: {large_offsets_count}")
+            file.write(f"\nMaximum offset value: {max_offset}")
+            file.write(f"\nDuration(s) of offset with value <{max_offset}> cm: {max_offset_durations}\n\n")
+    # End for.
 
 
 if __name__ == "__main__":
@@ -114,7 +137,3 @@ if __name__ == "__main__":
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************
 # ***************************************************************************
-
-
-
-

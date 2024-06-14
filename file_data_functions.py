@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 
 
-""" **************** Function implementation below **************** """
+""" ******************* Function implementation below ******************* """
 
 
 # ***************************************************************************
-# ******************* FUNCTION READ_FILE ************************************
+# **************************** FUNCTION READ_FILE ***************************
 # ***************************************************************************
 
 # Reads csv file into a dataframe.
@@ -301,19 +301,19 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
     ref_missing = shared_gaps + ref_gaps
 
     percent_agree = round(total_agree/size * 100, 4)
-    percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
+    # percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
     percent_vals_disagree = round(values_disagree/size * 100, 4)
     percent_primary_missing = round(primary_missing/size * 100, 4)
     percent_ref_missing = round(ref_missing/size * 100, 4)
 
     table = {
-        'total points': [total_agree, shared_gaps, total_disagree, primary_missing,
+        'total points': [total_agree, total_disagree, primary_missing,
                          ref_missing],
-        'percent': [percent_agree, percent_agree_gaps, percent_vals_disagree,
+        'percent': [percent_agree, percent_vals_disagree,
                     percent_primary_missing, percent_ref_missing]
     }
 
-    row_labels = ['agreements', 'shared gaps (of agreements)', 'disagreements',
+    row_labels = ['agreements', 'disagreements',
                   'missing (primary)', 'missing (reference)']
 
     stats_table = pd.DataFrame(table, index=row_labels)
@@ -449,7 +449,7 @@ def get_run_data(offset_column, reference_column, ref_dates, size, create_table=
     if create_table is True:
         # Create the dataframe.
         summary_df = pd.DataFrame()
-        summary_df['discrepancy value (ref - primary, unit)'] = run_values
+        summary_df['offset (ref - primary, unit)'] = run_values
         summary_df['start date'] = ref_dates.iloc[start_indices].tolist()
         summary_df['end date'] = ref_dates.iloc[end_indices].tolist()
         summary_df['durations'] = summary_df['end date'] - summary_df['start date']
@@ -465,7 +465,7 @@ def get_run_data(offset_column, reference_column, ref_dates, size, create_table=
 # ******************* FUNCTION GET_DISCREPANCIES ****************************
 # ***************************************************************************
 
-# Get array of all discrepancies.
+# Get array of all discrepancies. Called by get_run_data().
 def get_discrepancies(offset_column, reference_column, size):
 
     discrepancies = []
@@ -526,10 +526,10 @@ def filter_value(dataframe, threshold, is_max=False, is_min=True):
     filter_series = pd.Series([True] * len(dataframe))
 
     if is_min is True:
-        filter_series = abs(filtered_df['discrepancy value (ref - primary, unit)']) >= threshold
+        filter_series = abs(filtered_df['offset (ref - primary, unit)']) >= threshold
     else:
         if is_max is True:
-            filter_series = abs(filtered_df['discrepancy value (ref - primary, unit)']) <= threshold
+            filter_series = abs(filtered_df['offset (ref - primary, unit)']) <= threshold
 
     filtered_df = filtered_df[filter_series]
 
