@@ -107,7 +107,7 @@ def end_file_index(filename, criteria_char='#', until=False, until_not=True):
 # ***************************************************************************
 # ******************* FUNCTION END_FILE_INDEX VERSION 2 *********************
 # ***************************************************************************
-
+'''
 # Get the number of the last row of valid data.
 # In Lighthouse files, there are junk lines that begin with '#', so
 # the last valid row number is returned to read_file so that nrows
@@ -115,8 +115,10 @@ def end_file_index(filename, criteria_char='#', until=False, until_not=True):
 # rows read into the dataframe.
 # This is the more efficient byte-sized approach than loading the entire
 # file into memory at once using readlines().
-def end_file_index(filename, criteria_char='#', until=False, until_not=True):
+def end_file_index(filename):
 
+    # Read file in binary mode to get byte objects instead of unicode
+    # strings.
     with open(filename, 'rb') as file:
 
         file.seek(0, 2)
@@ -125,8 +127,8 @@ def end_file_index(filename, criteria_char='#', until=False, until_not=True):
         buffer_size = 1024
         total_lines = 0
         trailing_lines = 0
-        buffer = b""
-        found_valid_data = False
+        buffer = b"" # Bytes literal, instead of default unicode characters.
+        # found_valid_data = False
 
         while end_position > 0:
             read_position = max(0, end_position - buffer_size)
@@ -145,21 +147,47 @@ def end_file_index(filename, criteria_char='#', until=False, until_not=True):
 
             for line in reversed(lines):
                 total_lines += 1
-                if line.strip() == b'':
-                    trailing_lines += 1
-                elif line.startswith(b'#'):
-                    trailing_lines += 1
-                else:
-                    found_valid_data = True
-                    break
+                if not found_valid_data:
+                    if line.strip() == b'':
+                        trailing_lines += 1
+                    elif line.startswith(b'#'):
+                        trailing_lines += 1
+                    else:
+                        found_valid_data = True
             # End for.
 
-        if not found_valid_data:
-            trailing_lines = total_lines
+        # if not found_valid_data:
+        #     trailing_lines = total_lines
     # End while.
 
     valid_data_lines = total_lines - trailing_lines
     return valid_data_lines
+# End end_file_index().'''
+
+
+# ***************************************************************************
+# ******************* FUNCTION END_FILE_INDEX VERSION 3 *********************
+# ***************************************************************************
+
+# Simply count the lines in the file (Python's iteration over file does
+# not load the entire file into memory. Then, subtract the number of lines
+# that begin with '' or '#'. This assumes all of them are at the end.
+def end_file_index(filename):
+
+    line_count = 0
+    trailing_lines = 0
+
+    with open(filename, 'r', encoding='utf-8') as file:
+        for line in file:
+            line_count += 1
+            if line.startswith('#') or line.startswith(''):
+                trailing_lines += 1
+    # Close file.
+
+    valid_data_lines = line_count - trailing_lines
+
+    return valid_data_lines
+# End end_file_index().
 
 
 # ***************************************************************************
