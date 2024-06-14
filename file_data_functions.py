@@ -170,8 +170,8 @@ def end_file_index(filename):
 # ***************************************************************************
 
 # Simply count the lines in the file (Python's iteration over file does
-# not load the entire file into memory. Then, subtract the number of lines
-# that begin with '' or '#'. This assumes all of them are at the end.
+# not load the entire file into memory). Then, subtract the number of lines
+# that begin with '# '. This assumes all of them are at the end.
 def end_file_index(filename):
 
     line_count = 0
@@ -184,7 +184,7 @@ def end_file_index(filename):
                 trailing_lines += 1
     # Close file.
 
-    valid_data_lines = line_count - trailing_lines - 1
+    valid_data_lines = line_count - trailing_lines - 1 # -1 for last new line.
 
     return valid_data_lines
 # End end_file_index().
@@ -216,7 +216,7 @@ def split_by_year(df, datetime_col_name):
     # the current 'year'. Append these dataframes to a list.
     data_by_year = []
     for year in years:
-        data_by_year.append(df[df[datetime_col_name].dt.year == year])
+        data_by_year.append(df[df[datetime_col_name].dt.year == year].reset_index(drop=True))
     # End for.
 
     # Or use dictionary comprehension and return a dictionary where the
@@ -234,22 +234,27 @@ def split_by_year(df, datetime_col_name):
 
 # Prepare dataframe for analysis by standardizing datetimes and numerical values.
 # Option to clean backup water level (bwl) and harmonic water level (harmwl) columns.
-def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None, bwl_col_name=None):
+def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
+                    bwl_col_name=None, flag=[False]):
 
     # Replace missing values with NaN.
     df.replace([-999, -99, 99, 'NA', 'RM'], np.nan, inplace=True)
 
-    # Convert to datetime.
-    df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
+    # Convert to datetime and numeric. coerce changes invalid values
+    # to NaN.
+    df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
 
-    # Convert pwl, bwl, and harmwl to numeric if they are not None.
-    # coerce changes invalid values to NaN.
     if pwl_col_name is not None:
         df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
     if harmwl_col_name is not None:
         df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
+
+    if df[datetime_col_name].isna().all() or df[pwl_col_name].isna().all():
+        flag[0] = False
+    else:
+        flag[0] = True
 # End clean_dataframe.
 
 
