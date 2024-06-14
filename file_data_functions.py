@@ -17,7 +17,7 @@ import numpy as np
 # pd.read_csv will read the entire csv file.
 # Option to pass a flag and error message to be retrieved from main() if
 # user wants to verify that read was successful.
-def read_file(file, index_limit=None, flag=None, error=None):
+def read_file(file, index_limit=None, flag=[False], error=[""]):
 
     # Initialize df to None.
     df = None
@@ -33,13 +33,13 @@ def read_file(file, index_limit=None, flag=None, error=None):
     if os.path.isfile(file):
         try:
             df = pd.read_csv(file, nrows=index_limit)
-            flag = True
+            flag[0] = True
         except Exception as e:
-            error = str(e)
-            flag = False
+            error[0] = str(e)
+            flag[0] = False
     else:
-        error = "File not found."
-        flag = False
+        error[0] = "File not found."
+        flag[0] = False
     # End for.
 
     return df
@@ -180,11 +180,11 @@ def end_file_index(filename):
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             line_count += 1
-            if line.startswith('#') or line.startswith(''):
+            if line.startswith("# "):
                 trailing_lines += 1
     # Close file.
 
-    valid_data_lines = line_count - trailing_lines
+    valid_data_lines = line_count - trailing_lines - 1
 
     return valid_data_lines
 # End end_file_index().
