@@ -13,8 +13,8 @@ from datetime import timedelta
 # parse_arguments will get command line arguments for the filename
 # that main() will write results to, directories main() will read
 # data files from, and the station name in the noaa filename pattern.
-# Use: python this_program.py --filename writeToThisFile.txt --refDir path/to/reference/data/files
-# --primaryDir path/to/primary/data/files --stationName stationNameAsInNoaaFileNames
+# Use: python this_program.py --filename writeToThisFile.txt --refDir 'path/to/reference/data/files'
+# --primaryDir 'path/to/primary/data/files' --stationName stationNameAsInNoaaFileNames
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Write to a specified file.")
     parser.add_argument('--filename', type=str,
@@ -76,8 +76,6 @@ def main():
     filename = get_filename(args)
 
     # Assign paths to station data for Lighthouse and NOAA.
-    # bhp_lighthouse_path = 'data/lighthouse/Bob Hall Pier'
-    # bhp_noaa_path = 'data/NOAA/bobHallPier'
     args_flag_ptr = [False]
     paths = get_directories(args, flag=args_flag_ptr)
     station_name = get_filename_pattern(args, flag=args_flag_ptr)
@@ -92,11 +90,9 @@ def main():
         sys.exit()
 
     # Get all csv files from Lighthouse path.
-    # lighthouse_csv_files = glob.glob(f"{bhp_lighthouse_path}/*.csv")
     lighthouse_csv_files = glob.glob(f"{lighthouse_path}/*.csv")
 
     # Ignore csv files for harmonic water level (harmwl) from NOAA path.
-    # pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
     pattern = f"{noaa_path}/{station_name}_*_water_level.csv"
     noaa_csv_files = glob.glob(pattern)
 
