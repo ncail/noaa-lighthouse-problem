@@ -139,16 +139,34 @@ def main():
         bool_mask = runs_df['offset (ref - primary, unit)'] == max_offset
         max_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
 
+        # Hold these metrics in metric_data.
+        metric_data = [
+            ("Number of offsets with duration >= one day", long_offsets_count),
+            ("Maximum duration of an offset", max_duration),
+            ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
+            ("Number of offsets with value >= 5 cm", large_offsets_count),
+            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations)
+        ]
+
         year = noaa_df[noaa_dt_col_name].dt.year
         # Write all stats to a .txt file (in append mode).
         with open(f'generated_files/{filename}.txt', 'a') as file:
-            file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}")
-            file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
-            file.write(f"\nMaximum duration of an offset: {max_duration}")
-            file.write(f"\nOffset value(s) with <{max_duration}> duration: {max_duration_offsets}")
-            file.write(f"\nNumber of offsets with value >= 5 cm: {large_offsets_count}")
-            file.write(f"\nMaximum offset value: {max_offset}")
-            file.write(f"\nDuration(s) of offset with value <{max_offset}> cm: {max_offset_durations}\n\n")
+            file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}\n\n")
+
+            # Find the longest key length for key alignment.
+            max_key_length = max(len(key) for key in metric_data)
+
+            # Write each key-value pair aligned.
+            for key, value in metric_data:
+                file.write(f"{key:{max_key_length}}: {value}\n")
+            # End for.
+            # file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
+            # file.write(f"\nMaximum duration of an offset: {max_duration}")
+            # file.write(f"\nOffset value(s) with <{max_duration}> duration: {max_duration_offsets}")
+            # file.write(f"\nNumber of offsets with value >= 5 cm: {large_offsets_count}")
+            # file.write(f"\nMaximum offset value: {max_offset}")
+            # file.write(f"\nDuration(s) of offset with value <{max_offset}> cm: {max_offset_durations}\n\n")
+        # File closed.
     # End for.
 
 
