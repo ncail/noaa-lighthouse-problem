@@ -101,25 +101,19 @@ def main():
         # Filter for offsets (runs) >= 1 day.
         long_offsets_df = da.filter_duration(runs_df, timedelta(days=1))
         long_offsets_count = len(long_offsets_df)
-        if long_offsets_count == 0:
-            max_duration = np.nan
-        else:
-            max_duration = max(long_offsets_df['durations'])
-        bool_mask = long_offsets_df['durations'] == max_duration
-        max_duration_offsets = long_offsets_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+        max_duration = runs_df['durations'].max()
+        bool_mask = runs_df['durations'] == max_duration
+        max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
 
         # Filter by value >= 5 cm.
         large_offsets_df = da.filter_value(runs_df, threshold=0.05)
         large_offsets_count = len(large_offsets_df)
-        if large_offsets_count == 0:
-            max_offset = np.nan
-        else:
-            max_offset = max(large_offsets_df['offset (ref - primary, unit)'])
-        bool_mask = large_offsets_df['offset (ref - primary, unit)'] == max_offset
-        max_offset_durations = large_offsets_df.loc[bool_mask, 'durations'].to_list()
+        max_offset = runs_df['offset (ref - primary, unit)'].max()
+        bool_mask = runs_df['offset (ref - primary, unit)'] == max_offset
+        max_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
 
         year = noaa_df[noaa_dt_col_name].dt.year
-        # Write all stats to a .txt file.
+        # Write all stats to a .txt file (in append mode).
         with open(f'generated_files/bobHallPier_1993-2023_noaa_vs_lh_stats.txt', 'a') as file:
             file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}")
             file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
