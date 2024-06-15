@@ -104,7 +104,7 @@ def main():
 
         # If either clean failed, skip this iteration.
         if flag_ptr[0] is False:
-            print("clean_dataframe failed.\n")
+            print("clean_dataframe failed.\nskipping to next file pair...\n")
             continue
 
         # Get size of dataframes.
@@ -145,6 +145,7 @@ def main():
             ("Maximum duration of an offset", max_duration),
             ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
             ("Number of offsets with value >= 5 cm", large_offsets_count),
+            ("Maximum offset value", max_offset),
             ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations)
         ]
 
@@ -158,8 +159,10 @@ def main():
 
             # Write each key-value pair aligned.
             for key, value in metric_data:
-                file.write(f"{key:{max_key_length}}: {value}\n")
+                # file.write(f"{key:{max_key_length}}: {value}\n")
+                file.write("{:<{width}}: {}\n".format(key, value, width=max_key_length))
             # End for.
+            file.write("\n\n\n")
             # file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
             # file.write(f"\nMaximum duration of an offset: {max_duration}")
             # file.write(f"\nOffset value(s) with <{max_duration}> duration: {max_duration_offsets}")
