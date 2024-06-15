@@ -3,6 +3,7 @@ import file_data_functions as da
 
 # Imports continued...
 import argparse
+import sys
 import datetime
 import glob
 from datetime import timedelta
@@ -15,6 +16,12 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Write to a specified file.")
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
+    parser.add_argument('--refDir', type=str,
+                        help='Path to directory of reference data', default=None)
+    parser.add_argument('--primaryDir', type=str,
+                        help='Path to directory of primary data', default=None)
+    parser.add_argument('--stationName', type=str,
+                        help='Name of station to fill in NOAA filename pattern.', default=None)
     return parser.parse_args()
 # End parse_arguments.
 
@@ -30,6 +37,29 @@ def get_filename(args):
 # End get_filename.
 
 
+# get_directories returns the specified directories to pull data from
+# given by command line arguments.
+def get_directories(args, flag=[False]):
+    if args.refDir and args.primaryDir:
+        flag[0] = True
+    else:
+        flag[0] = False
+    return args.refDir, args.primaryDir
+# End get_directories.
+
+
+# get_filename_pattern returns the NOAA station name specified by the
+# user as command line argument. This will be used to identify the files
+# read into the list of NOAA data files.
+def get_filename_pattern(args, flag=[False]):
+    if args.stationName:
+        flag[0] = True
+    else:
+        flag[0] = False
+    return args.stationName
+# End get_filename_pattern.
+
+
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
@@ -41,15 +71,26 @@ def main():
     # Determine the filename results will be written to.
     filename = get_filename(args)
 
-    # Assign paths to Bob Hall Pier data for Lighthouse and NOAA.
-    bhp_lighthouse_path = 'data/lighthouse/Bob Hall Pier'
-    bhp_noaa_path = 'data/NOAA/bobHallPier'
+    # Assign paths to station data for Lighthouse and NOAA.
+    # bhp_lighthouse_path = 'data/lighthouse/Bob Hall Pier'
+    # bhp_noaa_path = 'data/NOAA/bobHallPier'
+    args_flag_ptr = [False]
+    paths = get_directories(args, flag=args_flag_ptr)
+    filename_pattern = get_filename_pattern(args, flag=args_flag_ptr)
+    if args_flag_ptr[0] is True:
+        lighthouse_path = paths[0]
+        noaa_path = paths[1]
+    if args_flag_ptr[0] is False:
+        print("args_flag_ptr is False. Data directories, or filename pattern not entered. Exiting program.")
+        sys.exit()
 
     # Get all csv files from Lighthouse path.
-    lighthouse_csv_files = glob.glob(f"{bhp_lighthouse_path}/*.csv")
+    # lighthouse_csv_files = glob.glob(f"{bhp_lighthouse_path}/*.csv")
+    lighthouse_csv_files = glob.glob(f"{lighthouse_path}/*.csv")
 
     # Ignore csv files for harmonic water level (harmwl) from NOAA path.
-    pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
+    # pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
+    pattern = f"{noaa_path}/{filename_pattern}_*_water_level.csv"
     noaa_csv_files = glob.glob(pattern)
 
     # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
