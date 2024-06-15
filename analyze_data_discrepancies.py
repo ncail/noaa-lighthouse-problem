@@ -56,7 +56,7 @@ def get_directories(args, flag=[False]):
 # get_filename_pattern returns the NOAA station name specified by the
 # user as command line argument. This will be used to identify the files
 # read into the list of NOAA data files.
-def get_filename_pattern(args, flag=[False]):
+def get_station_name(args, flag=[False]):
     if args.stationName:
         flag[0] = True
     else:
@@ -79,7 +79,7 @@ def main():
     # Assign paths to station data for Lighthouse and NOAA.
     args_flag_ptr = [False]
     paths = get_directories(args, flag=args_flag_ptr)
-    station_name = get_filename_pattern(args, flag=args_flag_ptr)
+    station_name = get_station_name(args, flag=args_flag_ptr)
 
     # Check that get_directories and get_filename_pattern succeeded.
     if args_flag_ptr[0] is True:
