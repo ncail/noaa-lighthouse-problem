@@ -43,7 +43,7 @@ def get_filename(args):
 
 # get_directories returns the specified directories to pull data from
 # given by command line arguments.
-def get_directories(args, flag=[False]):
+def get_data_paths(args, flag=[False]):
     if args.refDir and args.primaryDir:
         if os.path.exists(args.refDir) and os.path.exists(args.primaryDir):
             flag[0] = True
@@ -78,7 +78,7 @@ def main():
 
     # Assign paths to station data for Lighthouse and NOAA.
     args_flag_ptr = [False]
-    paths = get_directories(args, flag=args_flag_ptr)
+    paths = get_data_paths(args, flag=args_flag_ptr)
     station_name = get_station_name(args, flag=args_flag_ptr)
 
     # Check that get_directories and get_filename_pattern succeeded.
