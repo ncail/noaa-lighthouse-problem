@@ -136,17 +136,21 @@ def main():
         large_offsets_df = da.filter_value(runs_df, threshold=0.05)
         large_offsets_count = len(large_offsets_df)
         max_offset = runs_df['offset (ref - primary, unit)'].max()
+        min_offset = runs_df['offset (ref - primary, unit)'].min()
         bool_mask = runs_df['offset (ref - primary, unit)'] == max_offset
         max_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+        bool_mask = runs_df['offset (ref - primary, unit)'] == min_offset
+        min_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
 
         # Hold these metrics in metric_data.
         metric_data = [
             ("Number of offsets with duration >= one day", long_offsets_count),
             ("Maximum duration of an offset", max_duration),
             ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
-            ("Number of offsets with value >= 5 cm", large_offsets_count),
-            ("Maximum offset value", max_offset),
-            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations)
+            ("Number of offsets with abs value >= 5 cm", large_offsets_count),
+            ("Maximum/minimum offset value (m)", str(max_offset) + "/" + str(min_offset)),
+            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations),
+            ("Duration(s) of offset with value <" + str(min_offset) + "> cm", min_offset_durations)
         ]
 
         # Write all stats to a .txt file (in append mode).
