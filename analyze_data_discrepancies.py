@@ -24,7 +24,8 @@ def parse_arguments():
     parser.add_argument('--primaryDir', type=str,
                         help='Path to directory of primary data', default=None)
     parser.add_argument('--stationName', type=str,
-                        help='Name of station to fill in NOAA filename pattern.', default=None)
+                        help='Name of station to fill in NOAA filename pattern '
+                             '(i.e. "{station_name}_*_water_level.csv")', default=None)
     return parser.parse_args()
 # End parse_arguments.
 
