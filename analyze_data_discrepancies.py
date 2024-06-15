@@ -3,6 +3,7 @@ import file_data_functions as da
 
 # Imports continued...
 import argparse
+import os
 import sys
 import datetime
 import glob
@@ -10,8 +11,10 @@ from datetime import timedelta
 
 
 # parse_arguments will get command line arguments for the filename
-# that main() will write results to.
-# Use: python this_program.py --filename myFileName.txt
+# that main() will write results to, directories main() will read
+# data files from, and the station name in the noaa filename pattern.
+# Use: python this_program.py --filename writeToThisFile.txt --refDir path/to/reference/data/files
+# --primaryDir path/to/primary/data/files --stationName stationNameAsInNoaaFileNames
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Write to a specified file.")
     parser.add_argument('--filename', type=str,
@@ -41,7 +44,8 @@ def get_filename(args):
 # given by command line arguments.
 def get_directories(args, flag=[False]):
     if args.refDir and args.primaryDir:
-        flag[0] = True
+        if os.path.exists(args.refDir) and os.path.exists(args.primaryDir):
+            flag[0] = True
     else:
         flag[0] = False
     return args.refDir, args.primaryDir
@@ -76,12 +80,15 @@ def main():
     # bhp_noaa_path = 'data/NOAA/bobHallPier'
     args_flag_ptr = [False]
     paths = get_directories(args, flag=args_flag_ptr)
-    filename_pattern = get_filename_pattern(args, flag=args_flag_ptr)
+    station_name = get_filename_pattern(args, flag=args_flag_ptr)
+
+    # Check that get_directories and get_filename_pattern succeeded.
     if args_flag_ptr[0] is True:
-        lighthouse_path = paths[0]
-        noaa_path = paths[1]
+        noaa_path = paths[0]
+        lighthouse_path = paths[1]
     if args_flag_ptr[0] is False:
-        print("args_flag_ptr is False. Data directories, or filename pattern not entered. Exiting program.")
+        print("args_flag_ptr is False. Data paths or filename pattern not entered, "
+              "or paths do not exist. Exiting program.")
         sys.exit()
 
     # Get all csv files from Lighthouse path.
@@ -90,8 +97,13 @@ def main():
 
     # Ignore csv files for harmonic water level (harmwl) from NOAA path.
     # pattern = f"{bhp_noaa_path}/bobHallPier_*_water_level.csv"
-    pattern = f"{noaa_path}/{filename_pattern}_*_water_level.csv"
+    pattern = f"{noaa_path}/{station_name}_*_water_level.csv"
     noaa_csv_files = glob.glob(pattern)
+
+    # Check that files matching the pattern were found.
+    if not noaa_csv_files:
+        print("Failed to match files to NOAA filename pattern. Exiting program.")
+        sys.exit()
 
     # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
     lh_df_arr = []
