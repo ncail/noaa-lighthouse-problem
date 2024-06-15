@@ -155,12 +155,18 @@ def main():
             file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}\n\n")
 
             # Find the longest key length for key alignment.
-            max_key_length = max(len(key) for key in metric_data)
+            max_key_length = max(len(key) for key, value in metric_data)
+            print("max_key_length: ", max_key_length, "\n")
 
             # Write each key-value pair aligned.
             for key, value in metric_data:
-                # file.write(f"{key:{max_key_length}}: {value}\n")
-                file.write("{:<{width}}: {}\n".format(key, value, width=max_key_length))
+                print(f"Key: '{key}', Length: {len(key)}\n")
+                file.write(f"{key:{max_key_length}}: {value}\n")
+                # file.write("{:<{width}}: {}\n".format(key, value, width=max_key_length))
+                # file.write(f"{key:<{max_key_length}}: {value}\n")
+                # output = f'{key:>{max_key_length}}: {value}\n'
+                # output = '{}{:>10}'.format(key, str(value))
+                # file.write(output)
             # End for.
             file.write("\n\n\n")
             # file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")

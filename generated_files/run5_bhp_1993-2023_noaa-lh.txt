@@ -1,0 +1,76 @@
+Comparison Table for year 1996:
+                      total points  percent
+agreements                  86338  98.2901
+disagreements                1502   1.7099
+missing (primary)            1460   1.6621
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day12Maximum duration of an offset116 days 10:54:00Offset value(s) with <116 days 10:54:00> duration[0.0]Number of offsets with value >= 5 cm14Maximum offset value1.595Duration(s) of offset with value <1.595> cm[Timedelta('0 days 00:06:00')]
+
+
+Comparison Table for year 1997:
+                      total points  percent
+agreements                  86904  99.2055
+disagreements                 696   0.7945
+missing (primary)             570   0.6507
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day12Maximum duration of an offset129 days 23:24:00Offset value(s) with <129 days 23:24:00> duration[0.0]Number of offsets with value >= 5 cm19Maximum offset value0.1Duration(s) of offset with value <0.1> cm[Timedelta('0 days 00:24:00')]
+
+
+Comparison Table for year 1998:
+                      total points  percent
+agreements                  87551  99.9441
+disagreements                  49   0.0559
+missing (primary)              18   0.0205
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day8Maximum duration of an offset121 days 07:54:00Offset value(s) with <121 days 07:54:00> duration[0.0]Number of offsets with value >= 5 cm3Maximum offset value0.126Duration(s) of offset with value <0.126> cm[Timedelta('0 days 00:06:00')]
+
+
+Comparison Table for year 1999:
+                      total points  percent
+agreements                  83170  94.9429
+disagreements                4430   5.0571
+missing (primary)            1101   1.2568
+missing (reference)          4631   5.2865
+
+Number of offsets with duration >= one day15Maximum duration of an offset78 days 13:12:00Offset value(s) with <78 days 13:12:00> duration[0.0]Number of offsets with value >= 5 cm84Maximum offset value1.14Duration(s) of offset with value <1.14> cm[Timedelta('0 days 00:06:00')]
+
+
+Comparison Table for year 2000:
+                      total points  percent
+agreements                  87721  99.8645
+disagreements                 119   0.1355
+missing (primary)              71   0.0808
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day6Maximum duration of an offset108 days 10:12:00Offset value(s) with <108 days 10:12:00> duration[0.0]Number of offsets with value >= 5 cm20Maximum offset value0.323Duration(s) of offset with value <0.323> cm[Timedelta('0 days 00:06:00')]
+
+
+Comparison Table for year 2001:
+                      total points  percent
+agreements                  86934  99.2397
+disagreements                 666   0.7603
+missing (primary)              69   0.0788
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day18Maximum duration of an offset106 days 13:06:00Offset value(s) with <106 days 13:06:00> duration[0.0]Number of offsets with value >= 5 cm343Maximum offset value0.048Duration(s) of offset with value <0.048> cm[Timedelta('0 days 00:06:00')]
+
+
+Comparison Table for year 1996:
+                      total points  percent
+agreements                  86338  98.2901
+disagreements                1502   1.7099
+missing (primary)            1460   1.6621
+missing (reference)             0   0.0000
+
+Number of offsets with duration >= one day: 12
+Maximum duration of an offset: 116 days 10:54:00
+Offset value(s) with <116 days 10:54:00> duration: [0.0]
+Number of offsets with value >= 5 cm: 14
+Maximum offset value: 1.595
+Duration(s) of offset with value <1.595> cm: [Timedelta('0 days 00:06:00')]
+
+
+
