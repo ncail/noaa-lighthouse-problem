@@ -77,7 +77,7 @@ def main():
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, flag=flag_ptr)
 
         # If either read failed, skip this iteration.
-        if flag_ptr is False:
+        if flag_ptr[0] is False:
             print("clean_dataframe failed.\n")
             continue
 
@@ -85,6 +85,8 @@ def main():
         lh_size = len(lh_df)
         noaa_size = len(noaa_df)
 
+        # If dataframes are not same size, do not attempt getting discrepancy stats,
+        # skip to next file pair.
         if lh_size != noaa_size:
             print("sizes are not equal: ", lh_size, " ", noaa_size, "\nskipping to next file pair...\n")
             continue

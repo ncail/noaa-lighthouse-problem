@@ -234,6 +234,8 @@ def split_by_year(df, datetime_col_name):
 
 # Prepare dataframe for analysis by standardizing datetimes and numerical values.
 # Option to clean backup water level (bwl) and harmonic water level (harmwl) columns.
+# Option to pass flag pointer so that status of if clean_dataframe succeeded or failed
+# can be checked by user in main program.
 def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
                     bwl_col_name=None, flag=[False]):
 
