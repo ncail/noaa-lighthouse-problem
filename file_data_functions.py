@@ -243,7 +243,7 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
     df.replace([-999, -99, 99, 'NA', 'RM'], np.nan, inplace=True)
 
     # Convert to datetime and numeric. coerce changes invalid values
-    # to NaN.
+    # to NaT/NaN.
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
 
     if pwl_col_name is not None:
@@ -304,14 +304,14 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 
     percent_agree = round(total_agree/size * 100, 4)
     # percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
-    percent_vals_disagree = round(values_disagree/size * 100, 4)
+    percent_disagree = round(total_disagree/size * 100, 4)
     percent_primary_missing = round(primary_missing/size * 100, 4)
     percent_ref_missing = round(ref_missing/size * 100, 4)
 
     table = {
         'total points': [total_agree, total_disagree, primary_missing,
                          ref_missing],
-        'percent': [percent_agree, percent_vals_disagree,
+        'percent': [percent_agree, percent_disagree,
                     percent_primary_missing, percent_ref_missing]
     }
 
