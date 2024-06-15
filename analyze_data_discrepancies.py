@@ -149,32 +149,22 @@ def main():
             ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations)
         ]
 
-        year = noaa_df[noaa_dt_col_name].dt.year
         # Write all stats to a .txt file (in append mode).
+        year = noaa_df[noaa_dt_col_name].dt.year
         with open(f'generated_files/{filename}.txt', 'a') as file:
+
             file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}\n\n")
 
             # Find the longest key length for key alignment.
             max_key_length = max(len(key) for key, value in metric_data)
-            print("max_key_length: ", max_key_length, "\n")
+            # print("max_key_length: ", max_key_length, "\n")
 
             # Write each key-value pair aligned.
             for key, value in metric_data:
-                print(f"Key: '{key}', Length: {len(key)}\n")
+                # print(f"Key: '{key}', Length: {len(key)}\n")
                 file.write(f"{key:{max_key_length}}: {value}\n")
-                # file.write("{:<{width}}: {}\n".format(key, value, width=max_key_length))
-                # file.write(f"{key:<{max_key_length}}: {value}\n")
-                # output = f'{key:>{max_key_length}}: {value}\n'
-                # output = '{}{:>10}'.format(key, str(value))
-                # file.write(output)
             # End for.
             file.write("\n\n\n")
-            # file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
-            # file.write(f"\nMaximum duration of an offset: {max_duration}")
-            # file.write(f"\nOffset value(s) with <{max_duration}> duration: {max_duration_offsets}")
-            # file.write(f"\nNumber of offsets with value >= 5 cm: {large_offsets_count}")
-            # file.write(f"\nMaximum offset value: {max_offset}")
-            # file.write(f"\nDuration(s) of offset with value <{max_offset}> cm: {max_offset_durations}\n\n")
         # File closed.
     # End for.
 
