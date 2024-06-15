@@ -2,19 +2,45 @@
 import file_data_functions as da
 
 # Imports continued...
-import os
-import numpy as np
-import pandas as pd
+import argparse
+import datetime
 import glob
 from datetime import timedelta
-import matplotlib.pyplot as plt
+
+
+# parse_arguments will get command line arguments for the filename
+# that main() will write results to.
+# Use: python this_program.py --filename myFileName.txt
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Write to a specified file.")
+    parser.add_argument('--filename', type=str,
+                        help='Name of the file to write to', default=None)
+    return parser.parse_args()
+# End parse_arguments.
+
+
+# get_filename will return the filename input from the user's command line
+# argument, or return a default unique filename using timestamp.
+def get_filename(args):
+    if args.filename:
+        return args.filename
+    else:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        return f"output_{timestamp}.txt"
+# End get_filename.
 
 
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
-
 def main():
+
+    # Parse command line arguments.
+    args = parse_arguments()
+
+    # Determine the filename results will be written to.
+    filename = get_filename(args)
+
     # Assign paths to Bob Hall Pier data for Lighthouse and NOAA.
     bhp_lighthouse_path = 'data/lighthouse/Bob Hall Pier'
     bhp_noaa_path = 'data/NOAA/bobHallPier'
@@ -76,17 +102,16 @@ def main():
         da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, flag=flag_ptr)
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, flag=flag_ptr)
 
-        # If either read failed, skip this iteration.
+        # If either clean failed, skip this iteration.
         if flag_ptr[0] is False:
             print("clean_dataframe failed.\n")
             continue
 
         # Get size of dataframes.
-        lh_size = len(lh_df)
-        noaa_size = len(noaa_df)
-
         # If dataframes are not same size, do not attempt getting discrepancy stats,
         # skip to next file pair.
+        lh_size = len(lh_df)
+        noaa_size = len(noaa_df)
         if lh_size != noaa_size:
             print("sizes are not equal: ", lh_size, " ", noaa_size, "\nskipping to next file pair...\n")
             continue
@@ -116,7 +141,7 @@ def main():
 
         year = noaa_df[noaa_dt_col_name].dt.year
         # Write all stats to a .txt file (in append mode).
-        with open(f'generated_files/bobHallPier_1993-2023_noaa_vs_lh_stats.txt', 'a') as file:
+        with open(f'generated_files/{filename}.txt', 'a') as file:
             file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}")
             file.write(f"\n\nNumber of offsets with duration >= one day: {long_offsets_count}")
             file.write(f"\nMaximum duration of an offset: {max_duration}")
