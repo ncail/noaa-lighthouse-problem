@@ -304,18 +304,19 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 
     percent_agree = round(total_agree/size * 100, 4)
     # percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
-    percent_disagree = round(total_disagree/size * 100, 4)
+    percent_val_disagree = round(values_disagree/size * 100, 4)
+    percent_total_disagree = round(total_disagree/size * 100, 4)
     percent_primary_missing = round(primary_missing/size * 100, 4)
     percent_ref_missing = round(ref_missing/size * 100, 4)
 
     table = {
-        'total points': [total_agree, total_disagree, primary_missing,
+        'total points': [total_agree, values_disagree, total_disagree, primary_missing,
                          ref_missing],
-        'percent': [percent_agree, percent_disagree,
+        'percent': [percent_agree, percent_val_disagree, percent_total_disagree,
                     percent_primary_missing, percent_ref_missing]
     }
 
-    row_labels = ['agreements', 'disagreements',
+    row_labels = ['total agreements', 'value disagreements', 'total disagreements'
                   'missing (primary)', 'missing (reference)']
 
     stats_table = pd.DataFrame(table, index=row_labels)

@@ -138,7 +138,7 @@ def main():
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
 
         # If either clean failed, skip this iteration.
-        if error_msg:
+        if error_msg or not all(e == "" for e in error_msg):
             print(f"clean_dataframe failed.\nerror message(s): {error_msg}"
                   f"\nskipping to next file pair...\n")
             continue
@@ -185,8 +185,8 @@ def main():
             ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
             ("Number of offsets with abs value >= 5 cm", large_offsets_count),
             ("Maximum/minimum offset value (m)", str(max_offset) + "/" + str(min_offset)),
-            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations),
-            ("Duration(s) of offset with value <" + str(min_offset) + "> cm", min_offset_durations)
+            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", str(max_offset_durations)),
+            ("Duration(s) of offset with value <" + str(min_offset) + "> cm", str(min_offset_durations))
         ]
 
         # Write all stats to a .txt file (in append mode).
