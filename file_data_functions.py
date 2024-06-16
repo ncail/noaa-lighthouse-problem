@@ -195,7 +195,7 @@ def end_file_index(filename):
 # ***************************************************************************
 
 # Splits a dataframe into yearly dataframes. Returns a list of
-# dataframes where the keys are the years and items are the dataframes.
+# yearly dataframes.
 # Lighthouse data files are provided in multi-year csv files but need
 # to be processed year by year so splitting them is necessary.
 def split_by_year(df, datetime_col_name):
@@ -237,26 +237,26 @@ def split_by_year(df, datetime_col_name):
 # Option to pass flag pointer so that status of if clean_dataframe succeeded or failed
 # can be checked by user in main program.
 def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
-                    bwl_col_name=None, flag=[False]):
+                    bwl_col_name=None, error=[""]):
 
     # Replace missing values with NaN.
     df.replace([-999, -99, 99, 'NA', 'RM'], np.nan, inplace=True)
 
     # Convert to datetime and numeric. coerce changes invalid values
     # to NaT/NaN.
-    df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
-
-    if pwl_col_name is not None:
+    try:
+        df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
         df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
+    except Exception as e:
+        error.append(str(e))
+
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
     if harmwl_col_name is not None:
         df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
 
     if df[datetime_col_name].isna().all() or df[pwl_col_name].isna().all():
-        flag[0] = False
-    else:
-        flag[0] = True
+        error.append("\ndataframe has column with only NaT or NaN.")
 # End clean_dataframe.
 
 

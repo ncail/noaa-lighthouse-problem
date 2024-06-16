@@ -70,7 +70,7 @@ def main():
         noaa_path = paths[0]
         lighthouse_path = paths[1]
     if args_flag_ptr[0] is False:
-        print("args_flag_ptr is False. Data paths or filename pattern not entered, "
+        print("args_flag_ptr is False. Data paths not entered, "
               "or paths do not exist. Exiting program.")
         sys.exit()
 
@@ -133,12 +133,14 @@ def main():
     for lh_df, noaa_df in zip(lh_df_arr, noaa_df_arr):
 
         # Clean dataframe.
-        da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, flag=flag_ptr)
-        da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, flag=flag_ptr)
+        error_msg = [""]
+        da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
+        da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
 
         # If either clean failed, skip this iteration.
-        if flag_ptr[0] is False:
-            print("clean_dataframe failed.\nskipping to next file pair...\n")
+        if error_msg:
+            print(f"clean_dataframe failed.\nerror message(s): {error_msg}"
+                  f"\nskipping to next file pair...\n")
             continue
 
         # Get size of dataframes.
@@ -147,7 +149,7 @@ def main():
         lh_size = len(lh_df)
         noaa_size = len(noaa_df)
         if lh_size != noaa_size:
-            print("sizes are not equal: ", lh_size, " ", noaa_size, "\nskipping to next file pair...\n")
+            print("sizes are not equal. lh: ", lh_size, " noaa: ", noaa_size, "\nskipping to next file pair...\n")
             continue
 
         # Get comparison table.
