@@ -248,7 +248,7 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
         df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
         df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
     except Exception as e:
-        error.append(str(e))
+        error[0] = str(e)
 
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
@@ -256,8 +256,29 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
         df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
 
     if df[datetime_col_name].isna().all() or df[pwl_col_name].isna().all():
-        error.append("\ndataframe has column with only NaT or NaN.")
+        error[0] = "\ndataframe has column with only NaT or NaN."
 # End clean_dataframe.
+
+
+# ***************************************************************************
+# ******************* FUNCTION GET_DF_DICTIONARY ****************************
+# ***************************************************************************
+
+# Convert list of dataframes to a dictionary with the year as the keys and
+# corresponding dataframes as values. Then, comparing the NOAA and Lighthouse
+# dictionaries ensures data from the same year will be compared.
+
+def get_df_dictionary(df_list, dt_col_name):
+
+    dfs_dict = {}
+    for df in df_list:
+
+        year = df[dt_col_name].dt.year
+        dfs_dict[year[0]] = df
+    # End for.
+
+    return dfs_dict
+# End get_df_dictionary.
 
 
 # ***************************************************************************

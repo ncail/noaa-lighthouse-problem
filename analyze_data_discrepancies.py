@@ -65,7 +65,7 @@ def main():
     args_flag_ptr = [False]
     paths = get_data_paths(args, flag=args_flag_ptr)
 
-    # Check that get_directories and get_filename_pattern succeeded.
+    # Check that get_data_paths succeeded.
     if args_flag_ptr[0] is True:
         noaa_path = paths[0]
         lighthouse_path = paths[1]
@@ -90,7 +90,7 @@ def main():
     lh_df_arr = []
     noaa_df_arr = []
 
-    # Initialize a flag pointer to check if da.read_file() was successful.
+    # Initialize a flag pointer to check if da.read_file() is successful.
     flag_ptr = [False]
 
     # Read and split up the lighthouse files.
@@ -118,10 +118,6 @@ def main():
             print(f"failed to read file: {noaa_file}\n")
     # End for.
 
-    # ***********************************************************************
-    # ********************* CORRECT TIME SHIFT HERE *************************
-    # ***********************************************************************
-
     # Get column names. Assumes all dataframes in the list have same column names.
     # Avoids repeated assignment in the loop which does not make this assumption.
     lh_dt_col_name = lh_df_arr[0].columns[0]
@@ -129,7 +125,7 @@ def main():
     noaa_dt_col_name = noaa_df_arr[0].columns[0]
     noaa_pwl_col_name = noaa_df_arr[0].columns[1]
 
-    # Process dataframes for discrepancies between lighthouse and noaa.
+    # Clean dataframes, print error messages.
     for lh_df, noaa_df in zip(lh_df_arr, noaa_df_arr):
 
         # Clean dataframe.
@@ -139,17 +135,32 @@ def main():
 
         # If either clean failed, skip this iteration.
         if error_msg or not all(e == "" for e in error_msg):
-            print(f"clean_dataframe failed.\nerror message(s): {error_msg}"
-                  f"\nskipping to next file pair...\n")
-            continue
+            print(f"clean_dataframe failed.\nerror message(s): {error_msg}")
+    # End for.
 
-        # Get size of dataframes.
-        # If dataframes are not same size, do not attempt getting discrepancy stats,
-        # skip to next file pair.
+    # Make sure only common years are compared.
+    # .keys() returns a view object that displays the list of dictionary keys.
+    # set() converts the view object into a set of years.
+    # & is used to find the intersection of two sets, returning a new set that contains
+    # the common years.
+    lh_dfs_dict = da.get_df_dictionary(lh_df_arr, lh_dt_col_name)
+    noaa_dfs_dict = da.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
+    common_years = set(lh_dfs_dict.keys()) & set(noaa_dfs_dict.keys())
+
+    # Process the dataframes to get statistics.
+    for year in common_years:
+
+        # Assign dataframes from dictionaries.
+        lh_df = lh_dfs_dict[year]
+        noaa_df = noaa_dfs_dict[year]
+
+        # Get size of dataframes. If dataframes are not same size, do not attempt
+        # getting discrepancy stats, skip to next file pair.
         lh_size = len(lh_df)
         noaa_size = len(noaa_df)
         if lh_size != noaa_size:
-            print("sizes are not equal. lh: ", lh_size, " noaa: ", noaa_size, "\nskipping to next file pair...\n")
+            print("sizes are not equal. lh: ", lh_size, " noaa: ", noaa_size,
+                  "\nskipping to next file pair...\n")
             continue
 
         # Get comparison table.
@@ -190,10 +201,9 @@ def main():
         ]
 
         # Write all stats to a .txt file (in append mode).
-        year = noaa_df[noaa_dt_col_name].dt.year
         with open(f'generated_files/{filename}.txt', 'a') as file:
 
-            file.write(f"Comparison Table for year {year[0]}:\n {stats_df.to_string(index=True)}\n\n")
+            file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
 
             # Find the longest key length for key alignment.
             max_key_length = max(len(key) for key, value in metric_data)
