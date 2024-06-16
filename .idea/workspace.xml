@@ -27,8 +27,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Python.analyze_data_discrepancies.executor": "Run",
-    "Python.file_data_functions.executor": "Debug",
+    "Python.analyze_data_discrepancies.executor": "Debug",
+    "Python.file_data_functions.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "last_opened_file_path": "C:/data/cbi_coastal_inundation/waterLevels/noaa_lighthouse_problem"
   }
