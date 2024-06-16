@@ -23,9 +23,9 @@ def parse_arguments():
                         help='Path to directory of reference data', default=None)
     parser.add_argument('--primaryDir', type=str,
                         help='Path to directory of primary data', default=None)
-    parser.add_argument('--stationName', type=str,
-                        help='Name of station to fill in NOAA filename pattern '
-                             '(i.e. "{station_name}_*_water_level.csv")', default=None)
+    # parser.add_argument('--stationName', type=str,
+    #                     help='Name of station to fill in NOAA filename pattern '
+    #                          '(i.e. "{station_name}_*_water_level.csv")', default=None)
     return parser.parse_args()
 # End parse_arguments.
 
@@ -56,12 +56,12 @@ def get_data_paths(args, flag=[False]):
 # get_filename_pattern returns the NOAA station name specified by the
 # user as command line argument. This will be used to identify the files
 # read into the list of NOAA data files.
-def get_station_name(args, flag=[False]):
-    if args.stationName:
-        flag[0] = True
-    else:
-        flag[0] = False
-    return args.stationName
+# def get_station_name(args, flag=[False]):
+#     if args.stationName:
+#         flag[0] = True
+#     else:
+#         flag[0] = False
+#     return args.stationName
 # End get_filename_pattern.
 
 
@@ -79,7 +79,7 @@ def main():
     # Assign paths to station data for Lighthouse and NOAA.
     args_flag_ptr = [False]
     paths = get_data_paths(args, flag=args_flag_ptr)
-    station_name = get_station_name(args, flag=args_flag_ptr)
+    # station_name = get_station_name(args, flag=args_flag_ptr)
 
     # Check that get_directories and get_filename_pattern succeeded.
     if args_flag_ptr[0] is True:
@@ -94,7 +94,8 @@ def main():
     lighthouse_csv_files = glob.glob(f"{lighthouse_path}/*.csv")
 
     # Ignore csv files for harmonic water level (harmwl) from NOAA path.
-    pattern = f"{noaa_path}/{station_name}_*_water_level.csv"
+    # pattern = f"{noaa_path}/{station_name}_*_water_level.csv"
+    pattern = f"{noaa_path}/*_*_water_level.csv"
     noaa_csv_files = glob.glob(pattern)
 
     # Check that files matching the pattern were found.
