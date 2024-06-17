@@ -253,7 +253,7 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
         df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
         df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
     except Exception as e:
-        error[0] = str(e)
+        error[0] += str(e)
 
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
@@ -261,7 +261,7 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
         df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
 
     if df[datetime_col_name].isna().all() or df[pwl_col_name].isna().all():
-        error[0] = "dataframe has column with only NaT or NaN."
+        error[0] += "dataframe has column with only NaT or NaN. "
 # End clean_dataframe.
 
 

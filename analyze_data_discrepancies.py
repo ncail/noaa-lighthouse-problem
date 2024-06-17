@@ -8,6 +8,7 @@ import sys
 import datetime
 import glob
 from datetime import timedelta
+import pandas as pd
 
 
 # parse_arguments will get command line arguments for the filename
@@ -133,9 +134,12 @@ def main():
         da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
 
-        # If either clean failed, skip this iteration.
+        # If either clean failed, print error message.
         if error_msg[0] or not all(e == "" for e in error_msg):
-            print(f"clean_dataframe failed.\nerror message(s): {error_msg}")
+            lh_year = lh_df[lh_dt_col_name].dt.year
+            noaa_yr = noaa_df[noaa_dt_col_name].dt.year
+            print(f"clean_dataframe failed for either lh file - year {lh_year[0]} or "
+                  f"noaa file - year {noaa_yr[0]}. error message(s): {error_msg}")
     # End for.
 
     # Make sure only common years are compared.
