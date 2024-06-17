@@ -30,7 +30,8 @@
     "Python.analyze_data_discrepancies.executor": "Debug",
     "Python.file_data_functions.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/data/cbi_coastal_inundation/waterLevels/noaa_lighthouse_problem"
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/ncail/cbi_data/programs/noaa-lighthouse-problem/noaa-lighthouse-problem"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -42,7 +43,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
+        <option value="bundled-python-sdk-48aec45f0201-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17011.127" />
       </set>
     </attachedChunks>
   </component>
