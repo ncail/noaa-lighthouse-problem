@@ -2,6 +2,11 @@ import os
 import pandas as pd
 import numpy as np
 
+# Opt into future behavior for pandas. Encouraged by FutureWarning message
+# for pd.replace(): "Downcasting behavior in 'replace' is deprecated and
+# will be removed in a future version."
+pd.set_option('future.no_silent_downcasting', True)
+
 
 """ ******************* Function implementation below ******************* """
 
@@ -337,7 +342,7 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
                     percent_primary_missing, percent_ref_missing]
     }
 
-    row_labels = ['total agreements', 'value disagreements', 'total disagreements'
+    row_labels = ['total agreements', 'value disagreements', 'total disagreements',
                   'missing (primary)', 'missing (reference)']
 
     stats_table = pd.DataFrame(table, index=row_labels)
