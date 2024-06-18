@@ -22,7 +22,7 @@ Running the main program `analyze_data_discrepancies.py` will write statistics a
 --refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files
 ```
 
-These paths should be to folders containing water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data for common years.
+These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data for common years.
 
 ## Output
 
