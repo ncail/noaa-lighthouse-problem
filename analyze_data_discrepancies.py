@@ -175,8 +175,8 @@ def main():
         lh_size = len(lh_df)
         noaa_size = len(noaa_df)
         if lh_size != noaa_size:
-            print("sizes are not equal. lh: ", lh_size, " noaa: ", noaa_size,
-                  "\nskipping to next file pair...\n")
+            print(f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size},"
+                  f"\nskipping to next file pair...\n")
             continue
 
         # Get comparison table.
