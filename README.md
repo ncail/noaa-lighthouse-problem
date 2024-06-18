@@ -16,7 +16,6 @@ Running the main program `analyze_data_discrepancies.py` will write statistics a
 ```shell
 --filename myFileName
 ```
-(Do not include an extension; .txt will be added automatically. If not specified, the program will write to output_{timestamp}.txt.)<br><br>
 
 - The reference data (NOAA) path and primary data (Lighthouse) path are provided by the user. To specify these paths, use command line arguments
 ```shell
@@ -27,7 +26,7 @@ These paths should be to folders containing water level CSV files for a specific
 
 ## Output
 
-The program generates a text file in the generated_files directory containing the statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp.
+The program generates a text file in the `generated_files` directory containing the statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp.
 
 ## Requirements
 
