@@ -1,14 +1,16 @@
 # NOAA-Lighthouse-Problem
 
-<b>noaa-lighthouse-problem</b> is a project aimed at generating useful metrics for assessing the nature and severity of discrepancies between NOAA and Lighthouse data from tide gauge stations.
+**noaa-lighthouse-problem** is a project aimed at recording useful metrics for assessing the nature and severity of discrepancies between data from tide gauge stations shared by the organizations NOAA and Lighthouse. Of the many Lighthouse stations in coastal Texas, some are also NOAA stations, meaning that both organizations receive data from the station's water level sensor before processing the data to distribute sea level products. Strangely, we find that the station data available to download from NOAA and Lighthouse have major discrepancies, including vertical and temporal offsets, unshared missing values, flatlines, spikes, and more. NOAA, being a federal agency, defines the standard for data quality, so it is important to understand how and why the Lighthouse data differs so that data quality from other Lighthouse stations, not shared by NOAA, can be assured.
 
-The main program `analyze_data_discrepancies.py` uses function implementation from `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv), gets their statistical differences, and directly compares the datasets using discrepancy analysis.
+The main program, `analyze_data_discrepancies.py`, uses functions implemented in `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv). It calculates their statistical differences and directly compares the datasets using discrepancy analysis.
 
-These processes are meant to be a starting point for diagnosing any underlying issues that prevent Lighthouse from meeting the standard of NOAA.
+These processes are intended to be a starting point for diagnosing any underlying issues that prevent Lighthouse from meeting the standards of NOAA.
 
-## Running program
+**Note:** Not all Lighthouse stations are also NOAA stations. Additionally, Lighthouse stations are only located in coastal Texas, whereas NOAA stations are distributed across the United States. Ensure that you select comparable stations when running the analysis.
 
-Running the main program `analyze_data_discrepancies.py` will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory.
+## Running the Program
+
+Running the main program, `analyze_data_discrepancies.py`, will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory.
 
 ## Command line arguments
 
@@ -55,3 +57,18 @@ cd path/to/noaa-lighthouse-problem
 ```shell
 python analyze_data_discrepancies.py --refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files --filename results
 ```
+
+## Downloading Data
+
+**NOAA Data**
+
+1. Visit the NOAA Tides & Currents website: [NOAA Tides & Currents](https://tidesandcurrents.noaa.gov/)
+2. Use the search bar or map to select a tide gauge station.
+3. Specify the date range, units, datum, etc. for the data you want to download.
+4. Download the data in CSV format and save it to a directory, e.g., path/to/NOAA/files.
+
+**Lighthouse Data**
+
+1. Access the Lighthouse data portal: [Lighthouse Data Portal]"(link?)"
+2. Locate the relevant tide gauge station and specify the date range, etc. for the data.
+3. Download the data in CSV format and save it to a directory, e.g., path/to/Lighthouse/files.
