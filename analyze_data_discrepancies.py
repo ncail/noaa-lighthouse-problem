@@ -120,26 +120,38 @@ def main():
     # End for.
 
     # Get column names. Assumes all dataframes in the list have same column names.
-    # Avoids repeated assignment in the loop which does not make this assumption.
+    # Avoids repeated assignment in the loop which would not make this assumption.
     lh_dt_col_name = lh_df_arr[0].columns[0]
     lh_pwl_col_name = lh_df_arr[0].columns[1]
     noaa_dt_col_name = noaa_df_arr[0].columns[0]
     noaa_pwl_col_name = noaa_df_arr[0].columns[1]
 
-    # Clean dataframes, print error messages.
-    for lh_df, noaa_df in zip(lh_df_arr, noaa_df_arr):
+    # Clean lighthouse dataframes. Print error messages.
+    for lh_df in lh_df_arr:
 
-        # Clean dataframe.
+        # Initialize error message.
         error_msg = [""]
-        da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
-        da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
 
-        # If either clean failed, print error message.
-        if error_msg[0] or not all(e == "" for e in error_msg):
-            lh_year = lh_df[lh_dt_col_name].dt.year
-            noaa_yr = noaa_df[noaa_dt_col_name].dt.year
-            print(f"clean_dataframe failed for either lh file - year {lh_year[0]} or "
-                  f"noaa file - year {noaa_yr[0]}. error message(s): {error_msg}")
+        da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
+        year = lh_df[lh_dt_col_name].dt.year
+        if not all(e == "" for e in error_msg):
+
+            print(f"clean_dataframe returned message for lh file - year {year[0]}. "
+                  f"error message: {error_msg}\n")
+    # End for.
+
+    # Clean NOAA dataframes. Print error messages.
+    for noaa_df in noaa_df_arr:
+
+        # Initialize error message.
+        error_msg = [""]
+
+        da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
+        year = noaa_df[noaa_dt_col_name].dt.year
+        if not all(e == "" for e in error_msg):
+
+            print(f"clean_dataframe returned message for noaa file - year {year[0]}. "
+                  f"error message: {error_msg}\n")
     # End for.
 
     # Make sure only common years are compared.

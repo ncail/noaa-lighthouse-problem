@@ -279,7 +279,9 @@ def get_df_dictionary(df_list, dt_col_name):
     for df in df_list:
 
         year = df[dt_col_name].dt.year
-        dfs_dict[year[0]] = df
+
+        if not pd.isna(year[0]):
+            dfs_dict[year[0]] = df
     # End for.
 
     return dfs_dict
