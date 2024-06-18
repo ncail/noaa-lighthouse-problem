@@ -1,38 +1,58 @@
-<h3>README</h3>
+# NOAA-Lighthouse-Problem
 
-<b>noaa-lighthouse-problem</b> is a project aimed at generating useful metrics for assessing the<br> 
-nature and severity of discrepancies between NOAA and Lighthouse data from tide gauge<br>
-stations.
+<b>noaa-lighthouse-problem</b> is a project aimed at generating useful metrics for assessing the nature and severity of discrepancies between NOAA and Lighthouse data from tide gauge stations.
 
-The main program `analyze_data_discrepancies.py` uses function implementation from<br>
-`file_data_functions.py` to process annual water level data from both NOAA and <br>
-Lighthouse, gets their statistical differences, and directly compares the data sets<br>
-using discrepancy analysis.
+The main program `analyze_data_discrepancies.py` uses function implementation from `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv), gets their statistical differences, and directly compares the datasets using discrepancy analysis.
 
-These processes are meant to be a starting point for diagnosing any underlying issues<br>
-that prevent Lighthouse from meeting the standard of NOAA.<br>
-<br><br>
+These processes are meant to be a starting point for diagnosing any underlying issues that prevent Lighthouse from meeting the standard of NOAA.
 
-<h3>RUNNING PROGRAM</h3>
+## Running program
 
-Running the main program `analyze_data_discrepancies.py` will write stats and metrics about<br>
-the compared data sets for a tide gauge station to a text file in the `generated_files`<br>
-directory. 
+Running the main program `analyze_data_discrepancies.py` will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory.
 
-To specify the name of the file to be written to, use command line argument
+## Command line arguments
 
-`--filename myFileName`
+- To specify the name of the file to be written to, use command line argument
+```shell
+--filename myFileName
+```
+(Do not include an extension; .txt will be added automatically. If not specified, the program will write to output_{timestamp}.txt.)<br><br>
 
-with no extension (.txt). If not specified, the program will write to `output_{timestamp}.txt.`
+- The reference data (NOAA) path and primary data (Lighthouse) path are provided by the user. To specify these paths, use command line arguments
+```shell
+--refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files
+```
 
-The datasets being compared must be specified using command line arguments. The<br>
-reference data (NOAA) path and primary data (Lighthouse) path are provided by the user <br>
-with command line arguments
+These paths should be to folders containing water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data for common years.
 
-`--refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files`
+## Output
 
-These paths should be to folders of water level csv files for a specific tide gauge<br>
-station. Typically, doing discrepancy analysis would require that the station chosen<br>
-for both NOAA and Lighthouse be the same. However, any two stations can be compared. 
+The program generates a text file in the generated_files directory containing the statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp.
 
+## Requirements
 
+Python 3.x<br>
+Required packages (listed in `requirements.txt`)
+
+## Installation
+
+1. Clone the repository:
+```shell
+git clone https://github.com/ncail/noaa-lighthouse-problem.git
+cd noaa-lighthouse-problem
+```
+2. Install the required packages:
+```shell
+pip install -r requirements.txt
+```
+
+## Usage example
+
+1. Navigate to the project directory:
+```shell
+cd path/to/noaa-lighthouse-problem
+```
+2. Run the program:
+```shell
+python analyze_data_discrepancies.py --refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files --filename results
+```
