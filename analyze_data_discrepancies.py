@@ -18,7 +18,8 @@ import pandas as pd
 # --primarydir 'path/to/primary/data/files'
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Write to a specified file and directory, "
-                                                 "and specify paths to data files.")
+                                                 "specify paths to data files, and opt out of "
+                                                 "program execution messages")
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
     parser.add_argument('--refdir', type=str,
@@ -26,16 +27,21 @@ def parse_arguments():
     parser.add_argument('--primarydir', type=str,
                         help='Path to directory of primary data', default=None)
     parser.add_argument('--writepath', type=str,
-                        help='Path to write results text file to', default='generated_files')
+                        help='Path to write results text file in', default='generated_files')
+    parser.add_argument('--include-msgs', action='store_true',
+                        help="Enable writing program execution messages to results text file")
+    parser.add_argument('--no-msgs', dest='include_msgs', action='store_false',
+                        help="Opt out of writing execution messages to results text file")
+    parser.set_defaults(include_msgs=True)
     return parser.parse_args()
 # End parse_arguments.
 
 
 # get_filename will return the filename input from the user's command line
 # argument, or return a default unique filename using timestamp.
-def get_filename(args):
-    if args.filename:
-        return args.filename
+def get_filename(user_args):
+    if user_args.filename:
+        return user_args.filename
     else:
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         return f"output_{timestamp}.txt"
@@ -44,23 +50,20 @@ def get_filename(args):
 
 # get_directories returns the specified directories to pull data from
 # given by command line arguments.
-def get_data_paths(args, flag=[False]):
-    if args.refdir and args.primarydir:
-        if os.path.exists(args.refdir) and os.path.exists(args.primarydir):
+def get_data_paths(user_args, flag=[False]):
+    if user_args.refdir and user_args.primarydir:
+        if os.path.exists(user_args.refdir) and os.path.exists(user_args.primarydir):
             flag[0] = True
     else:
         flag[0] = False
-    return args.refdir, args.primarydir
+    return user_args.refdir, user_args.primarydir
 # End get_directories.
 
 
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
-def main():
-
-    # Parse command line arguments.
-    args = parse_arguments()
+def main(args):
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
@@ -94,13 +97,14 @@ def main():
         sys.exit()
 
     # Prompt user for the start and end year of their data.
-    prompt = "Enter the starting year <yyyy> of your data: "
-    start_year = da.get_year_from_user(prompt)
-    prompt = "Enter the last year <yyyy> of your data: "
-    end_year = da.get_year_from_user(prompt)
+    if args.include_msgs:
+        prompt = "Enter the starting year <yyyy> of your data: "
+        start_year = da.get_year_from_user(prompt)
+        prompt = "Enter the last year <yyyy> of your data: "
+        end_year = da.get_year_from_user(prompt)
 
-    # Get range of years.
-    year_range = range(start_year, end_year + 1)
+        # Get range of years.
+        year_range = range(start_year, end_year + 1)
 
     # Initialize a summary of error messages. These will be written to the result file.
     error_summary = ["Messages about the program execution are below: \n"]
@@ -191,9 +195,10 @@ def main():
     # Record which years have no data for analysis.
     header = ["Analysis could not be done for year(s): \n"]
     bad_years = []
-    for year in year_range:
-        if year not in common_years:
-            bad_years.append(year)
+    if args.include_msgs:
+        for year in year_range:
+            if year not in common_years:
+                bad_years.append(year)
 
     # Process the dataframes of common years to get statistics.
     for year in common_years:
@@ -269,18 +274,21 @@ def main():
         # File closed.
     # End for.
 
-    # Prepend error_summary and header to the text file.
-    bad_years.sort()
-    header.extend([str(y) + " " for y in bad_years])
-    results_title = ["***************************************************************************\n"
-                     "******************************* RESULTS ***********************************\n"
-                     "***************************************************************************\n\n"]
-    prepend_text = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-    da.prepend_to_file(f'{write_path}/{filename}.txt', prepend_text)
+    # Prepend error_summary and header to the text file if include_msgs is True.
+    if args.include_msgs:
+        bad_years.sort()
+        header.extend([str(y) + " " for y in bad_years])
+        results_title = ["***************************************************************************\n"
+                         "******************************* RESULTS ***********************************\n"
+                         "***************************************************************************\n\n"]
+        prepend_text = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+        da.prepend_to_file(f'{write_path}/{filename}.txt', prepend_text)
+# End main.
 
 
 if __name__ == "__main__":
-    main()
+    main_args = parse_arguments()
+    main(main_args)
 
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************
