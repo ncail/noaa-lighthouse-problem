@@ -35,7 +35,12 @@ If not specified, the program will write the file in the `generated_files` direc
 --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files
 ```
 
-These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data` directory as an example.
+These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data` directory as an example.<br><br>
+
+- By default, the program will write messages about the execution of the program at the top of the results text file. To aid in creating these messages, the program will ask the user to input the start and end year of their data. This is an optional feature the user can opt out of using command line argument
+```shell
+--no-msgs
+``` 
 
 ## Output
 
