@@ -45,12 +45,12 @@ def get_filename(args):
 # get_directories returns the specified directories to pull data from
 # given by command line arguments.
 def get_data_paths(args, flag=[False]):
-    if args.refDir and args.primaryDir:
-        if os.path.exists(args.refDir) and os.path.exists(args.primaryDir):
+    if args.refdir and args.primarydir:
+        if os.path.exists(args.refdir) and os.path.exists(args.primarydir):
             flag[0] = True
     else:
         flag[0] = False
-    return args.refDir, args.primaryDir
+    return args.refdir, args.primarydir
 # End get_directories.
 
 
@@ -93,6 +93,18 @@ def main():
         print("Failed to match files to NOAA filename pattern. Exiting program.")
         sys.exit()
 
+    # Prompt user for the start and end year of their data.
+    prompt = "Enter the starting year <yyyy> of your data: "
+    start_year = da.get_year_from_user(prompt)
+    prompt = "Enter the last year <yyyy> of your data: "
+    end_year = da.get_year_from_user(prompt)
+
+    # Get range of years.
+    year_range = range(start_year, end_year + 1)
+
+    # Initialize a summary of error messages. These will be written to the result file.
+    error_summary = ["Messages about the program execution are below: \n"]
+
     # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
     lh_df_arr = []
     noaa_df_arr = []
@@ -114,6 +126,7 @@ def main():
             lh_df_arr.extend(split_df)
         else:
             print(f"failed to read file: {lh_file}\n")
+            error_summary.append(f"failed to read file: {lh_file}\n")
     # End for.
 
     # Send NOAA data into dataframes. The files are already split by year.
@@ -122,7 +135,9 @@ def main():
         noaa_df_arr.append(da.read_file(noaa_file, flag=flag_ptr))
 
         if flag_ptr[0] is False:
-            print(f"failed to read file: {noaa_file}\n")
+            msg = f"failed to read file: {noaa_file}\n"
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Get column names. Assumes all dataframes in the list have same column names.
@@ -140,10 +155,12 @@ def main():
 
         da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
         year = lh_df[lh_dt_col_name].dt.year
-        if not all(e == "" for e in error_msg):
 
-            print(f"clean_dataframe returned message for lh file - year {year[0]}. "
-                  f"error message: {error_msg}\n")
+        if not all(e == "" for e in error_msg):
+            msg = (f"clean_dataframe returned message for lh file - year {year[0]}. "
+                   f"error message: {error_msg}\n")
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Clean NOAA dataframes. Print error messages.
@@ -154,10 +171,12 @@ def main():
 
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
         year = noaa_df[noaa_dt_col_name].dt.year
-        if not all(e == "" for e in error_msg):
 
-            print(f"clean_dataframe returned message for noaa file - year {year[0]}. "
-                  f"error message: {error_msg}\n")
+        if not all(e == "" for e in error_msg):
+            msg = (f"clean_dataframe returned message for noaa file - year {year[0]}. "
+                   f"error message: {error_msg}\n")
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Make sure only common years are compared.
@@ -169,7 +188,14 @@ def main():
     noaa_dfs_dict = da.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
     common_years = set(lh_dfs_dict.keys()) & set(noaa_dfs_dict.keys())
 
-    # Process the dataframes to get statistics.
+    # Record which years have no data for analysis.
+    header = ["Analysis could not be done for year(s): \n"]
+    bad_years = []
+    for year in year_range:
+        if year not in common_years:
+            bad_years.append(year)
+
+    # Process the dataframes of common years to get statistics.
     for year in common_years:
 
         # Assign dataframes from dictionaries.
@@ -181,8 +207,11 @@ def main():
         lh_size = len(lh_df)
         noaa_size = len(noaa_df)
         if lh_size != noaa_size:
-            print(f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size},"
-                  f"\nskipping to next file pair...\n")
+            msg = (f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size}, "
+                   f"skipping to next file pair...\n")
+            print(msg)
+            error_summary.append(msg)
+            bad_years.append(year)
             continue
 
         # Get comparison table.
@@ -239,6 +268,15 @@ def main():
             file.write("\n\n\n")
         # File closed.
     # End for.
+
+    # Prepend error_summary and header to the text file.
+    bad_years.sort()
+    header.extend([str(y) + " " for y in bad_years])
+    results_title = ["***************************************************************************\n"
+                     "******************************* RESULTS ***********************************\n"
+                     "***************************************************************************\n\n"]
+    prepend_text = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+    da.prepend_to_file(f'{write_path}/{filename}.txt', prepend_text)
 
 
 if __name__ == "__main__":

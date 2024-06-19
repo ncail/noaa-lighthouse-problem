@@ -5,11 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="57dc3638-9ca8-44c5-8ca9-c4df40c26bc9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/generated_files/run1_rockport_noaa-lh.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/generated_files/run2_rockport_noaa-lh.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/generated_files/run3_rockport_noaa-lh.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/noaa_lighthouse_problem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/noaa_lighthouse_problem.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analyze_data_discrepancies.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze_data_discrepancies.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/file_data_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/file_data_functions.py" afterDir="false" />
@@ -44,7 +39,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/ncail/cbi_data/programs/noaa-lighthouse-problem/analyze_data_discrepancies.py",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -69,7 +64,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/analyze_data_discrepancies.py" />
-      <option name="PARAMETERS" value="--filename run3_rockport_noaa-lh --refDir data/NOAA/rockport --primaryDir data/lighthouse/Rockport" />
+      <option name="PARAMETERS" value="--filename run3_rockport_noaa-lh --refdir data/NOAA/rockport --primarydir data/lighthouse/Rockport" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
