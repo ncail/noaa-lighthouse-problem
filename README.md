@@ -21,14 +21,14 @@ The `data` directory included in the repository has example CSV files that the p
 --filename myFileName
 ```
 
-If not specified, the program will write to a text file with a file name generated based on the current timestamp.
+If not specified, the program will write to a text file with a file name generated based on the current timestamp.<br><br>
 
 - To specify the path that the results file should be created in, use command line argument
 ```shell
 --writepath path/to/results/folder
 ```
 
-If not specified, the program will write the file in the `generated_files` directory by default.
+If not specified, the program will write the file in the `generated_files` directory by default.<br><br>
 
 - The reference data (NOAA) path and primary data (Lighthouse) path are provided by the user. To specify these paths, use command line arguments
 ```shell
