@@ -14,16 +14,19 @@ import pandas as pd
 # parse_arguments will get command line arguments for the filename
 # that main() will write results to, directories main() will read
 # data files from, and the station name in the noaa filename pattern.
-# Use: python this_program.py --filename writeToThisFile.txt --refDir 'path/to/reference/data/files'
-# --primaryDir 'path/to/primary/data/files'
+# Use: python this_program.py --filename writeToThisFile.txt --refdir 'path/to/reference/data/files'
+# --primarydir 'path/to/primary/data/files'
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Write to a specified file.")
+    parser = argparse.ArgumentParser(description="Write to a specified file and directory, "
+                                                 "and specify paths to data files.")
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
-    parser.add_argument('--refDir', type=str,
+    parser.add_argument('--refdir', type=str,
                         help='Path to directory of reference data', default=None)
-    parser.add_argument('--primaryDir', type=str,
+    parser.add_argument('--primarydir', type=str,
                         help='Path to directory of primary data', default=None)
+    parser.add_argument('--writepath', type=str,
+                        help='Path to write results text file to', default='generated_files')
     return parser.parse_args()
 # End parse_arguments.
 
@@ -61,6 +64,9 @@ def main():
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
+
+    # Get path that program will write results to.
+    write_path = args.writepath
 
     # Assign paths to station data for Lighthouse and NOAA.
     args_flag_ptr = [False]
@@ -217,7 +223,7 @@ def main():
         ]
 
         # Write all stats to a .txt file (in append mode).
-        with open(f'generated_files/{filename}.txt', 'a') as file:
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
 
             file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
 
