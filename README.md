@@ -10,7 +10,7 @@ These processes are intended to be a starting point for diagnosing any underlyin
 
 ## Running the program
 
-Running the main program, `analyze_data_discrepancies.py`, will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory. 
+Running the main program, `analyze_data_discrepancies.py`, will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory, or a directory specified by the user. 
 
 The `data/` directory included in the repository has example CSV files that the program can handle. The program can process all of the files in directories `data/lighthouse/[station]` and `data/NOAA/[station]` at once by reading in all the files and sorting the data into years for year-by-year comparison. 
 
@@ -21,17 +21,21 @@ The `data/` directory included in the repository has example CSV files that the 
 --filename myFileName
 ```
 
+If not specified, the program will write to a text file with a file name generated based on the current timestamp.
+
 - To specify the path that the results file should be created in, use command line argument
 ```shell
 --writepath path/to/results/folder
 ```
+
+If not specified, the program will write the file in the `generated_files` directory by default.
 
 - The reference data (NOAA) path and primary data (Lighthouse) path are provided by the user. To specify these paths, use command line arguments
 ```shell
 --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files
 ```
 
-These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. 
+These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data/` directory as an example.
 
 ## Output
 
