@@ -205,24 +205,48 @@ def main(args):
 
         # Get size of dataframes. If dataframes are not same size, do not attempt
         # getting discrepancy stats, skip to next file pair.
-        lh_size = len(lh_df)
-        noaa_size = len(noaa_df)
-        if lh_size != noaa_size:
-            msg = (f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size}, "
-                   f"skipping to next file pair...\n")
-            print(msg)
-            error_summary.append(msg)
-            bad_years.append(year)
-            continue
+        # lh_size = len(lh_df)
+        # noaa_size = len(noaa_df)
+        # if lh_size != noaa_size:
+        #     msg = (f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size}, "
+        #            f"skipping to next file pair...\n")
+        #     print(msg)
+        #     error_summary.append(msg)
+        #     bad_years.append(year)
+        #     continue
+
+        # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
+        # will result in the addition of a NaN in the other.
+        merged_df = pd.merge(lh_df, noaa_df, how='outer', left_on=lh_dt_col_name,
+                             right_on=noaa_dt_col_name, suffixes=('_primary', '_reference'))
+
+        # Get size of merged dataframe.
+        size = len(merged_df)
+
+        # Reassign column names in case suffixes were added for repeated column names
+        # found during merge. Column indices chosen because merged df still includes other
+        # columns like bwl, harmwl, etc.
+        lh_dt_col_name = merged_df.columns[0]
+        lh_pwl_col_name = merged_df.columns[1]
+        noaa_dt_col_name = merged_df.columns[4]
+        noaa_pwl_col_name = merged_df.columns[5]
+
+        # print(merged_df)
+        print(f"merged_df column dtypes: {merged_df[lh_dt_col_name].dtype}, {merged_df[lh_pwl_col_name].dtype},"
+              f"{merged_df[noaa_dt_col_name].dtype}, {merged_df[noaa_pwl_col_name].dtype}\n")
 
         # Get comparison table.
-        stats_df = da.get_comparison_stats(lh_df[lh_pwl_col_name],
-                                           noaa_df[noaa_pwl_col_name], noaa_size)
+        # stats_df = da.get_comparison_stats(lh_df[lh_pwl_col_name],
+        #                                    noaa_df[noaa_pwl_col_name], noaa_size)
+        stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
+                                           merged_df[noaa_pwl_col_name], size)
 
         # Do get_run_data() to get a dataframe that can be filtered for
         # duration and value.
-        runs_df = da.get_run_data(lh_df[lh_pwl_col_name], noaa_df[noaa_pwl_col_name],
-                                  noaa_df[noaa_dt_col_name], noaa_size)
+        # runs_df = da.get_run_data(lh_df[lh_pwl_col_name], noaa_df[noaa_pwl_col_name],
+        #                           noaa_df[noaa_dt_col_name], noaa_size)
+        runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
+                                  merged_df[noaa_dt_col_name], size)
 
         # Filter for offsets (runs) >= 1 day.
         long_offsets_df = da.filter_duration(runs_df, timedelta(days=1))
