@@ -338,6 +338,72 @@ def get_df_dictionary(df_list, dt_col_name):
 
 
 # ***************************************************************************
+# ******************* FUNCTION GET_COMPARISON_STATS *************************
+# ***************************************************************************
+
+# Compares two dataframes and returns statistics about their discrepancies
+# including number of values that agree, disagree (including and excluding gaps),
+# and the percentage of the dataset for these metrics.
+
+def get_comparison_stats(primary_df_col, reference_df_col, size):
+
+    # Initialize incremented stats.
+    values_disagree = 0
+    values_agree = 0
+    primary_gaps = 0
+    ref_gaps = 0
+    shared_gaps = 0
+
+    for index in range(size):
+        # If neither value is NaN, compare the values and increment disagreements
+        # if not equal.
+        # Round values to millimeters.
+        if not pd.isna(primary_df_col.iloc[index]) and not pd.isna(reference_df_col.iloc[index]):
+            if round(primary_df_col.iloc[index], 4) != round(reference_df_col.iloc[index], 4):
+                values_disagree += 1
+            else:
+                values_agree += 1
+
+        if pd.isna(primary_df_col.iloc[index]) and pd.isna(reference_df_col.iloc[index]):
+            shared_gaps += 1
+            continue
+
+        if pd.isna(primary_df_col.iloc[index]):
+            primary_gaps += 1
+
+        if pd.isna(reference_df_col.iloc[index]):
+            ref_gaps += 1
+    # End for.
+
+    total_disagree = values_disagree + primary_gaps + ref_gaps
+    total_agree = values_agree + shared_gaps
+    primary_missing = shared_gaps + primary_gaps
+    ref_missing = shared_gaps + ref_gaps
+
+    percent_agree = round(total_agree/size * 100, 4)
+    # percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
+    percent_val_disagree = round(values_disagree/size * 100, 4)
+    percent_total_disagree = round(total_disagree/size * 100, 4)
+    percent_primary_missing = round(primary_missing/size * 100, 4)
+    percent_ref_missing = round(ref_missing/size * 100, 4)
+
+    table = {
+        'total points': [total_agree, values_disagree, total_disagree, primary_missing,
+                         ref_missing],
+        'percent': [percent_agree, percent_val_disagree, percent_total_disagree,
+                    percent_primary_missing, percent_ref_missing]
+    }
+
+    row_labels = ['total agreements', 'value disagreements', 'total disagreements',
+                  'missing (primary)', 'missing (reference)']
+
+    stats_table = pd.DataFrame(table, index=row_labels)
+
+    return stats_table
+# End get_comparison_stats.
+
+
+# ***************************************************************************
 # ******************* FUNCTION TEMPORAL_DESHIFTER ***************************
 # ***************************************************************************
 
@@ -419,72 +485,6 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
     return deshifted_df
 # End temporal_deshifter.
-
-
-# ***************************************************************************
-# ******************* FUNCTION GET_COMPARISON_STATS *************************
-# ***************************************************************************
-
-# Compares two dataframes and returns statistics about their discrepancies
-# including number of values that agree, disagree (including and excluding gaps),
-# and the percentage of the dataset for these metrics.
-
-def get_comparison_stats(primary_df_col, reference_df_col, size):
-
-    # Initialize incremented stats.
-    values_disagree = 0
-    values_agree = 0
-    primary_gaps = 0
-    ref_gaps = 0
-    shared_gaps = 0
-
-    for index in range(size):
-        # If neither value is NaN, compare the values and increment disagreements
-        # if not equal.
-        # Round values to millimeters.
-        if not pd.isna(primary_df_col.iloc[index]) and not pd.isna(reference_df_col.iloc[index]):
-            if round(primary_df_col.iloc[index], 4) != round(reference_df_col.iloc[index], 4):
-                values_disagree += 1
-            else:
-                values_agree += 1
-
-        if pd.isna(primary_df_col.iloc[index]) and pd.isna(reference_df_col.iloc[index]):
-            shared_gaps += 1
-            continue
-
-        if pd.isna(primary_df_col.iloc[index]):
-            primary_gaps += 1
-
-        if pd.isna(reference_df_col.iloc[index]):
-            ref_gaps += 1
-    # End for.
-
-    total_disagree = values_disagree + primary_gaps + ref_gaps
-    total_agree = values_agree + shared_gaps
-    primary_missing = shared_gaps + primary_gaps
-    ref_missing = shared_gaps + ref_gaps
-
-    percent_agree = round(total_agree/size * 100, 4)
-    # percent_agree_gaps = round(shared_gaps/total_agree * 100, 4)
-    percent_val_disagree = round(values_disagree/size * 100, 4)
-    percent_total_disagree = round(total_disagree/size * 100, 4)
-    percent_primary_missing = round(primary_missing/size * 100, 4)
-    percent_ref_missing = round(ref_missing/size * 100, 4)
-
-    table = {
-        'total points': [total_agree, values_disagree, total_disagree, primary_missing,
-                         ref_missing],
-        'percent': [percent_agree, percent_val_disagree, percent_total_disagree,
-                    percent_primary_missing, percent_ref_missing]
-    }
-
-    row_labels = ['total agreements', 'value disagreements', 'total disagreements',
-                  'missing (primary)', 'missing (reference)']
-
-    stats_table = pd.DataFrame(table, index=row_labels)
-
-    return stats_table
-# End get_comparison_stats.
 
 
 # ***************************************************************************
