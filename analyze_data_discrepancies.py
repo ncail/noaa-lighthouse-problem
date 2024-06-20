@@ -11,28 +11,33 @@ from datetime import timedelta
 import pandas as pd
 
 
-# parse_arguments will get command line arguments for the filename
-# that main() will write results to, directories main() will read
-# data files from, and the station name in the noaa filename pattern.
-# Use: python this_program.py --filename writeToThisFile.txt --refDir 'path/to/reference/data/files'
-# --primaryDir 'path/to/primary/data/files'
+# parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Write to a specified file.")
+    parser = argparse.ArgumentParser(description="Write to a specified file and directory, "
+                                                 "specify paths to data files, and opt out of "
+                                                 "program execution messages")
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
-    parser.add_argument('--refDir', type=str,
+    parser.add_argument('--refdir', type=str,
                         help='Path to directory of reference data', default=None)
-    parser.add_argument('--primaryDir', type=str,
+    parser.add_argument('--primarydir', type=str,
                         help='Path to directory of primary data', default=None)
+    parser.add_argument('--writepath', type=str,
+                        help='Path to write results text file in', default='generated_files')
+    parser.add_argument('--include-msgs', action='store_true',
+                        help="Enable writing program execution messages to results text file")
+    parser.add_argument('--no-msgs', dest='include_msgs', action='store_false',
+                        help="Opt out of writing execution messages to results text file")
+    parser.set_defaults(include_msgs=True)
     return parser.parse_args()
 # End parse_arguments.
 
 
 # get_filename will return the filename input from the user's command line
 # argument, or return a default unique filename using timestamp.
-def get_filename(args):
-    if args.filename:
-        return args.filename
+def get_filename(user_args):
+    if user_args.filename:
+        return user_args.filename
     else:
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         return f"output_{timestamp}.txt"
@@ -41,26 +46,26 @@ def get_filename(args):
 
 # get_directories returns the specified directories to pull data from
 # given by command line arguments.
-def get_data_paths(args, flag=[False]):
-    if args.refDir and args.primaryDir:
-        if os.path.exists(args.refDir) and os.path.exists(args.primaryDir):
+def get_data_paths(user_args, flag=[False]):
+    if user_args.refdir and user_args.primarydir:
+        if os.path.exists(user_args.refdir) and os.path.exists(user_args.primarydir):
             flag[0] = True
     else:
         flag[0] = False
-    return args.refDir, args.primaryDir
+    return user_args.refdir, user_args.primarydir
 # End get_directories.
 
 
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
-def main():
-
-    # Parse command line arguments.
-    args = parse_arguments()
+def main(args):
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
+
+    # Get path that program will write results to.
+    write_path = args.writepath
 
     # Assign paths to station data for Lighthouse and NOAA.
     args_flag_ptr = [False]
@@ -87,6 +92,19 @@ def main():
         print("Failed to match files to NOAA filename pattern. Exiting program.")
         sys.exit()
 
+    # Prompt user for the start and end year of their data.
+    if args.include_msgs:
+        prompt = "Enter the starting year <yyyy> of your data: "
+        start_year = da.get_year_from_user(prompt)
+        prompt = "Enter the last year <yyyy> of your data: "
+        end_year = da.get_year_from_user(prompt)
+
+        # Get range of years.
+        year_range = range(start_year, end_year + 1)
+
+    # Initialize a summary of error messages. These will be written to the result file.
+    error_summary = ["Messages about the program execution are below: \n"]
+
     # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
     lh_df_arr = []
     noaa_df_arr = []
@@ -108,6 +126,7 @@ def main():
             lh_df_arr.extend(split_df)
         else:
             print(f"failed to read file: {lh_file}\n")
+            error_summary.append(f"failed to read file: {lh_file}\n")
     # End for.
 
     # Send NOAA data into dataframes. The files are already split by year.
@@ -119,8 +138,10 @@ def main():
         if flag_ptr[0] is True:
             noaa_df_arr.append(df)
         else:
-            print(f"failed to read file: {noaa_file}. "
-                  f"file will not be included included in list of dataframes.")
+            msg = f"failed to read file: {noaa_file}\n"
+            print(msg)
+            error_summary.append(msg)
+
     # End for.
 
     # Get column names. Assumes all dataframes in the list have same column names.
@@ -138,10 +159,12 @@ def main():
 
         da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
         year = lh_df[lh_dt_col_name].dt.year
-        if not all(e == "" for e in error_msg):
 
-            print(f"clean_dataframe returned message for lh file - year {year[0]}. "
-                  f"error message: {error_msg}\n")
+        if not all(e == "" for e in error_msg):
+            msg = (f"clean_dataframe returned message for lh file - year {year[0]}. "
+                   f"error message: {error_msg}\n")
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Clean NOAA dataframes. Print error messages.
@@ -152,10 +175,12 @@ def main():
 
         da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
         year = noaa_df[noaa_dt_col_name].dt.year
-        if not all(e == "" for e in error_msg):
 
-            print(f"clean_dataframe returned message for noaa file - year {year[0]}. "
-                  f"error message: {error_msg}\n")
+        if not all(e == "" for e in error_msg):
+            msg = (f"clean_dataframe returned message for noaa file - year {year[0]}. "
+                   f"error message: {error_msg}\n")
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Make sure only common years are compared.
@@ -167,30 +192,45 @@ def main():
     noaa_dfs_dict = da.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
     common_years = set(lh_dfs_dict.keys()) & set(noaa_dfs_dict.keys())
 
-    # Process the dataframes to get statistics.
+    # Record which years have no data for analysis.
+    header = ["Analysis could not be done for year(s): \n"]
+    bad_years = []
+    if args.include_msgs:
+        for year in year_range:
+            if year not in common_years:
+                bad_years.append(year)
+
+    # Process the dataframes of common years to get statistics.
     for year in common_years:
 
         # Assign dataframes from dictionaries.
         lh_df = lh_dfs_dict[year]
         noaa_df = noaa_dfs_dict[year]
 
-        # Get size of dataframes. If dataframes are not same size, do not attempt
-        # getting discrepancy stats, skip to next file pair.
-        lh_size = len(lh_df)
-        noaa_size = len(noaa_df)
-        if lh_size != noaa_size:
-            print(f"sizes are not equal for year {year}. lh: {lh_size}, noaa: {noaa_size},"
-                  f"\nskipping to next file pair...\n")
-            continue
+        # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
+        # will result in the addition of a NaN in the other.
+        merged_df = pd.merge(lh_df, noaa_df, how='outer', left_on=lh_dt_col_name,
+                             right_on=noaa_dt_col_name, suffixes=('_primary', '_reference'))
+
+        # Get size of merged dataframe.
+        size = len(merged_df)
+
+        # Reassign column names in case suffixes were added for repeated column names
+        # found during merge. Column indices chosen because merged df still includes other
+        # columns like bwl, harmwl, etc.
+        lh_dt_col_name = merged_df.columns[0]
+        lh_pwl_col_name = merged_df.columns[1]
+        noaa_dt_col_name = merged_df.columns[4]
+        noaa_pwl_col_name = merged_df.columns[5]
 
         # Get comparison table.
-        stats_df = da.get_comparison_stats(lh_df[lh_pwl_col_name],
-                                           noaa_df[noaa_pwl_col_name], noaa_size)
+        stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
+                                           merged_df[noaa_pwl_col_name], size)
 
         # Do get_run_data() to get a dataframe that can be filtered for
         # duration and value.
-        runs_df = da.get_run_data(lh_df[lh_pwl_col_name], noaa_df[noaa_pwl_col_name],
-                                  noaa_df[noaa_dt_col_name], noaa_size)
+        runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
+                                  merged_df[noaa_dt_col_name], size)
 
         # Filter for offsets (runs) >= 1 day.
         long_offsets_df = da.filter_duration(runs_df, timedelta(days=1))
@@ -221,7 +261,7 @@ def main():
         ]
 
         # Write all stats to a .txt file (in append mode).
-        with open(f'generated_files/{filename}.txt', 'a') as file:
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
 
             file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
 
@@ -238,9 +278,21 @@ def main():
         # File closed.
     # End for.
 
+    # Prepend error_summary and header to the text file if include_msgs is True.
+    if args.include_msgs:
+        bad_years.sort()
+        header.extend([str(y) + " " for y in bad_years])
+        results_title = ["***************************************************************************\n"
+                         "******************************* RESULTS ***********************************\n"
+                         "***************************************************************************\n\n"]
+        prepend_text = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+        da.prepend_to_file(f'{write_path}/{filename}.txt', prepend_text)
+# End main.
+
 
 if __name__ == "__main__":
-    main()
+    main_args = parse_arguments()
+    main(main_args)
 
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************

@@ -22,6 +22,7 @@ pd.set_option('future.no_silent_downcasting', True)
 # pd.read_csv will read the entire csv file.
 # Option to pass a flag and error message to be retrieved from main() if
 # user wants to verify that read was successful.
+
 def read_file(file, index_limit=None, flag=[False], error=[""]):
 
     # Initialize df to None.
@@ -177,6 +178,7 @@ def end_file_index(filename):
 # Simply count the lines in the file (Python's iteration over file does
 # not load the entire file into memory). Then, subtract the number of lines
 # that begin with '# '. This assumes all of them are at the end.
+
 def end_file_index(filename):
 
     line_count = 0
@@ -196,6 +198,51 @@ def end_file_index(filename):
 
 
 # ***************************************************************************
+# ******************* FUNCTION GET_YEAR_FROM_USER ***************************
+# ***************************************************************************
+
+# Prompts the user to enter a year value. This allows the main program
+# to get the range of years that the data has, and write whether data for
+# a given year was not available to the results file.
+
+def get_year_from_user(prompt):
+    while True:
+        try:
+            # Asking for the user's input with a custom prompt.
+            year = int(input(prompt))
+
+            # Check if the year is a valid positive number.
+            if year <= 0:
+                print("Please enter a positive number for the year.")
+            else:
+                return year  # Return the year if the input is valid.
+        except ValueError:
+            print("Please enter a valid number for the year.")
+# End get_year_from_user.
+
+
+# ***************************************************************************
+# ******************* FUNCTION PREPEND_TO_FILE ******************************
+# ***************************************************************************
+
+# Prepend text file. Inserts passed text to top of text file.
+
+def prepend_to_file(file_path, text_to_prepend):
+
+    # Read the current content of the file.
+    with open(file_path, 'r') as file:
+        original_content = file.read()
+
+    # Prepend the new text.
+    new_content = ''.join(text_to_prepend) + original_content
+
+    # Write the new content back to the file.
+    with open(file_path, 'w') as file:
+        file.write(new_content)
+# End prepend_to_file.
+
+
+# ***************************************************************************
 # ******************* FUNCTION SPLIT_BY_YEAR ********************************
 # ***************************************************************************
 
@@ -203,6 +250,7 @@ def end_file_index(filename):
 # yearly dataframes.
 # Lighthouse data files are provided in multi-year csv files but need
 # to be processed year by year so splitting them is necessary.
+
 def split_by_year(df, datetime_col_name):
     # Case if column name is not assigned.
     if datetime_col_name is None:
@@ -241,6 +289,7 @@ def split_by_year(df, datetime_col_name):
 # Option to clean backup water level (bwl) and harmonic water level (harmwl) columns.
 # Option to pass flag pointer so that status of if clean_dataframe succeeded or failed
 # can be checked by user in main program.
+
 def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
                     bwl_col_name=None, error=[""]):
 
@@ -295,6 +344,7 @@ def get_df_dictionary(df_list, dt_col_name):
 # Compares two dataframes and returns statistics about their discrepancies
 # including number of values that agree, disagree (including and excluding gaps),
 # and the percentage of the dataset for these metrics.
+
 def get_comparison_stats(primary_df_col, reference_df_col, size):
 
     # Initialize incremented stats.
@@ -361,6 +411,7 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 # and that some discrepancies cannot be considered offsets.
 # Includes option to append an array with offset values including NaNs.
 # Modifies passed columns. Returns nothing.
+
 def process_offsets(offset_column, reference_column, size, offset_arr=None):
 
     index = 0
@@ -404,6 +455,7 @@ def process_offsets(offset_column, reference_column, size, offset_arr=None):
 # (default at 240 intervals or one day for 6 minute intervals), then return
 # the offset value, else return NaN.
 # Called by process_offsets.
+
 def identify_offset(offset_column, reference_column, index, size, duration=240):
 
     is_offset = False
@@ -447,6 +499,7 @@ def identify_offset(offset_column, reference_column, index, size, duration=240):
 # Calls get_discrepancies.
 # ref_dates need to be time deltas (use pd.to_datetime) that correspond to
 # the offset_column and reference_column values (same size).
+
 def get_run_data(offset_column, reference_column, ref_dates, size, create_table=True):
 
     offsets = get_discrepancies(offset_column, reference_column, size)
@@ -497,6 +550,7 @@ def get_run_data(offset_column, reference_column, ref_dates, size, create_table=
 # ***************************************************************************
 
 # Get array of all discrepancies. Called by get_run_data().
+
 def get_discrepancies(offset_column, reference_column, size):
 
     discrepancies = []
@@ -523,6 +577,7 @@ def get_discrepancies(offset_column, reference_column, size):
 # For example, returns all discrepancies that persisted for no less than 1 day.
 # Passed dataframe must be generated by get_run_data.
 # Threshold must be a time delta so that units passed into function are flexible.
+
 def filter_duration(dataframe, threshold, is_max=False, is_min=True):
 
     filtered_df = dataframe.copy()
@@ -549,6 +604,7 @@ def filter_duration(dataframe, threshold, is_max=False, is_min=True):
 # Return a dataframe filtered for a threshold value of the discrepancy.
 # For example, returns all discrepancies greater than 5 cm.
 # Passed dataframe must be generated by get_run_data.
+
 def filter_value(dataframe, threshold, is_max=False, is_min=True):
 
     filtered_df = dataframe.copy()
