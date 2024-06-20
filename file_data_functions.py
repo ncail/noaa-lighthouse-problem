@@ -343,7 +343,9 @@ def get_df_dictionary(df_list, dt_col_name):
 
 # Automated process for correcting a changing temporal shift.
 # Writes notes about execution into text file.
-# Returns a corrected copy of the dataframe.
+# Returns a time-aligned/corrected copy of the dataframe.
+# Note that vertical offsets are not corrected. This is the purpose of
+# process_offsets.
 
 def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
@@ -367,30 +369,42 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
     deshifted_df = merged_df.copy()
 
+    # While indices of dataframe are valid, correct temporal shifts if possible.
     while index < size:
 
+        # If all temporal shifts have been tried, consider this segment
+        # of data impossible to automatically correct, possibly because of a
+        # changing vertical offset or skipped values, etc.
+        # Restart process at +10 indices from current.
         if shift_val_index > 6:
             shift_val_index = 0
             index += 10
 
+        # Current shift value.
         try_shift = temporal_shifts[shift_val_index]
 
+        # Temporally shift the dataframe.
         df_copy[primary_col_name].shift(try_shift) # inplace=True?
 
+        # Get the vertical offset. Note that identify_offset does not let missing
+        # values contribute to the detection of an offset, but does include them in the
+        # duration count.
         vert_offset = identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
                                       index, size, duration=10)
+
+        # If there is no consistent vertical offset, try again for next temporal shift value.
         if pd.isna(vert_offset):
             shift_val_index += 1
             continue
 
+        # If an offset is found, record df_copy values into deshifted_df while the vertical
+        # offset is valid. Record the index where the offset stops.
         while index < size:
             if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                     round(df_copy[ref_col_name].iloc[index], 4)):
                 index += 1
                 deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
             else:
-                df_copy.drop(1, index)
-                size = len(df_copy)
                 break
 
 
