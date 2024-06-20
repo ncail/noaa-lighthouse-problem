@@ -362,12 +362,13 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
             Restart loop, beginning at last index, and first temporal offset value.
     '''
 
+    # Initialize dataframes. df_copy will be
+    df_copy = merged_df.copy()
+    deshifted_df = merged_df.copy()
+
     index = 0
     temporal_shifts = range(-3, 4)
     shift_val_index = 0
-    df_copy = merged_df.copy()
-
-    deshifted_df = merged_df.copy()
 
     # While indices of dataframe are valid, correct temporal shifts if possible.
     while index < size:
@@ -399,13 +400,23 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
         # If an offset is found, record df_copy values into deshifted_df while the vertical
         # offset is valid. Record the index where the offset stops.
+        # When offset, stops, undo the shift and drop the rows that have been analyzed
+        # from df_copy.
         while index < size:
             if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                     round(df_copy[ref_col_name].iloc[index], 4)):
                 index += 1
                 deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
             else:
+                df_copy[primary_col_name].shift(-1 * try_shift)
+                df_copy.drop(1, index)
                 break
+        # End inner while.
+    # End outer while.
+
+    return deshifted_df
+
+# End temporal_deshifter.
 
 
 # ***************************************************************************
