@@ -13,9 +13,7 @@ import pandas as pd
 
 # parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Write to a specified file and directory, "
-                                                 "specify paths to data files, and opt out of "
-                                                 "program execution messages")
+    parser = argparse.ArgumentParser(description="Parse arguments from user.")
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
     parser.add_argument('--refdir', type=str,
@@ -132,7 +130,6 @@ def main(args):
     # Send NOAA data into dataframes. The files are already split by year.
     for noaa_file in noaa_csv_files:
 
-        # noaa_df_arr.append(da.read_file(noaa_file, flag=flag_ptr))
         df = da.read_file(noaa_file, flag=flag_ptr)
 
         if flag_ptr[0] is True:
@@ -186,7 +183,7 @@ def main(args):
     # Make sure only common years are compared.
     # .keys() returns a view object that displays the list of dictionary keys.
     # set() converts the view object into a set of years.
-    # & is used to find the intersection of two sets, returning a new set that contains
+    # Bitwise & is used to find the intersection of two sets, returning a new set that contains
     # the common years.
     lh_dfs_dict = da.get_df_dictionary(lh_df_arr, lh_dt_col_name)
     noaa_dfs_dict = da.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
@@ -195,10 +192,11 @@ def main(args):
     # Record which years have no data for analysis.
     header = ["Analysis could not be done for year(s): \n"]
     bad_years = []
-    if args.include_msgs:
+    if args.include_msgs: # Skip if user has opted out of program messages.
         for year in year_range:
             if year not in common_years:
                 bad_years.append(year)
+        # End for.
 
     # Process the dataframes of common years to get statistics.
     for year in common_years:
@@ -267,11 +265,9 @@ def main(args):
 
             # Find the longest key length for key alignment.
             max_key_length = max(len(key) for key, value in metric_data)
-            # print("max_key_length: ", max_key_length, "\n")
 
             # Write each key-value pair aligned.
             for key, value in metric_data:
-                # print(f"Key: '{key}', Length: {len(key)}\n")
                 file.write(f"{key:{max_key_length}}: {value}\n")
             # End for.
             file.write("\n\n\n")

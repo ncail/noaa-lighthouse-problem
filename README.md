@@ -44,7 +44,7 @@ These paths should be to water level CSV files for a specific tide gauge station
 
 ## Output
 
-The program generates a text file in the `generated_files` directory or directory specified by the user, containing the statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp. Some example results are available to view in `generated_files`.
+The program generates a text file in the `generated_files` directory or directory specified by the user, containing the annual statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp. Some example results are available to view in `generated_files`.
 
 ## Requirements
 
