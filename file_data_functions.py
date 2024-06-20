@@ -466,7 +466,7 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
         # If an offset is found, record df_copy values into deshifted_df while the vertical
         # offset is valid. Record the index where the offset stops.
-        # When offset, stops, undo the shift and drop the rows that have been analyzed
+        # When offset stops, undo the shift and drop the rows that have been analyzed
         # from df_copy.
         while index < size:
             if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
@@ -480,7 +480,6 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
         # End inner while.
 
         shift_val_index = 0
-
     # End outer while.
 
     return deshifted_df
