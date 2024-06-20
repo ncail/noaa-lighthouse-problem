@@ -385,7 +385,7 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
         try_shift = temporal_shifts[shift_val_index]
 
         # Temporally shift the dataframe.
-        df_copy[primary_col_name].shift(try_shift) # inplace=True?
+        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
 
         # Get the vertical offset. Note that identify_offset does not let missing
         # values contribute to the detection of an offset, but does include them in the
@@ -408,14 +408,16 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
                 index += 1
                 deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
             else:
-                df_copy[primary_col_name].shift(-1 * try_shift)
-                df_copy.drop(1, index)
+                df_copy[primary_col_name] = merged_df[primary_col_name]
+                df_copy.drop(index, inplace=True)
                 break
         # End inner while.
+
+        shift_val_index = 0
+
     # End outer while.
 
     return deshifted_df
-
 # End temporal_deshifter.
 
 
@@ -539,38 +541,26 @@ def process_offsets(offset_column, reference_column, size, index=0, offset_arr=N
 # Called by process_offsets and temporal_deshifter.
 
 def identify_offset(offset_column, reference_column, index, size, duration=240):
-
-    is_offset = False
     offset_value = offset_column.iloc[index]
     ref_value = reference_column.iloc[index]
     difference = round(ref_value - offset_value, 4)
 
     for loop in range(index, index + duration):
-
         if loop + 1 >= size:
-            is_offset = False
-            break
+            return np.nan
 
-        if pd.isna(offset_column.iloc[loop]):
+        # Skips over NaNs. Considers that the offset remains valid even if
+        # some values are missing due to sensor failure or whatever.
+        # This prevents invalidating an offset that is consistent otherwise.
+        if pd.isna(offset_column.iloc[loop]) or pd.isna(reference_column.iloc[loop]):
             continue
 
         current_diff = round(reference_column.iloc[loop + 1] - offset_column.iloc[loop + 1], 4)
 
-        if current_diff == 0.000:
-            is_offset = False
-            break
+        if current_diff != difference:
+            return np.nan
 
-        if current_diff == difference:
-            is_offset = True
-        else:
-            is_offset = False
-            break
-    # End for.
-
-    if is_offset:
-        return difference
-    else:
-        return np.nan
+    return difference
 # End identify_offset.
 
 
