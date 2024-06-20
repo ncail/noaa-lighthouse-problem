@@ -369,6 +369,10 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
     while index < size:
 
+        if shift_val_index > 6:
+            shift_val_index = 0
+            index += 10
+
         try_shift = temporal_shifts[shift_val_index]
 
         df_copy[primary_col_name].shift(try_shift) # inplace=True?
@@ -386,6 +390,7 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
                 deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
             else:
                 df_copy.drop(1, index)
+                size = len(df_copy)
                 break
 
 
