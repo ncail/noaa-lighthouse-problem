@@ -219,10 +219,6 @@ def main(args):
         noaa_dt_col_name = merged_df.columns[4]
         noaa_pwl_col_name = merged_df.columns[5]
 
-        # print(merged_df)
-        print(f"merged_df column dtypes: {merged_df[lh_dt_col_name].dtype}, {merged_df[lh_pwl_col_name].dtype},"
-              f"{merged_df[noaa_dt_col_name].dtype}, {merged_df[noaa_pwl_col_name].dtype}\n")
-
         # Get comparison table.
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
                                            merged_df[noaa_pwl_col_name], size)
