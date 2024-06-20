@@ -11,11 +11,7 @@ from datetime import timedelta
 import pandas as pd
 
 
-# parse_arguments will get command line arguments for the filename
-# that main() will write results to, directories main() will read
-# data files from, and the station name in the noaa filename pattern.
-# Use: python this_program.py --filename writeToThisFile.txt --refdir 'path/to/reference/data/files'
-# --primarydir 'path/to/primary/data/files'
+# parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Write to a specified file and directory, "
                                                  "specify paths to data files, and opt out of "
