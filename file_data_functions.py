@@ -345,7 +345,7 @@ def get_df_dictionary(df_list, dt_col_name):
 # Writes notes about execution into text file.
 # Returns a corrected copy of the dataframe.
 
-def temporal_deshifter(merged_df, size):
+def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
     ''' Loop over 7 temporal shifts: from -3 to 3
             Create copy of merged dataframe.
@@ -361,7 +361,32 @@ def temporal_deshifter(merged_df, size):
     '''
 
     index = 0
-    
+    temporal_shifts = range(-3, 4)
+    df_copy = merged_df.copy()
+    shift_val_index = 0
+
+    deshifted_df = merged_df.copy()
+
+    while index < size:
+
+        try_shift = temporal_shifts[shift_val_index]
+
+        df_copy[primary_col_name].shift(try_shift) # inplace=True?
+
+        vert_offset = identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
+                                      index, size, duration=10)
+        if pd.isna(vert_offset):
+            shift_val_index += 1
+            continue
+
+        while index < size:
+            if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
+                    round(df_copy[ref_col_name].iloc[index], 4)):
+                index += 1
+                deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
+            else:
+                df_copy.drop(1, index)
+                break
 
 
 # ***************************************************************************
@@ -481,7 +506,7 @@ def process_offsets(offset_column, reference_column, size, index=0, offset_arr=N
 # reference and suspected offset data, for [duration] number of intervals
 # (default at 240 intervals or one day for 6 minute intervals), then return
 # the offset value, else return NaN.
-# Called by process_offsets.
+# Called by process_offsets and temporal_deshifter.
 
 def identify_offset(offset_column, reference_column, index, size, duration=240):
 
@@ -491,6 +516,7 @@ def identify_offset(offset_column, reference_column, index, size, duration=240):
     difference = round(ref_value - offset_value, 4)
 
     for loop in range(index, index + duration):
+
         if loop + 1 >= size:
             is_offset = False
             break
