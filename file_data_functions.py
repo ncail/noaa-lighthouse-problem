@@ -362,8 +362,8 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
     index = 0
     temporal_shifts = range(-3, 4)
-    df_copy = merged_df.copy()
     shift_val_index = 0
+    df_copy = merged_df.copy()
 
     deshifted_df = merged_df.copy()
 
