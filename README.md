@@ -71,7 +71,7 @@ cd path/to/noaa-lighthouse-problem
 ```
 2. Run the program:
 ```shell
-python analyze_data_discrepancies.py --refDir path/to/NOAA/files --primaryDir path/to/Lighthouse/files --filename results
+python analyze_data_discrepancies.py --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files --filename results
 ```
 
 ## Downloading data
