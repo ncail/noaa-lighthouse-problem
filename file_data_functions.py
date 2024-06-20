@@ -338,6 +338,33 @@ def get_df_dictionary(df_list, dt_col_name):
 
 
 # ***************************************************************************
+# ******************* FUNCTION TEMPORAL_DESHIFTER ***************************
+# ***************************************************************************
+
+# Automated process for correcting a changing temporal shift.
+# Writes notes about execution into text file.
+# Returns a corrected copy of the dataframe.
+
+def temporal_deshifter(merged_df, size):
+
+    ''' Loop over 7 temporal shifts: from -3 to 3
+            Create copy of merged dataframe.
+            Shift lighthouse by temporal shift loop variable value.
+            Create dataframe to hold the de-shifted data.
+            Call identify_offset.
+                If returns nan, then continue to trying next temporal offset value.
+                If offset,
+                    find index where offset stops.
+                    Save this index, only loop for index < size.
+            Save corrections to de-shifted dataframe.
+            Restart loop, beginning at last index, and first temporal offset value.
+    '''
+
+    index = 0
+    
+
+
+# ***************************************************************************
 # ******************* FUNCTION GET_COMPARISON_STATS *************************
 # ***************************************************************************
 
@@ -412,9 +439,9 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 # Includes option to append an array with offset values including NaNs.
 # Modifies passed columns. Returns nothing.
 
-def process_offsets(offset_column, reference_column, size, offset_arr=None):
+def process_offsets(offset_column, reference_column, size, index=0, offset_arr=None):
 
-    index = 0
+    # index = 0
     while index < size:
         # Skip NaNs.
         if pd.isna(offset_column.iloc[index]) or pd.isna(reference_column.iloc[index]):
