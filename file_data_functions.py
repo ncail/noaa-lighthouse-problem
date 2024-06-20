@@ -404,6 +404,89 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 
 
 # ***************************************************************************
+# ******************* FUNCTION TEMPORAL_DESHIFTER ***************************
+# ***************************************************************************
+
+# Automated process for correcting a changing temporal shift.
+# Writes notes about execution into text file.
+# Returns a time-aligned/corrected copy of the dataframe.
+# Note that vertical offsets are not corrected. This is the purpose of
+# process_offsets.
+
+def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
+
+    ''' Loop over 7 temporal shifts: from -3 to 3
+            Create copy of merged dataframe.
+            Shift lighthouse by temporal shift loop variable value.
+            Create dataframe to hold the de-shifted data.
+            Call identify_offset.
+                If returns nan, then continue to trying next temporal offset value.
+                If offset,
+                    find index where offset stops.
+                    Save this index, only loop for index < size.
+            Save corrections to de-shifted dataframe.
+            Restart loop, beginning at last index, and first temporal offset value.
+    '''
+
+    # Initialize dataframes. df_copy will be
+    df_copy = merged_df.copy()
+    deshifted_df = merged_df.copy()
+
+    index = 0
+    temporal_shifts = range(-3, 4)
+    shift_val_index = 0
+
+    # While indices of dataframe are valid, correct temporal shifts if possible.
+    while index < size:
+
+        # If all temporal shifts have been tried, consider this segment
+        # of data impossible to automatically correct, possibly because of a
+        # changing vertical offset or skipped values, etc.
+        # Restart process at +10 indices from current.
+        if shift_val_index > 6:
+            shift_val_index = 0
+            index += 10
+
+        # Current shift value.
+        try_shift = temporal_shifts[shift_val_index]
+
+        # Temporally shift the dataframe.
+        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
+
+        # Get the vertical offset. Note that identify_offset does not let missing
+        # values contribute to the detection of an offset, but does include them in the
+        # duration count.
+        vert_offset = identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
+                                      index, size, duration=10)
+
+        # If there is no consistent vertical offset, try again for next temporal shift value.
+        if pd.isna(vert_offset):
+            shift_val_index += 1
+            continue
+
+        # If an offset is found, record df_copy values into deshifted_df while the vertical
+        # offset is valid. Record the index where the offset stops.
+        # When offset stops, undo the shift and drop the rows that have been analyzed
+        # from df_copy.
+        while index < size:
+            if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
+                    round(df_copy[ref_col_name].iloc[index], 4)):
+                index += 1
+                deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
+            else:
+                df_copy[primary_col_name] = merged_df[primary_col_name]
+                df_copy.drop(index, inplace=True)
+                break
+        # End inner while.
+
+        shift_val_index = 0
+    # End outer while.
+
+    return deshifted_df
+# End temporal_deshifter.
+
+
+# ***************************************************************************
 # ******************* FUNCTION PROCESS_OFFSETS ******************************
 # ***************************************************************************
 
@@ -412,9 +495,9 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 # Includes option to append an array with offset values including NaNs.
 # Modifies passed columns. Returns nothing.
 
-def process_offsets(offset_column, reference_column, size, offset_arr=None):
+def process_offsets(offset_column, reference_column, size, index=0, offset_arr=None):
 
-    index = 0
+    # index = 0
     while index < size:
         # Skip NaNs.
         if pd.isna(offset_column.iloc[index]) or pd.isna(reference_column.iloc[index]):
@@ -454,40 +537,29 @@ def process_offsets(offset_column, reference_column, size, offset_arr=None):
 # reference and suspected offset data, for [duration] number of intervals
 # (default at 240 intervals or one day for 6 minute intervals), then return
 # the offset value, else return NaN.
-# Called by process_offsets.
+# Called by process_offsets and temporal_deshifter.
 
 def identify_offset(offset_column, reference_column, index, size, duration=240):
-
-    is_offset = False
     offset_value = offset_column.iloc[index]
     ref_value = reference_column.iloc[index]
     difference = round(ref_value - offset_value, 4)
 
     for loop in range(index, index + duration):
         if loop + 1 >= size:
-            is_offset = False
-            break
+            return np.nan
 
-        if pd.isna(offset_column.iloc[loop]):
+        # Skips over NaNs. Considers that the offset remains valid even if
+        # some values are missing due to sensor failure or whatever.
+        # This prevents invalidating an offset that is consistent otherwise.
+        if pd.isna(offset_column.iloc[loop]) or pd.isna(reference_column.iloc[loop]):
             continue
 
         current_diff = round(reference_column.iloc[loop + 1] - offset_column.iloc[loop + 1], 4)
 
-        if current_diff == 0.000:
-            is_offset = False
-            break
+        if current_diff != difference:
+            return np.nan
 
-        if current_diff == difference:
-            is_offset = True
-        else:
-            is_offset = False
-            break
-    # End for.
-
-    if is_offset:
-        return difference
-    else:
-        return np.nan
+    return difference
 # End identify_offset.
 
 
