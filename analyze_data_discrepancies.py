@@ -113,10 +113,14 @@ def main():
     # Send NOAA data into dataframes. The files are already split by year.
     for noaa_file in noaa_csv_files:
 
-        noaa_df_arr.append(da.read_file(noaa_file, flag=flag_ptr))
+        # noaa_df_arr.append(da.read_file(noaa_file, flag=flag_ptr))
+        df = da.read_file(noaa_file, flag=flag_ptr)
 
-        if flag_ptr[0] is False:
-            print(f"failed to read file: {noaa_file}\n")
+        if flag_ptr[0] is True:
+            noaa_df_arr.append(df)
+        else:
+            print(f"failed to read file: {noaa_file}. "
+                  f"file will not be included included in list of dataframes.")
     # End for.
 
     # Get column names. Assumes all dataframes in the list have same column names.
