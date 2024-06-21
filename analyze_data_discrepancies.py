@@ -7,7 +7,6 @@ import os
 import sys
 import datetime
 import glob
-from datetime import timedelta
 import pandas as pd
 
 
@@ -220,58 +219,6 @@ def main(args):
         lh_pwl_col_name = merged_df.columns[1]
         noaa_dt_col_name = merged_df.columns[4]
         noaa_pwl_col_name = merged_df.columns[5]
-
-        # Get comparison table.
-        stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
-                                           merged_df[noaa_pwl_col_name], size)
-
-        # Do get_run_data() to get a dataframe that can be filtered for
-        # duration and value.
-        runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
-                                  merged_df[noaa_dt_col_name], size)
-
-        # Filter for offsets (runs) >= 1 day.
-        long_offsets_df = da.filter_duration(runs_df, timedelta(days=1))
-        long_offsets_count = len(long_offsets_df)
-        max_duration = runs_df['durations'].max()
-        bool_mask = runs_df['durations'] == max_duration
-        max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
-
-        # Filter by value >= 5 cm.
-        large_offsets_df = da.filter_value(runs_df, threshold=0.05)
-        large_offsets_count = len(large_offsets_df)
-        max_offset = runs_df['offset (ref - primary, unit)'].max()
-        min_offset = runs_df['offset (ref - primary, unit)'].min()
-        bool_mask = runs_df['offset (ref - primary, unit)'] == max_offset
-        max_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
-        bool_mask = runs_df['offset (ref - primary, unit)'] == min_offset
-        min_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
-
-        # Hold these metrics in metric_data.
-        metric_data = [
-            ("Number of offsets with duration >= one day", long_offsets_count),
-            ("Maximum duration of an offset", max_duration),
-            ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
-            ("Number of offsets with abs value >= 5 cm", large_offsets_count),
-            ("Maximum/minimum offset value (m)", str(max_offset) + "/" + str(min_offset)),
-            ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations),
-            ("Duration(s) of offset with value <" + str(min_offset) + "> cm", min_offset_durations)
-        ]
-
-        # Write all stats to a .txt file (in append mode).
-        with open(f'{write_path}/{filename}.txt', 'a') as file:
-
-            file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
-
-            # Find the longest key length for key alignment.
-            max_key_length = max(len(key) for key, value in metric_data)
-
-            # Write each key-value pair aligned.
-            for key, value in metric_data:
-                file.write(f"{key:{max_key_length}}: {value}\n")
-            # End for.
-            file.write("\n\n\n")
-        # File closed.
     # End for.
 
     # Prepend error_summary and header to the text file if include_msgs is True.
