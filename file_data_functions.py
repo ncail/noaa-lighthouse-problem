@@ -380,9 +380,36 @@ def get_metrics(primary_col, ref_col, ref_dates, size,
     # Filter for offsets (runs) >= 1 day.
     long_offsets_df = filter_duration(runs_df, time_threshold)
     long_offsets_count = len(long_offsets_df)
-    max_duration = runs_df['durations'].max()
-    bool_mask = runs_df['durations'] == max_duration
-    max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+
+    # Create mask that filters offsets for NaNs.
+    bool_mask = pd.isna(runs_df['offset (ref - primary, unit)'])
+
+    # Get the durations of all gaps.
+    gap_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+
+    # Get maximum gap duration.
+    max_gap_duration = max(gap_durations)
+
+    # Verify this corresponds to a NaN.
+    # find_nan = runs_df['durations'] == max_gap_duration
+    # gap_value = runs_df.loc[find_nan, 'offset (ref - primary, unit)'].to_list()
+
+    # Create mask that filters offsets for values only (not NaNs).
+    bool_mask = ~pd.isna(runs_df['offset (ref - primary, unit)'])
+
+    # Get offset durations, excluding NaNs.
+    offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+
+    # Get offset with the longest duration.
+    max_offset_duration = max(offset_durations)
+
+    # Find offset values that correspond to the max_offset_duration.
+    bool_mask = runs_df['durations'] == max_offset_duration
+    long_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+
+    # max_duration = runs_df['durations'].max()
+    # bool_mask = runs_df['durations'] == max_duration
+    # max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
 
     # Filter by value >= 5 cm.
     large_offsets_df = filter_value(runs_df, threshold=val_threshold)
@@ -396,13 +423,14 @@ def get_metrics(primary_col, ref_col, ref_dates, size,
 
     # Hold these metrics in metric_data.
     metric_data = [
-        ("Number of offsets with duration >= one day", long_offsets_count),
-        ("Maximum duration of an offset", max_duration),
-        ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
-        ("Number of offsets with abs value >= 5 cm", large_offsets_count),
-        ("Maximum/minimum offset value (m)", str(max_offset) + "/" + str(min_offset)),
-        ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations),
-        ("Duration(s) of offset with value <" + str(min_offset) + "> cm", min_offset_durations)
+        (f"Number of offsets with duration >= one day", long_offsets_count),
+        (f"Duration of longest gap", f"{max_gap_duration}"),
+        (f"Maximum duration of an offset", f"{max_offset_duration}"),
+        (f"Offset value(s) with <{max_offset_duration}> duration", f"{long_offsets}"),
+        (f"Number of offsets with abs value >= 5 cm", f"{large_offsets_count}"),
+        (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
+        (f"Duration(s) of offset with value <{max_offset}> cm", f"{max_offset_durations}"),
+        (f"Duration(s) of offset with value <{min_offset}> cm", f"{min_offset_durations}")
     ]
 
     return metric_data
