@@ -338,7 +338,7 @@ def get_df_dictionary(df_list, dt_col_name):
 
 
 # ***************************************************************************
-# ******************* FUNCTION GET_DF_DICTIONARY ****************************
+# ******************* FUNCTION WRITE_REPORT *********************************
 # ***************************************************************************
 
 # Write all the comparison statistics and metrics to a file.
