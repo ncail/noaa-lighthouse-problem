@@ -415,7 +415,7 @@ def get_comparison_stats(primary_df_col, reference_df_col, size):
 
 def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
-    ''' Loop over 7 temporal shifts: from -3 to 3
+    """ Loop over 7 temporal shifts: from -3 to 3
             Create copy of merged dataframe.
             Shift lighthouse by temporal shift loop variable value.
             Create dataframe to hold the de-shifted data.
@@ -426,9 +426,10 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
                     Save this index, only loop for index < size.
             Save corrections to de-shifted dataframe.
             Restart loop, beginning at last index, and first temporal offset value.
-    '''
+    """
 
-    # Initialize dataframes. df_copy will be
+    # Initialize dataframes. df_copy will be shifted to find offsets.
+    # deshifted_df will hold the temporally corrected values.
     df_copy = merged_df.copy()
     deshifted_df = merged_df.copy()
 
@@ -466,8 +467,7 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
 
         # If an offset is found, record df_copy values into deshifted_df while the vertical
         # offset is valid. Record the index where the offset stops.
-        # When offset stops, undo the shift and drop the rows that have been analyzed
-        # from df_copy.
+        # When offset stops, undo the shift.
         while index < size:
             if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                     round(df_copy[ref_col_name].iloc[index], 4)):
@@ -475,7 +475,7 @@ def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
                 deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
             else:
                 df_copy[primary_col_name] = merged_df[primary_col_name]
-                df_copy.drop(index, inplace=True)
+                # df_copy.drop(index, inplace=True)
                 break
         # End inner while.
 
