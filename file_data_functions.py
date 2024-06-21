@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+from datetime import timedelta
 
 # Opt into future behavior for pandas. Encouraged by FutureWarning message
 # for pd.replace(): "Downcasting behavior in 'replace' is deprecated and
@@ -344,6 +345,68 @@ def get_df_dictionary(df_list, dt_col_name):
 # Write all the comparison statistics and metrics to a file.
 # Helps to modularize the main program so that multiple comparisons can be
 # done: for raw, and manipulated data, for example.
+
+def write_report(stats_df, metrics, write_path, filename, year):
+
+    # Write all stats to a .txt file (in append mode).
+    with open(f'{write_path}/{filename}.txt', 'a') as file:
+        file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
+
+        # Find the longest key length for key alignment.
+        max_key_length = max(len(key) for key, value in metrics)
+
+        # Write each key-value pair aligned.
+        for key, value in metrics:
+            file.write(f"{key:{max_key_length}}: {value}\n")
+        # End for.
+        file.write("\n\n\n")
+    # File closed.
+# End write_report.
+
+
+# ***************************************************************************
+# ******************* FUNCTION GET_METRICS **********************************
+# ***************************************************************************
+
+# Gets the metrics data from the runs dataframe.
+
+def get_metrics(primary_col, ref_col, ref_dates, size,
+                time_threshold=timedelta(days=1), val_threshold=0.05):
+
+    # Do get_run_data() to get a dataframe that can be filtered for
+    # duration and value.
+    runs_df = get_run_data(primary_col, ref_col, ref_dates, size)
+
+    # Filter for offsets (runs) >= 1 day.
+    long_offsets_df = filter_duration(runs_df, time_threshold)
+    long_offsets_count = len(long_offsets_df)
+    max_duration = runs_df['durations'].max()
+    bool_mask = runs_df['durations'] == max_duration
+    max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+
+    # Filter by value >= 5 cm.
+    large_offsets_df = filter_value(runs_df, threshold=val_threshold)
+    large_offsets_count = len(large_offsets_df)
+    max_offset = runs_df['offset (ref - primary, unit)'].max()
+    min_offset = runs_df['offset (ref - primary, unit)'].min()
+    bool_mask = runs_df['offset (ref - primary, unit)'] == max_offset
+    max_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+    bool_mask = runs_df['offset (ref - primary, unit)'] == min_offset
+    min_offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+
+    # Hold these metrics in metric_data.
+    metric_data = [
+        ("Number of offsets with duration >= one day", long_offsets_count),
+        ("Maximum duration of an offset", max_duration),
+        ("Offset value(s) with <" + str(max_duration) + "> duration", max_duration_offsets),
+        ("Number of offsets with abs value >= 5 cm", large_offsets_count),
+        ("Maximum/minimum offset value (m)", str(max_offset) + "/" + str(min_offset)),
+        ("Duration(s) of offset with value <" + str(max_offset) + "> cm", max_offset_durations),
+        ("Duration(s) of offset with value <" + str(min_offset) + "> cm", min_offset_durations)
+    ]
+
+    return metric_data
+# End get_metrics.
 
 
 # ***************************************************************************

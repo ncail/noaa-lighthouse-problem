@@ -99,7 +99,7 @@ def main(args):
         # Get range of years.
         year_range = range(start_year, end_year + 1)
 
-    # Initialize a summary of error messages. These will be written to the result file.
+    # Initialize a summary of error messages to be written to the results file.
     error_summary = ["Messages about the program execution are below: \n"]
 
     # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
@@ -122,8 +122,9 @@ def main(args):
             split_df = da.split_by_year(df, df.columns[0])
             lh_df_arr.extend(split_df)
         else:
-            print(f"failed to read file: {lh_file}\n")
-            error_summary.append(f"failed to read file: {lh_file}\n")
+            msg = f"failed to read file: {lh_file}\n"
+            print(msg)
+            error_summary.append(msg)
     # End for.
 
     # Send NOAA data into dataframes. The files are already split by year.
@@ -137,7 +138,6 @@ def main(args):
             msg = f"failed to read file: {noaa_file}\n"
             print(msg)
             error_summary.append(msg)
-
     # End for.
 
     # Get column names. Assumes all dataframes in the list have same column names.
@@ -219,6 +219,18 @@ def main(args):
         lh_pwl_col_name = merged_df.columns[1]
         noaa_dt_col_name = merged_df.columns[4]
         noaa_pwl_col_name = merged_df.columns[5]
+
+        # Get comparison table.
+        stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
+                                           merged_df[noaa_pwl_col_name], size)
+
+        # Gets metrics.
+        metrics = da.get_metrics(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
+                                 merged_df[noaa_dt_col_name], size)
+
+        # Write stats and metrics for {year} to a txt file.
+        da.write_report(stats_df, metrics, write_path, filename, year)
+
     # End for.
 
     # Prepend error_summary and header to the text file if include_msgs is True.
