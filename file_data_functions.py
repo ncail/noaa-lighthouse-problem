@@ -338,6 +338,15 @@ def get_df_dictionary(df_list, dt_col_name):
 
 
 # ***************************************************************************
+# ******************* FUNCTION GET_DF_DICTIONARY ****************************
+# ***************************************************************************
+
+# Write all the comparison statistics and metrics to a file.
+# Helps to modularize the main program so that multiple comparisons can be
+# done: for raw, and manipulated data, for example.
+
+
+# ***************************************************************************
 # ******************* FUNCTION GET_COMPARISON_STATS *************************
 # ***************************************************************************
 
