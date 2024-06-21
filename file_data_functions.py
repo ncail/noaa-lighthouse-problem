@@ -381,31 +381,19 @@ def get_metrics(primary_col, ref_col, ref_dates, size,
     long_offsets_df = filter_duration(runs_df, time_threshold)
     long_offsets_count = len(long_offsets_df)
 
-    # Create mask that filters offsets for NaNs.
-    bool_mask = pd.isna(runs_df['offset (ref - primary, unit)'])
+    # Separate dataframe into NaNs and non-NaNs offsets.
+    nan_df = runs_df[runs_df['offset (ref - primary, unit)'].isna()]
+    non_nan_df = runs_df[runs_df['offset (ref - primary, unit)'].notna()]
 
-    # Get the durations of all gaps.
-    gap_durations = runs_df.loc[bool_mask, 'durations'].to_list()
+    # Get the maximum duration where offset is NaN.
+    max_gap_duration = nan_df['durations'].max()
 
-    # Get maximum gap duration.
-    max_gap_duration = max(gap_durations)
+    # Get maximum duration where offset is a real value.
+    max_offset_duration = non_nan_df['durations'].max()
 
-    # Verify this corresponds to a NaN.
-    # find_nan = runs_df['durations'] == max_gap_duration
-    # gap_value = runs_df.loc[find_nan, 'offset (ref - primary, unit)'].to_list()
-
-    # Create mask that filters offsets for values only (not NaNs).
-    bool_mask = ~pd.isna(runs_df['offset (ref - primary, unit)'])
-
-    # Get offset durations, excluding NaNs.
-    offset_durations = runs_df.loc[bool_mask, 'durations'].to_list()
-
-    # Get offset with the longest duration.
-    max_offset_duration = max(offset_durations)
-
-    # Find offset values that correspond to the max_offset_duration.
-    bool_mask = runs_df['durations'] == max_offset_duration
-    long_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+    # Get offsets corresponding to the maximum non-NaN offset duration.
+    long_offsets = non_nan_df[non_nan_df['durations'] ==
+                              max_offset_duration]['offset (ref - primary, unit)'].tolist()
 
     # max_duration = runs_df['durations'].max()
     # bool_mask = runs_df['durations'] == max_duration
