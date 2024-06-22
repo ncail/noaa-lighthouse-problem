@@ -899,14 +899,14 @@ def filter_duration(dataframe, threshold, is_max=config['dur_thr_is_max'],
 
     if is_min:
         if is_strict:
-            filter_series = filtered_df['durations'] > threshold
+            filter_series = series > threshold
         else:
-            filter_series = filtered_df['durations'] >= threshold
+            filter_series = series >= threshold
     elif is_max:
         if is_strict:
-            filter_series = filtered_df['durations'] < threshold
+            filter_series = series < threshold
         else:
-            filter_series = filtered_df['durations'] <= threshold
+            filter_series = series <= threshold
     else:
         filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
 
