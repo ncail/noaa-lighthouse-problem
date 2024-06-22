@@ -504,7 +504,7 @@ def get_metrics(run_data_df):
     max_gap_duration = nan_df['durations'].max()
 
     # Get maximum duration where offset is a real value.
-    non_nan_runs = run_data_df[run_data_df['durations'].notna()]
+    non_nan_runs = run_data_df[run_data_df['offset (ref - primary, unit)'].notna()]
     max_offset_duration = non_nan_runs['durations'].max()
 
     # Get offsets corresponding to the maximum non-NaN offset duration.
