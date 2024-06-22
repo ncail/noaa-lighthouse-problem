@@ -1,0 +1,835 @@
+Comparison Table for year 1996:
+                      total points  percent
+total agreements            86506  98.4813
+value disagreements            56   0.0638
+total disagreements          1334   1.5187
+missing (primary)            1278   1.4549
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 14
+Duration of longest gap                             : 4 days 16:30:00
+Maximum duration of an offset                       : 63 days 07:18:00
+Offset value(s) with <63 days 07:18:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 1
+Maximum/minimum offset value (m)                    : 0.03/-0.058
+Duration(s) of offset with value <0.03> cm          : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.058> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 6 days 07:12:00      | 1996-01-01 00:00:00  | 1996-01-07 07:12:00
+        | 24 days 11:42:00     | 1996-01-07 18:54:00  | 1996-02-01 06:36:00
+        | 37 days 22:30:00     | 1996-02-01 16:48:00  | 1996-03-10 15:18:00
+        | 26 days 05:06:00     | 1996-03-10 15:24:00  | 1996-04-05 20:30:00
+        | 20 days 16:18:00     | 1996-04-05 20:36:00  | 1996-04-26 12:54:00
+        | 6 days 08:00:00      | 1996-04-26 13:54:00  | 1996-05-02 21:54:00
+        | 6 days 23:00:00      | 1996-05-02 22:54:00  | 1996-05-09 21:54:00
+        | 61 days 16:30:00     | 1996-05-10 07:54:00  | 1996-07-11 00:24:00
+        | 34 days 20:00:00     | 1996-07-15 16:54:00  | 1996-08-19 12:54:00
+        | 54 days 06:24:00     | 1996-08-19 13:54:00  | 1996-10-12 20:18:00
+        | 1 days 17:42:00      | 1996-10-13 10:54:00  | 1996-10-15 04:36:00
+        | 63 days 07:18:00     | 1996-10-15 17:54:00  | 1996-12-18 01:12:00
+        | 11 days 05:36:00     | 1996-12-18 01:18:00  | 1996-12-29 06:54:00
+        | 2 days 16:00:00      | 1996-12-29 07:54:00  | 1996-12-31 23:54:00
+
+
+
+Comparison Table for year 1997:
+                      total points  percent
+total agreements            87015  99.3322
+value disagreements            66   0.0753
+total disagreements           585   0.6678
+missing (primary)             519   0.5925
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 16
+Duration of longest gap                             : 0 days 22:00:00
+Maximum duration of an offset                       : 92 days 15:00:00
+Offset value(s) with <92 days 15:00:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 7
+Maximum/minimum offset value (m)                    : 0.1/-0.137
+Duration(s) of offset with value <0.1> cm           : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.137> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 8 days 02:00:00      | 1997-01-01 00:00:00  | 1997-01-09 02:00:00
+        | 11 days 15:18:00     | 1997-01-09 16:54:00  | 1997-01-21 08:12:00
+        | 1 days 18:24:00      | 1997-01-21 08:24:00  | 1997-01-23 02:48:00
+        | 56 days 12:54:00     | 1997-01-23 03:00:00  | 1997-03-20 15:54:00
+        | 35 days 15:06:00     | 1997-03-20 17:30:00  | 1997-04-25 08:36:00
+        | 92 days 15:00:00     | 1997-04-25 08:42:00  | 1997-07-26 23:42:00
+        | 28 days 18:54:00     | 1997-07-26 23:48:00  | 1997-08-24 18:42:00
+        | 5 days 16:30:00      | 1997-08-24 18:48:00  | 1997-08-30 11:18:00
+        | 18 days 20:42:00     | 1997-08-30 11:24:00  | 1997-09-18 08:06:00
+        | 10 days 01:42:00     | 1997-09-18 08:12:00  | 1997-09-28 09:54:00
+        | 1 days 11:00:00      | 1997-09-28 10:54:00  | 1997-09-29 21:54:00
+        | 4 days 20:18:00      | 1997-09-30 18:54:00  | 1997-10-05 15:12:00
+        | 4 days 16:30:00      | 1997-10-06 17:30:00  | 1997-10-11 10:00:00
+        | 58 days 23:06:00     | 1997-10-11 10:48:00  | 1997-12-09 09:54:00
+        | 2 days 12:00:00      | 1997-12-09 21:54:00  | 1997-12-12 09:54:00
+        | 17 days 13:42:00     | 1997-12-14 10:12:00  | 1997-12-31 23:54:00
+
+
+
+Comparison Table for year 1998:
+                      total points  percent
+total agreements            86966  99.2763
+value disagreements           288   0.3288
+total disagreements           634   0.7237
+missing (primary)             346   0.3950
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 17
+Duration of longest gap                             : 0 days 22:00:00
+Maximum duration of an offset                       : 115 days 19:06:00
+Offset value(s) with <115 days 19:06:00> duration   : [0.0]
+Number of offsets with abs value >= 5 cm            : 195
+Maximum/minimum offset value (m)                    : 0.2/-0.2
+Duration(s) of offset with value <0.2> cm           : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.2> cm          : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 11 days 23:06:00     | 1998-01-01 00:00:00  | 1998-01-12 23:06:00
+        | 62 days 11:42:00     | 1998-01-13 00:18:00  | 1998-03-16 12:00:00
+        | 14 days 18:00:00     | 1998-03-16 12:06:00  | 1998-03-31 06:06:00
+        | 21 days 05:36:00     | 1998-03-31 09:24:00  | 1998-04-21 15:00:00
+        | 1 days 00:36:00      | 1998-04-21 15:18:00  | 1998-04-22 15:54:00
+        | 115 days 19:06:00    | 1998-04-22 19:54:00  | 1998-08-16 15:00:00
+        | 7 days 00:54:00      | 1998-08-16 15:06:00  | 1998-08-23 16:00:00
+        | 2 days 21:00:00      | 1998-08-23 16:06:00  | 1998-08-26 13:06:00
+        | 15 days 12:48:00     | 1998-08-26 13:12:00  | 1998-09-11 02:00:00
+        | 2 days 14:36:00      | 1998-09-11 22:18:00  | 1998-09-14 12:54:00
+        | 21 days 13:30:00     | 1998-09-14 22:18:00  | 1998-10-06 11:48:00
+        | 20 days 14:24:00     | 1998-10-06 13:30:00  | 1998-10-27 03:54:00
+        | 1 days 11:00:00      | 1998-10-27 07:54:00  | 1998-10-28 18:54:00
+        | 4 days 17:42:00      | 1998-10-29 17:18:00  | 1998-11-03 11:00:00
+        | 50 days 03:24:00     | 1998-11-03 11:12:00  | 1998-12-23 14:36:00
+        | 1 days 06:24:00      | 1998-12-23 14:54:00  | 1998-12-24 21:18:00
+        | 7 days 02:00:00      | 1998-12-24 21:54:00  | 1998-12-31 23:54:00
+
+
+
+Comparison Table for year 1999:
+                      total points  percent
+total agreements            62057  70.8413
+value disagreements         25411  29.0080
+total disagreements         25543  29.1587
+missing (primary)             132   0.1507
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 18
+Duration of longest gap                             : 0 days 04:00:00
+Maximum duration of an offset                       : 71 days 01:00:00
+Offset value(s) with <71 days 01:00:00> duration    : [-0.008]
+Number of offsets with abs value >= 5 cm            : 7
+Maximum/minimum offset value (m)                    : 0.104/-0.09
+Duration(s) of offset with value <0.104> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.09> cm         : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 22 days 00:54:00     | 1999-01-01 00:00:00  | 1999-01-23 00:54:00
+        | 37 days 22:00:00     | 1999-01-23 01:54:00  | 1999-03-01 23:54:00
+        | 3 days 22:42:00      | 1999-03-02 00:12:00  | 1999-03-05 22:54:00
+        | 36 days 23:00:00     | 1999-03-06 01:54:00  | 1999-04-12 00:54:00
+        | 8 days 08:06:00      | 1999-04-12 01:54:00  | 1999-04-20 10:00:00
+        | 13 days 02:36:00     | 1999-04-20 10:18:00  | 1999-05-03 12:54:00
+        | 12 days 05:48:00     | 1999-05-03 16:54:00  | 1999-05-15 22:42:00
+        | 54 days 02:06:00     | 1999-05-15 22:48:00  | 1999-07-09 00:54:00
+        | 11 days 16:24:00     | 1999-07-09 04:30:00  | 1999-07-20 20:54:00
+        | 1 days 19:30:00      | 1999-07-21 08:24:00  | 1999-07-23 03:54:00
+        | 41 days 11:42:00     | 1999-07-23 04:12:00  | 1999-09-02 15:54:00
+        | 1 days 09:06:00      | 1999-09-03 15:30:00  | 1999-09-05 00:36:00
+        | 2 days 18:54:00      | 1999-09-06 20:30:00  | 1999-09-09 15:24:00
+        | 4 days 01:36:00      | 1999-09-09 16:24:00  | 1999-09-13 18:00:00
+        | 1 days 15:54:00      | 1999-09-14 08:12:00  | 1999-09-16 00:06:00
+        | 1 days 18:54:00      | 1999-09-16 00:48:00  | 1999-09-17 19:42:00
+---------------------------------------------------------------------------
+-0.008  | 34 days 02:12:00     | 1999-09-17 19:42:00  | 1999-10-21 21:54:00
+        | 71 days 01:00:00     | 1999-10-21 22:54:00  | 1999-12-31 23:54:00
+
+
+
+Comparison Table for year 2000:
+                      total points  percent
+total agreements            83207  94.7256
+value disagreements          4523   5.1491
+total disagreements          4633   5.2744
+missing (primary)             110   0.1252
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 6
+Duration of longest gap                             : 0 days 06:36:00
+Maximum duration of an offset                       : 139 days 22:42:00
+Offset value(s) with <139 days 22:42:00> duration   : [0.0]
+Number of offsets with abs value >= 5 cm            : 4
+Maximum/minimum offset value (m)                    : 0.669/-0.008
+Duration(s) of offset with value <0.669> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.008> cm        : [Timedelta('17 days 19:30:00'), Timedelta('0 days 20:24:00'), Timedelta('0 days 01:24:00'), Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+-0.008  | 17 days 19:30:00     | 2000-01-01 00:00:00  | 2000-01-18 19:30:00
+---------------------------------------------------------------------------
+0.0     | 139 days 22:42:00    | 2000-01-19 21:54:00  | 2000-06-07 20:36:00
+        | 3 days 02:12:00      | 2000-06-07 20:42:00  | 2000-06-10 22:54:00
+        | 114 days 11:00:00    | 2000-06-11 05:30:00  | 2000-10-03 16:30:00
+        | 69 days 07:06:00     | 2000-10-04 21:00:00  | 2000-12-13 04:06:00
+        | 18 days 13:00:00     | 2000-12-13 10:54:00  | 2000-12-31 23:54:00
+
+
+
+Comparison Table for year 2001:
+                      total points  percent
+total agreements            63189  72.1336
+value disagreements         24356  27.8037
+total disagreements         24411  27.8664
+missing (primary)              55   0.0628
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 14
+Duration of longest gap                             : 0 days 03:00:00
+Maximum duration of an offset                       : 95 days 21:48:00
+Offset value(s) with <95 days 21:48:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 548
+Maximum/minimum offset value (m)                    : 0.31/-0.33
+Duration(s) of offset with value <0.31> cm          : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.33> cm         : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 2 days 07:24:00      | 2001-01-01 00:00:00  | 2001-01-03 07:24:00
+        | 17 days 06:48:00     | 2001-01-04 04:54:00  | 2001-01-21 11:42:00
+        | 22 days 03:00:00     | 2001-01-21 11:54:00  | 2001-02-12 14:54:00
+        | 5 days 02:06:00      | 2001-02-12 15:54:00  | 2001-02-17 18:00:00
+        | 19 days 22:00:00     | 2001-02-17 18:12:00  | 2001-03-09 16:12:00
+        | 6 days 21:18:00      | 2001-03-09 17:24:00  | 2001-03-16 14:42:00
+        | 1 days 21:48:00      | 2001-03-16 17:48:00  | 2001-03-18 15:36:00
+        | 2 days 17:42:00      | 2001-03-22 16:00:00  | 2001-03-25 09:42:00
+        | 22 days 06:54:00     | 2001-03-26 19:00:00  | 2001-04-18 01:54:00
+        | 95 days 21:48:00     | 2001-04-18 18:06:00  | 2001-07-23 15:54:00
+        | 63 days 17:00:00     | 2001-07-24 10:54:00  | 2001-09-26 03:54:00
+---------------------------------------------------------------------------
+-0.003  | 35 days 08:12:00     | 2001-09-26 08:54:00  | 2001-10-31 17:06:00
+        | 3 days 23:12:00      | 2001-11-01 16:48:00  | 2001-11-05 16:00:00
+        | 56 days 07:12:00     | 2001-11-05 16:42:00  | 2001-12-31 23:54:00
+
+
+
+Comparison Table for year 2002:
+                      total points  percent
+total agreements            72031  82.2272
+value disagreements         14684  16.7626
+total disagreements         15569  17.7728
+missing (primary)             885   1.0103
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 34
+Duration of longest gap                             : 2 days 14:00:00
+Maximum duration of an offset                       : 63 days 22:00:00
+Offset value(s) with <63 days 22:00:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 51
+Maximum/minimum offset value (m)                    : 0.104/-0.266
+Duration(s) of offset with value <0.104> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.266> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+-0.003  | 38 days 23:54:00     | 2002-01-01 00:00:00  | 2002-02-08 23:54:00
+        | 2 days 00:00:00      | 2002-03-29 23:54:00  | 2002-03-31 23:54:00
+        | 12 days 09:36:00     | 2002-04-02 14:18:00  | 2002-04-14 23:54:00
+        | 3 days 22:30:00      | 2002-05-31 20:54:00  | 2002-06-04 19:24:00
+---------------------------------------------------------------------------
+0.0     | 1 days 13:00:00      | 2002-02-08 23:54:00  | 2002-02-10 12:54:00
+        | 1 days 01:00:00      | 2002-02-10 13:54:00  | 2002-02-11 14:54:00
+        | 4 days 02:06:00      | 2002-02-12 01:54:00  | 2002-02-16 04:00:00
+        | 3 days 19:00:00      | 2002-02-16 04:54:00  | 2002-02-19 23:54:00
+        | 1 days 12:00:00      | 2002-02-20 08:54:00  | 2002-02-21 20:54:00
+        | 3 days 11:00:00      | 2002-02-22 19:54:00  | 2002-02-26 06:54:00
+        | 1 days 15:00:00      | 2002-02-26 07:54:00  | 2002-02-27 22:54:00
+        | 2 days 02:00:00      | 2002-02-28 21:54:00  | 2002-03-02 23:54:00
+        | 1 days 22:00:00      | 2002-03-03 00:54:00  | 2002-03-04 22:54:00
+        | 1 days 11:00:00      | 2002-03-08 11:54:00  | 2002-03-09 22:54:00
+        | 3 days 23:00:00      | 2002-03-09 23:54:00  | 2002-03-13 22:54:00
+        | 15 days 05:00:00     | 2002-03-14 17:54:00  | 2002-03-29 22:54:00
+        | 1 days 14:24:00      | 2002-03-31 23:54:00  | 2002-04-02 14:18:00
+        | 1 days 05:00:00      | 2002-04-14 23:54:00  | 2002-04-16 04:54:00
+        | 45 days 15:00:00     | 2002-04-16 05:54:00  | 2002-05-31 20:54:00
+        | 1 days 23:42:00      | 2002-06-04 19:24:00  | 2002-06-06 19:06:00
+        | 1 days 22:36:00      | 2002-06-06 20:30:00  | 2002-06-08 19:06:00
+        | 1 days 22:24:00      | 2002-06-08 20:30:00  | 2002-06-10 18:54:00
+        | 4 days 22:24:00      | 2002-06-11 20:30:00  | 2002-06-16 18:54:00
+        | 25 days 14:18:00     | 2002-06-16 20:36:00  | 2002-07-12 10:54:00
+        | 13 days 04:00:00     | 2002-07-12 11:54:00  | 2002-07-25 15:54:00
+        | 63 days 22:00:00     | 2002-07-29 16:54:00  | 2002-10-01 14:54:00
+        | 6 days 03:00:00      | 2002-10-01 17:54:00  | 2002-10-07 20:54:00
+        | 19 days 22:00:00     | 2002-10-08 17:54:00  | 2002-10-28 15:54:00
+        | 24 days 00:00:00     | 2002-10-28 16:54:00  | 2002-11-21 16:54:00
+        | 3 days 09:00:00      | 2002-11-22 15:54:00  | 2002-11-26 00:54:00
+        | 1 days 12:00:00      | 2002-11-26 01:54:00  | 2002-11-27 13:54:00
+        | 8 days 08:00:00      | 2002-11-27 18:54:00  | 2002-12-06 02:54:00
+        | 11 days 06:00:00     | 2002-12-06 04:54:00  | 2002-12-17 10:54:00
+        | 13 days 11:54:00     | 2002-12-17 12:48:00  | 2002-12-31 00:42:00
+
+
+
+Comparison Table for year 2003:
+                      total points  percent
+total agreements            87152  99.4886
+value disagreements            64   0.0731
+total disagreements           448   0.5114
+missing (primary)             384   0.4384
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 8
+Duration of longest gap                             : 1 days 13:00:00
+Maximum duration of an offset                       : 110 days 11:42:00
+Offset value(s) with <110 days 11:42:00> duration   : [0.0]
+Number of offsets with abs value >= 5 cm            : 21
+Maximum/minimum offset value (m)                    : 0.347/-0.13
+Duration(s) of offset with value <0.347> cm         : [Timedelta('0 days 00:42:00')]
+Duration(s) of offset with value <-0.13> cm         : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 37 days 17:18:00     | 2003-01-01 00:00:00  | 2003-02-07 17:18:00
+        | 54 days 20:00:00     | 2003-02-07 17:54:00  | 2003-04-03 13:54:00
+        | 104 days 04:42:00    | 2003-04-03 14:00:00  | 2003-07-16 18:42:00
+        | 24 days 02:30:00     | 2003-07-16 22:24:00  | 2003-08-10 00:54:00
+        | 14 days 18:36:00     | 2003-08-11 14:18:00  | 2003-08-26 08:54:00
+        | 1 days 05:42:00      | 2003-08-26 09:54:00  | 2003-08-27 15:36:00
+        | 15 days 15:06:00     | 2003-08-27 18:30:00  | 2003-09-12 09:36:00
+        | 110 days 11:42:00    | 2003-09-12 12:12:00  | 2003-12-31 23:54:00
+
+
+
+Comparison Table for year 2004:
+                      total points  percent
+total agreements            87210  99.2828
+value disagreements            22   0.0250
+total disagreements           630   0.7172
+missing (primary)             608   0.6922
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 7
+Duration of longest gap                             : 2 days 03:12:00
+Maximum duration of an offset                       : 177 days 17:12:00
+Offset value(s) with <177 days 17:12:00> duration   : [0.0]
+Number of offsets with abs value >= 5 cm            : 2
+Maximum/minimum offset value (m)                    : 0.384/-0.132
+Duration(s) of offset with value <0.384> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.132> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 14 days 16:30:00     | 2004-01-01 00:00:00  | 2004-01-15 16:30:00
+        | 177 days 17:12:00    | 2004-01-15 16:36:00  | 2004-07-11 09:48:00
+        | 71 days 03:36:00     | 2004-07-11 12:18:00  | 2004-09-20 15:54:00
+        | 1 days 21:00:00      | 2004-09-20 17:54:00  | 2004-09-22 14:54:00
+        | 55 days 21:06:00     | 2004-09-22 15:54:00  | 2004-11-17 13:00:00
+        | 19 days 03:12:00     | 2004-11-19 16:54:00  | 2004-12-08 20:06:00
+        | 22 days 00:42:00     | 2004-12-09 23:12:00  | 2004-12-31 23:54:00
+
+
+
+Comparison Table for year 2005:
+                      total points  percent
+total agreements            87371  99.7386
+value disagreements           201   0.2295
+total disagreements           229   0.2614
+missing (primary)              28   0.0320
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 11
+Duration of longest gap                             : 0 days 01:00:00
+Maximum duration of an offset                       : 122 days 13:42:00
+Offset value(s) with <122 days 13:42:00> duration   : [0.0]
+Number of offsets with abs value >= 5 cm            : 29
+Maximum/minimum offset value (m)                    : 0.209/-0.19
+Duration(s) of offset with value <0.209> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.19> cm         : [Timedelta('0 days 00:06:00'), Timedelta('0 days 00:06:00'), Timedelta('0 days 00:06:00'), Timedelta('0 days 00:12:00'), Timedelta('0 days 00:12:00'), Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 95 days 23:00:00     | 2005-01-01 00:00:00  | 2005-04-06 23:00:00
+        | 4 days 19:00:00      | 2005-04-07 02:54:00  | 2005-04-11 21:54:00
+        | 122 days 13:42:00    | 2005-04-12 00:12:00  | 2005-08-12 13:54:00
+        | 10 days 21:00:00     | 2005-08-12 15:54:00  | 2005-08-23 12:54:00
+        | 7 days 23:00:00      | 2005-08-23 14:54:00  | 2005-08-31 13:54:00
+        | 7 days 02:06:00      | 2005-09-01 08:48:00  | 2005-09-08 10:54:00
+        | 2 days 20:06:00      | 2005-09-08 11:54:00  | 2005-09-11 08:00:00
+        | 3 days 17:06:00      | 2005-09-12 00:48:00  | 2005-09-15 17:54:00
+        | 4 days 06:00:00      | 2005-09-15 18:54:00  | 2005-09-20 00:54:00
+        | 2 days 15:00:00      | 2005-09-20 01:54:00  | 2005-09-22 16:54:00
+        | 99 days 13:00:00     | 2005-09-23 10:54:00  | 2005-12-31 23:54:00
+
+
+
+Comparison Table for year 2006:
+                      total points  percent
+total agreements            86402  98.6324
+value disagreements           663   0.7568
+total disagreements          1198   1.3676
+missing (primary)             535   0.6107
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 60
+Duration of longest gap                             : 0 days 19:12:00
+Maximum duration of an offset                       : 29 days 12:24:00
+Offset value(s) with <29 days 12:24:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 88
+Maximum/minimum offset value (m)                    : 0.221/-0.195
+Duration(s) of offset with value <0.221> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.195> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 29 days 12:24:00     | 2006-01-01 00:00:00  | 2006-01-30 12:24:00
+        | 18 days 21:00:00     | 2006-01-30 12:54:00  | 2006-02-18 09:54:00
+        | 19 days 21:54:00     | 2006-02-18 10:54:00  | 2006-03-10 08:48:00
+        | 1 days 14:30:00      | 2006-03-10 12:54:00  | 2006-03-12 03:24:00
+        | 1 days 16:30:00      | 2006-03-12 03:48:00  | 2006-03-13 20:18:00
+        | 9 days 15:36:00      | 2006-03-13 20:30:00  | 2006-03-23 12:06:00
+        | 4 days 21:00:00      | 2006-03-23 23:42:00  | 2006-03-28 20:42:00
+        | 4 days 13:30:00      | 2006-03-29 02:18:00  | 2006-04-02 15:48:00
+        | 5 days 11:48:00      | 2006-04-02 17:36:00  | 2006-04-08 05:24:00
+        | 11 days 00:30:00     | 2006-04-08 05:36:00  | 2006-04-19 06:06:00
+        | 2 days 07:42:00      | 2006-04-19 06:12:00  | 2006-04-21 13:54:00
+        | 7 days 15:00:00      | 2006-04-21 14:54:00  | 2006-04-29 05:54:00
+        | 3 days 01:18:00      | 2006-04-29 13:36:00  | 2006-05-02 14:54:00
+        | 8 days 02:36:00      | 2006-05-02 20:54:00  | 2006-05-10 23:30:00
+        | 4 days 00:00:00      | 2006-05-11 01:54:00  | 2006-05-15 01:54:00
+        | 1 days 08:42:00      | 2006-05-15 04:30:00  | 2006-05-16 13:12:00
+        | 1 days 02:30:00      | 2006-05-16 13:18:00  | 2006-05-17 15:48:00
+        | 4 days 17:54:00      | 2006-05-17 15:54:00  | 2006-05-22 09:48:00
+        | 6 days 05:48:00      | 2006-05-22 09:54:00  | 2006-05-28 15:42:00
+        | 1 days 09:12:00      | 2006-05-28 16:24:00  | 2006-05-30 01:36:00
+        | 1 days 14:42:00      | 2006-05-30 09:36:00  | 2006-06-01 00:18:00
+        | 5 days 18:42:00      | 2006-06-01 14:48:00  | 2006-06-07 09:30:00
+        | 5 days 09:30:00      | 2006-06-07 09:36:00  | 2006-06-12 19:06:00
+        | 1 days 03:00:00      | 2006-06-13 06:42:00  | 2006-06-14 09:42:00
+        | 1 days 03:48:00      | 2006-06-14 10:18:00  | 2006-06-15 14:06:00
+        | 2 days 23:12:00      | 2006-06-15 14:36:00  | 2006-06-18 13:48:00
+        | 8 days 05:54:00      | 2006-06-18 15:00:00  | 2006-06-26 20:54:00
+        | 5 days 00:24:00      | 2006-06-26 23:54:00  | 2006-07-02 00:18:00
+        | 1 days 08:30:00      | 2006-07-03 09:48:00  | 2006-07-04 18:18:00
+        | 11 days 22:24:00     | 2006-07-06 20:00:00  | 2006-07-18 18:24:00
+        | 4 days 04:06:00      | 2006-07-19 22:30:00  | 2006-07-24 02:36:00
+        | 11 days 01:06:00     | 2006-07-27 06:36:00  | 2006-08-07 07:42:00
+        | 2 days 07:00:00      | 2006-08-07 16:54:00  | 2006-08-09 23:54:00
+        | 7 days 16:54:00      | 2006-08-10 20:00:00  | 2006-08-18 12:54:00
+        | 1 days 00:48:00      | 2006-08-18 15:18:00  | 2006-08-19 16:06:00
+        | 4 days 23:00:00      | 2006-08-19 16:30:00  | 2006-08-24 15:30:00
+        | 14 days 12:36:00     | 2006-08-25 16:54:00  | 2006-09-09 05:30:00
+        | 3 days 06:42:00      | 2006-09-09 10:00:00  | 2006-09-12 16:42:00
+        | 2 days 06:00:00      | 2006-09-12 17:12:00  | 2006-09-14 23:12:00
+        | 3 days 07:42:00      | 2006-09-14 23:42:00  | 2006-09-18 07:24:00
+        | 5 days 22:18:00      | 2006-09-18 09:30:00  | 2006-09-24 07:48:00
+        | 15 days 01:24:00     | 2006-09-24 07:54:00  | 2006-10-09 09:18:00
+        | 1 days 11:00:00      | 2006-10-09 09:48:00  | 2006-10-10 20:48:00
+        | 2 days 08:54:00      | 2006-10-10 21:36:00  | 2006-10-13 06:30:00
+        | 1 days 17:12:00      | 2006-10-13 07:42:00  | 2006-10-15 00:54:00
+        | 1 days 09:48:00      | 2006-10-16 22:06:00  | 2006-10-18 07:54:00
+        | 3 days 22:54:00      | 2006-10-18 08:42:00  | 2006-10-22 07:36:00
+        | 9 days 21:24:00      | 2006-10-22 08:48:00  | 2006-11-01 06:12:00
+        | 5 days 21:36:00      | 2006-11-01 06:42:00  | 2006-11-07 04:18:00
+        | 3 days 10:06:00      | 2006-11-07 04:30:00  | 2006-11-10 14:36:00
+        | 4 days 11:54:00      | 2006-11-11 06:24:00  | 2006-11-15 18:18:00
+        | 6 days 08:42:00      | 2006-11-15 21:54:00  | 2006-11-22 06:36:00
+        | 8 days 10:12:00      | 2006-11-22 07:00:00  | 2006-11-30 17:12:00
+        | 5 days 00:54:00      | 2006-12-01 08:00:00  | 2006-12-06 08:54:00
+        | 6 days 02:30:00      | 2006-12-06 09:36:00  | 2006-12-12 12:06:00
+        | 1 days 10:12:00      | 2006-12-12 12:36:00  | 2006-12-13 22:48:00
+        | 7 days 00:54:00      | 2006-12-13 23:18:00  | 2006-12-21 00:12:00
+        | 2 days 22:54:00      | 2006-12-21 02:12:00  | 2006-12-24 01:06:00
+        | 5 days 17:42:00      | 2006-12-24 09:18:00  | 2006-12-30 03:00:00
+        | 1 days 20:06:00      | 2006-12-30 03:48:00  | 2006-12-31 23:54:00
+
+
+
+Comparison Table for year 2007:
+                      total points  percent
+total agreements            55951  63.8710
+value disagreements         31539  36.0034
+total disagreements         31649  36.1290
+missing (primary)             110   0.1256
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 31
+Duration of longest gap                             : 0 days 06:36:00
+Maximum duration of an offset                       : 36 days 21:12:00
+Offset value(s) with <36 days 21:12:00> duration    : [0.0]
+Number of offsets with abs value >= 5 cm            : 80
+Maximum/minimum offset value (m)                    : 0.142/-0.313
+Duration(s) of offset with value <0.142> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.313> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 3 days 00:06:00      | 2007-01-01 00:00:00  | 2007-01-04 00:06:00
+        | 12 days 22:54:00     | 2007-01-04 05:00:00  | 2007-01-17 03:54:00
+        | 3 days 09:54:00      | 2007-01-17 04:54:00  | 2007-01-20 14:48:00
+        | 4 days 01:36:00      | 2007-01-20 15:18:00  | 2007-01-24 16:54:00
+        | 2 days 17:36:00      | 2007-01-24 18:00:00  | 2007-01-27 11:36:00
+        | 36 days 21:12:00     | 2007-01-27 12:54:00  | 2007-03-05 10:06:00
+        | 3 days 06:00:00      | 2007-03-05 10:24:00  | 2007-03-08 16:24:00
+        | 4 days 13:42:00      | 2007-03-09 14:18:00  | 2007-03-14 04:00:00
+        | 4 days 14:48:00      | 2007-03-14 08:36:00  | 2007-03-18 23:24:00
+        | 16 days 11:12:00     | 2007-03-18 23:54:00  | 2007-04-04 11:06:00
+        | 10 days 08:18:00     | 2007-04-04 15:06:00  | 2007-04-14 23:24:00
+        | 2 days 21:42:00      | 2007-04-15 00:24:00  | 2007-04-17 22:06:00
+        | 3 days 00:30:00      | 2007-04-17 22:36:00  | 2007-04-20 23:06:00
+        | 5 days 17:12:00      | 2007-04-20 23:36:00  | 2007-04-26 16:48:00
+        | 6 days 13:18:00      | 2007-04-26 17:18:00  | 2007-05-03 06:36:00
+        | 10 days 02:06:00     | 2007-05-03 09:06:00  | 2007-05-13 11:12:00
+        | 5 days 03:30:00      | 2007-05-13 11:36:00  | 2007-05-18 15:06:00
+        | 3 days 01:54:00      | 2007-05-18 15:48:00  | 2007-05-21 17:42:00
+        | 3 days 21:00:00      | 2007-05-21 19:54:00  | 2007-05-25 16:54:00
+        | 2 days 09:36:00      | 2007-05-25 17:12:00  | 2007-05-28 02:48:00
+        | 8 days 11:54:00      | 2007-05-28 03:12:00  | 2007-06-05 15:06:00
+        | 2 days 05:24:00      | 2007-06-05 16:12:00  | 2007-06-07 21:36:00
+        | 3 days 18:36:00      | 2007-06-07 22:12:00  | 2007-06-11 16:48:00
+        | 4 days 13:36:00      | 2007-06-11 17:18:00  | 2007-06-16 06:54:00
+        | 5 days 05:12:00      | 2007-06-16 07:18:00  | 2007-06-21 12:30:00
+        | 1 days 10:36:00      | 2007-06-22 03:36:00  | 2007-06-23 14:12:00
+        | 4 days 13:30:00      | 2007-06-24 22:24:00  | 2007-06-29 11:54:00
+        | 23 days 21:30:00     | 2007-06-30 15:24:00  | 2007-07-24 12:54:00
+        | 2 days 18:54:00      | 2007-11-03 18:24:00  | 2007-11-06 13:18:00
+        | 2 days 15:00:00      | 2007-11-08 08:54:00  | 2007-11-10 23:54:00
+        | 1 days 03:30:00      | 2007-11-28 09:54:00  | 2007-11-29 13:24:00
+
+
+
+Comparison Table for year 2008:
+                      total points  percent
+total agreements            11375  12.9497
+value disagreements         75511  85.9643
+total disagreements         76465  87.0503
+missing (primary)             954   1.0861
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 2
+Duration of longest gap                             : 2 days 02:42:00
+Maximum duration of an offset                       : 2 days 23:06:00
+Offset value(s) with <2 days 23:06:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 273
+Maximum/minimum offset value (m)                    : 0.212/-0.213
+Duration(s) of offset with value <0.212> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.213> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 2 days 11:00:00      | 2008-04-17 14:54:00  | 2008-04-20 01:54:00
+        | 2 days 23:06:00      | 2008-05-05 17:54:00  | 2008-05-08 17:00:00
+
+
+
+Comparison Table for year 2009:
+                      total points  percent
+total agreements            10767  12.2911
+value disagreements         76795  87.6655
+total disagreements         76833  87.7089
+missing (primary)              38   0.0434
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 00:48:00
+Maximum duration of an offset                       : 0 days 07:36:00
+Offset value(s) with <0 days 07:36:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 109
+Maximum/minimum offset value (m)                    : 0.158/-0.163
+Duration(s) of offset with value <0.158> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.163> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2010:
+                      total points  percent
+total agreements            10058  11.4817
+value disagreements         77454  88.4178
+total disagreements         77542  88.5183
+missing (primary)              88   0.1005
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 01:42:00
+Maximum duration of an offset                       : 0 days 01:48:00
+Offset value(s) with <0 days 01:48:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 193
+Maximum/minimum offset value (m)                    : 0.207/-0.246
+Duration(s) of offset with value <0.207> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.246> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2011:
+                      total points  percent
+total agreements            10798  12.3265
+value disagreements         76445  87.2660
+total disagreements         76802  87.6735
+missing (primary)             357   0.4075
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 11:42:00
+Maximum duration of an offset                       : 0 days 04:36:00
+Offset value(s) with <0 days 04:36:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 42
+Maximum/minimum offset value (m)                    : 0.268/-0.327
+Duration(s) of offset with value <0.268> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.327> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2012:
+                      total points  percent
+total agreements            10093  11.4902
+value disagreements         77642  88.3903
+total disagreements         77747  88.5098
+missing (primary)             105   0.1195
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 03:30:00
+Maximum duration of an offset                       : 0 days 04:24:00
+Offset value(s) with <0 days 04:24:00> duration     : [-0.002]
+Number of offsets with abs value >= 5 cm            : 169
+Maximum/minimum offset value (m)                    : 0.156/-0.124
+Duration(s) of offset with value <0.156> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.124> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2013:
+                      total points  percent
+total agreements            10678  12.1895
+value disagreements         76624  87.4703
+total disagreements         76922  87.8105
+missing (primary)             298   0.3402
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 08:54:00
+Maximum duration of an offset                       : 0 days 17:18:00
+Offset value(s) with <0 days 17:18:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 142
+Maximum/minimum offset value (m)                    : 0.176/-0.152
+Duration(s) of offset with value <0.176> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.152> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2014:
+                      total points  percent
+total agreements             9979  11.3916
+value disagreements         77076  87.9863
+total disagreements         77621  88.6084
+missing (primary)             545   0.6221
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 1 days 09:30:00
+Maximum duration of an offset                       : 0 days 05:54:00
+Offset value(s) with <0 days 05:54:00> duration     : [0.0]
+Number of offsets with abs value >= 5 cm            : 108
+Maximum/minimum offset value (m)                    : 0.107/-0.159
+Duration(s) of offset with value <0.107> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.159> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2015:
+                      total points  percent
+total agreements             7492   8.5525
+value disagreements         77196  88.1233
+total disagreements         80108  91.4475
+missing (primary)            5921   6.7591
+missing (reference)          3011   3.4372
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 12 days 13:30:00
+Maximum duration of an offset                       : 0 days 00:36:00
+Offset value(s) with <0 days 00:36:00> duration     : [0.006, 0.007, 0.007, 0.006, 0.002, 0.002]
+Number of offsets with abs value >= 5 cm            : 165
+Maximum/minimum offset value (m)                    : 0.348/-0.232
+Duration(s) of offset with value <0.348> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.232> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2016:
+                      total points  percent
+total agreements            11053  12.5831
+value disagreements         75022  85.4076
+total disagreements         76787  87.4169
+missing (primary)            1765   2.0093
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 1 days 00:24:00
+Maximum duration of an offset                       : 0 days 00:48:00
+Offset value(s) with <0 days 00:48:00> duration     : [0.0, 0.0, 0.0]
+Number of offsets with abs value >= 5 cm            : 117
+Maximum/minimum offset value (m)                    : 0.137/-0.192
+Duration(s) of offset with value <0.137> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.192> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2017.0:
+                      total points  percent
+total agreements            36919  42.1445
+value disagreements         50657  57.8270
+total disagreements         50682  57.8555
+missing (primary)           30662  35.0019
+missing (reference)         30639  34.9756
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 0 days 00:30:00
+Maximum duration of an offset                       : 0 days 00:54:00
+Offset value(s) with <0 days 00:54:00> duration     : [-0.001]
+Number of offsets with abs value >= 5 cm            : 125
+Maximum/minimum offset value (m)                    : 0.233/-0.235
+Duration(s) of offset with value <0.233> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-0.235> cm        : [Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2019:
+                      total points  percent
+total agreements                0      0.0
+value disagreements             0      0.0
+total disagreements         87600    100.0
+missing (primary)           87600    100.0
+missing (reference)             0      0.0
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 364 days 23:54:00
+Maximum duration of an offset                       : NaT
+Offset value(s) with <NaT> duration                 : []
+Number of offsets with abs value >= 5 cm            : 0
+Maximum/minimum offset value (m)                    : nan/nan
+Duration(s) of offset with value <nan> cm           : []
+Duration(s) of offset with value <nan> cm           : []
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2020:
+                      total points  percent
+total agreements                0      0.0
+value disagreements             0      0.0
+total disagreements         87840    100.0
+missing (primary)           87840    100.0
+missing (reference)             0      0.0
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 365 days 23:54:00
+Maximum duration of an offset                       : NaT
+Offset value(s) with <NaT> duration                 : []
+Number of offsets with abs value >= 5 cm            : 0
+Maximum/minimum offset value (m)                    : nan/nan
+Duration(s) of offset with value <nan> cm           : []
+Duration(s) of offset with value <nan> cm           : []
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2021:
+                      total points  percent
+total agreements                0      0.0
+value disagreements             0      0.0
+total disagreements         87600    100.0
+missing (primary)           87600    100.0
+missing (reference)             0      0.0
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 364 days 23:54:00
+Maximum duration of an offset                       : NaT
+Offset value(s) with <NaT> duration                 : []
+Number of offsets with abs value >= 5 cm            : 0
+Maximum/minimum offset value (m)                    : nan/nan
+Duration(s) of offset with value <nan> cm           : []
+Duration(s) of offset with value <nan> cm           : []
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2022:
+                      total points  percent
+total agreements                7   0.0080
+value disagreements         21768  24.8493
+total disagreements         87593  99.9920
+missing (primary)           65825  75.1427
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 144 days 23:42:00
+Maximum duration of an offset                       : 0 days 00:36:00
+Offset value(s) with <0 days 00:36:00> duration     : [-0.015]
+Number of offsets with abs value >= 5 cm            : 1260
+Maximum/minimum offset value (m)                    : 0.036/-6.284
+Duration(s) of offset with value <0.036> cm         : [Timedelta('0 days 00:06:00')]
+Duration(s) of offset with value <-6.284> cm        : [Timedelta('0 days 00:06:00'), Timedelta('0 days 00:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
+Comparison Table for year 2023:
+                      total points  percent
+total agreements                0      0.0
+value disagreements             0      0.0
+total disagreements         87600    100.0
+missing (primary)           87600    100.0
+missing (reference)             0      0.0
+
+Number of offsets (non-NaN) with duration >= one day: 0
+Duration of longest gap                             : 364 days 23:54:00
+Maximum duration of an offset                       : NaT
+Offset value(s) with <NaT> duration                 : []
+Number of offsets with abs value >= 5 cm            : 0
+Maximum/minimum offset value (m)                    : nan/nan
+Duration(s) of offset with value <nan> cm           : []
+Duration(s) of offset with value <nan> cm           : []
+
+Information about the offsets meeting duration threshold criteria:
+None.
+
+
