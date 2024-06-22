@@ -74,6 +74,77 @@ cd path/to/noaa-lighthouse-problem
 python analyze_data_discrepancies.py --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files --filename results
 ```
 
+## Configuration
+
+### Overview
+
+The `config.json` file is used to configure various parameters that define the metrics extracted from the discrepancy analysis of the datasets, and how corrections should be done on the primary data to resolve discrepancies (in development).
+
+### File location
+
+Place the `config.json` file in the root directory of your project.
+
+### Configuration sections
+
+- **Filter by duration parameters**
+    - `threshold`: The duration required for an offset to persist for it to be quantified in the results file. 
+    - `type`: Specifies if the threshold is a minimum or maximum cutoff.
+    - `is_strict`: Specify if the threshold is exclusive or inclusive.
+
+- **Filter by value parameters**
+    - `threshold`: The value of an offset required for it to be quantified in the result file. Value is irrespective of the units of chosen data (meters, feet, etc.).
+    - `use_abs`: Specifies to use the absolute values of offsets to determine if they meet the threshold criteria.
+    - `type`: Specifies if the threshold is a minimum or maximum cutoff.
+    - `is_strict`: Specify if the threshold is exclusive (strict) or inclusive.
+
+- **Offset correction parameters**
+    - `number_of_intervals`: The number of intervals required for a discrepancy to persist for it to be identified as an offset. This is used to determine temporal and vertical offset corrections, and is unrelated to the filtering by duration process.
+
+### Configuration values
+
+- `threshold` (duration): Acceptable values include:  "1 week", "2 days, 12 hours", "30 minutes".
+- `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0.
+- `type`: Must be either "min"` or "max"`.
+- `use_abs`: Must be `true` or `false`.
+- `is_strict`: Must be `true` or `false`.
+
+### Default values
+
+Default values are used if a parameter is not specified in `config.json`:
+
+- `filter_by_duration_parameters`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`.
+- `filter_by_value_parameters`: `threshold` = 0.0, `type` = "min", `use_abs` = `true`, `is_strict` = `false`.
+- `offset_correction_parameters`: `number_of_intervals` = 0.
+
+### Example configuration
+```elixir
+{
+    "filter_by_duration_parameters": [
+        {
+            "threshold": "1 day",
+            "type": "min",
+            "is_strict": false
+        }
+    ],
+
+    "filter_by_value_parameters": [
+        {
+            "threshold": 0.05,
+            "use_abs": true,
+            "type": "min",
+            "is_strict": false
+        }
+    ],
+
+    "offset_correction_parameters": [
+        {
+            "number_of_intervals": 240
+        }
+    ]
+}
+```
+
+
 ## Downloading data
 
 **NOAA Data**
