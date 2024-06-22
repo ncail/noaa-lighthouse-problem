@@ -400,24 +400,43 @@ def write_report(stats_df, metrics, offsets_dict, write_path, filename, year):
         file.write("\n")
 
         # Write the unique offsets dictionary to the file.
+        # Table title.
         file.write(f"Information about the offsets meeting duration threshold criteria:\n")
+
+        # If dictionary is empty, no offsets meeting the duration threshold criteria were found.
         if not offsets_dict:
             file.write("None.")
+
         else:
+            # Table header.
             file.write(f"Offset  | Duration             | Start Date           | End Date\n")
+
+            # Iterate through dictionary.
             for offset, data in offsets_dict.items():
+                # Set if_fist to true for the first item corresponding to this key (offset value).
                 is_first = True
+
+                # Draw offset data divider and write the current offset.
                 file.write(f"---------------------------------------------------------------------------\n")
                 file.write(f"{offset:<7} | ")
+
+                # Iterate through the data corresponding to the current offset.
                 for iLoop in range(len(data['durations'])):
+                    # Convert timedeltas to strings.
                     duration_str = str(data['durations'][iLoop])
                     start_date_str = str(data['start_dates'][iLoop])
                     end_date_str = str(data['end_dates'][iLoop])
+
                     if is_first:
+                        # Print next to the offset if this is the first data entry for the current offset.
                         file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
                         is_first = False
                     else:
+                        # Tab over to align successive data entries for the current offset.
                         file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
+                # End inner for.
+            # End outer for.
+
         file.write("\n\n\n")
     # File closed.
 # End write_report.
@@ -736,11 +755,11 @@ def process_offsets(offset_column, reference_column, size, index=0, offset_arr=N
 
 # If there is an offset identified as a constant difference between the
 # reference and suspected offset data, for [duration] number of intervals
-# (default at 240 intervals or one day for 6 minute intervals), then return
-# the offset value, else return NaN.
+# then return the offset value, else return NaN.
 # Called by process_offsets and temporal_deshifter.
 
-def identify_offset(offset_column, reference_column, index, size, duration=240):
+def identify_offset(offset_column, reference_column, index, size,
+                    duration=config['intervals_criteria']):
     offset_value = offset_column.iloc[index]
     ref_value = reference_column.iloc[index]
     difference = round(ref_value - offset_value, 4)
