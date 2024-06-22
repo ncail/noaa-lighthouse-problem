@@ -409,11 +409,12 @@ def get_metrics(run_data_df, time_threshold=timedelta(days=1), val_threshold=0.0
     max_gap_duration = nan_df['durations'].max()
 
     # Get maximum duration where offset is a real value.
-    max_offset_duration = non_nan_df['durations'].max()
+    non_nan_runs = run_data_df[run_data_df['durations'].notna()]
+    max_offset_duration = non_nan_runs['durations'].max()
 
     # Get offsets corresponding to the maximum non-NaN offset duration.
-    longest_offsets = non_nan_df[non_nan_df['durations'] ==
-                                 max_offset_duration]['offset (ref - primary, unit)'].tolist()
+    longest_offsets = non_nan_runs[non_nan_runs['durations'] ==
+                                   max_offset_duration]['offset (ref - primary, unit)'].tolist()
 
     # max_duration = runs_df['durations'].max()
     # bool_mask = runs_df['durations'] == max_duration
