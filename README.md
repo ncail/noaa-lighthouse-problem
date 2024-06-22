@@ -104,7 +104,7 @@ Place the `config.json` file in the root directory of your project.
 
 - `threshold` (duration): Acceptable values include:  "1 week", "2 days, 12 hours", "30 minutes".
 - `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0.
-- `type`: Must be either "min"` or "max"`.
+- `type`: Must be either "min" or "max".
 - `use_abs`: Must be `true` or `false`.
 - `is_strict`: Must be `true` or `false`.
 
