@@ -224,13 +224,16 @@ def main(args):
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
                                            merged_df[noaa_pwl_col_name], size)
 
-        # Gets metrics.
-        metrics = da.get_metrics(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
-                                 merged_df[noaa_dt_col_name], size)
+        # Get runs data and send into get_metrics and get_long_offsets_dict.
+        runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
+                                  merged_df[noaa_dt_col_name], size)
+
+        metrics = da.get_metrics(runs_df)
+
+        offsets_dict = da.get_long_offsets_dict(runs_df)
 
         # Write stats and metrics for {year} to a txt file.
-        da.write_report(stats_df, metrics, write_path, filename, year)
-
+        da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
     # End for.
 
     # Prepend error_summary and header to the text file if include_msgs is True.
