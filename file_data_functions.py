@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import timedelta
+import re
+import json
 
 # Opt into future behavior for pandas. Encouraged by FutureWarning message
 # for pd.replace(): "Downcasting behavior in 'replace' is deprecated and
@@ -51,16 +53,17 @@ config = {
 
 
 # ***************************************************************************
-# *********************** FUNCTION INITIALIZE_CONFIGS ***********************
+# *********************** FUNCTION LOAD_CONFIGS *****************************
 # ***************************************************************************
 
-# Assigns user's configurations.
+# Loads configurations, optional to customize by the user, from a JSON file.
 
-def initialize_configs(user_config):
-
+def load_configs(file_path):
     global config
-    config.update(user_config)
-# End initialize_configs.
+    with open(file_path, 'r') as file:
+        user_config = json.load(file)
+        config.update(user_config)
+# End load_configs.
 
 
 # ***************************************************************************
