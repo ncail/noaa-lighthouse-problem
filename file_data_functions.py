@@ -398,12 +398,12 @@ def get_metrics(run_data_df, time_threshold=timedelta(days=1), val_threshold=0.0
     # Filter for offsets (runs) >= 1 day.
     long_offsets_df = filter_duration(run_data_df, time_threshold)
 
-    # Count the number of times this happens.
-    long_offsets_count = len(long_offsets_df)
-
     # Separate dataframe into NaNs and non-NaNs offsets.
     nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].isna()]
     non_nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].notna()]
+
+    # Count long offsets.
+    long_offsets_count = len(non_nan_df)
 
     # Get the maximum duration where offset is NaN.
     max_gap_duration = nan_df['durations'].max()
@@ -431,7 +431,7 @@ def get_metrics(run_data_df, time_threshold=timedelta(days=1), val_threshold=0.0
 
     # Hold these metrics in metric_data.
     metric_data = [
-        (f"Number of offsets with duration >= one day", long_offsets_count),
+        (f"Number of offsets (non-NaN) with duration >= one day", long_offsets_count),
         (f"Duration of longest gap", f"{max_gap_duration}"),
         (f"Maximum duration of an offset", f"{max_offset_duration}"),
         (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
