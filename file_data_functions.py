@@ -399,8 +399,8 @@ def get_metrics(run_data_df, time_threshold=timedelta(days=1), val_threshold=0.0
     long_offsets_df = filter_duration(run_data_df, time_threshold)
 
     # Separate dataframe into NaNs and non-NaNs offsets.
-    nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].isna()]
-    non_nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].notna()]
+    nan_df = long_offsets_df[long_offsets_df['offset (ref - primary, unit)'].isna()]
+    non_nan_df = long_offsets_df[long_offsets_df['offset (ref - primary, unit)'].notna()]
 
     # Count long offsets.
     long_offsets_count = len(non_nan_df)
