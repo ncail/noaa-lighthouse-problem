@@ -119,28 +119,25 @@ Default values are used if a parameter is not specified in `config.json`:
 ### Example configuration
 ```elixir
 {
-    "filter_by_duration_parameters": [
-        {
-            "threshold": "1 day",
-            "type": "min",
-            "is_strict": false
-        }
-    ],
+    "filter_by_duration_parameters":
+    {
+        "threshold": "1 day",
+        "type": "min",
+        "is_strict": false
+    },
 
-    "filter_by_value_parameters": [
-        {
-            "threshold": 0.05,
-            "use_abs": true,
-            "type": "min",
-            "is_strict": false
-        }
-    ],
+    "filter_by_value_parameters":
+    {
+        "threshold": 0.05,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false
+    },
 
-    "offset_correction_parameters": [
-        {
-            "number_of_intervals": 240
-        }
-    ]
+    "offset_correction_parameters": 
+    {
+        "number_of_intervals": 240
+    }
 }
 ```
 
