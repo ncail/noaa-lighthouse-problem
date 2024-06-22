@@ -250,6 +250,7 @@ def main(args):
 
 if __name__ == "__main__":
     main_args = parse_arguments()
+    da.load_configs('config.json')
     main(main_args)
 
 # ***************************************************************************
