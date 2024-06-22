@@ -364,20 +364,23 @@ def write_report(stats_df, metrics, offsets_dict, write_path, filename, year):
 
         # Write the unique offsets dictionary to the file.
         file.write(f"Information about the offsets meeting duration threshold criteria:\n")
-        file.write(f"Offset  | Duration             | Start Date           | End Date\n")
-        for offset, data in offsets_dict.items():
-            is_first = True
-            file.write(f"---------------------------------------------------------------------------\n")
-            file.write(f"{offset:<7} | ")
-            for i in range(len(data['durations'])):
-                duration_str = str(data['durations'][i])
-                start_date_str = str(data['start_dates'][i])
-                end_date_str = str(data['end_dates'][i])
-                if is_first:
-                    file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
-                    is_first = False
-                else:
-                    file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
+        if not offsets_dict:
+            file.write("None.")
+        else:
+            file.write(f"Offset  | Duration             | Start Date           | End Date\n")
+            for offset, data in offsets_dict.items():
+                is_first = True
+                file.write(f"---------------------------------------------------------------------------\n")
+                file.write(f"{offset:<7} | ")
+                for iLoop in range(len(data['durations'])):
+                    duration_str = str(data['durations'][iLoop])
+                    start_date_str = str(data['start_dates'][iLoop])
+                    end_date_str = str(data['end_dates'][iLoop])
+                    if is_first:
+                        file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
+                        is_first = False
+                    else:
+                        file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
         file.write("\n\n\n")
     # File closed.
 # End write_report.
@@ -478,6 +481,13 @@ def get_unique_offsets_dict(run_data_df):
     # to each long offset value. Organize into a dictionary.
     unique_offsets_dict = {}
     for offset in unique_offsets:
+
+        # Skip NaNs.
+        if pd.isna(offset):
+            continue
+
+        # Add offset (key) and corresponding info from get_run_data df structure
+        # to dictionary.
         offset_data = run_data_df[run_data_df['offset (ref - primary, unit)'] == offset]
         unique_offsets_dict[offset] = {
             'durations': offset_data['durations'].tolist(),
