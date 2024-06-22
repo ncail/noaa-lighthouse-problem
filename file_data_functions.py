@@ -12,40 +12,57 @@ pd.set_option('future.no_silent_downcasting', True)
 
 
 # Default configuration dictionary.
+# config = {
+#     'duration_threshold': '1 day',  # The duration required for an offset to persist for
+#                                     # it to be quantified in the resulting metrics report.
+#
+#     'dur_thr_is_min': True,         # Specify that metrics should report values greater
+#                                     # than or equal to the duration threshold.
+#
+#     'dur_thr_is_max': False,        # Specify that metrics should report values less than
+#                                     # or equal to the duration threshold.
+#
+#     'dur_thr_strict': False,         # Specify if threshold is exclusive (strict: less/greater than)
+#                                     # or inclusive (less/greater than or equal to).
+#
+#     'value_threshold': 0.05,        # The threshold required for the value of an offset
+#                                     # for it to be quantified in the resulting metrics report,
+#                                     # with respect to the units of the data (meters, feet, etc.).
+#
+#     'use_abs': True,                # Offsets whose absolute values meet the value threshold
+#                                     # criteria will be quantified in the resulting metrics report.
+#
+#     'val_thr_is_min': True,         # Specify that metrics should report values greater
+#                                     # than or equal to the value threshold.
+#
+#     'val_thr_is_max': False,        # Specify that metrics should report values greater
+#                                     # than or equal to the value threshold.
+#
+#     'val_thr_strict': False,        # Specify if threshold is exclusive (strict: less/greater than)
+#                                     # or inclusive (less/greater than or equal to).
+#
+#     'intervals_criteria': 240       # The number of intervals required for an offset to persist
+#                                     # for it to be identified as an offset.
+#                                     # This is used to determine temporal and vertical offset
+#                                     # corrections, and is unrelated to the filtering process
+#                                     # done by duration_threshold.
+# }
+
 config = {
-    'duration_threshold': '1 day',  # The duration required for an offset to persist for
-                                    # it to be quantified in the resulting metrics report.
-
-    'dur_thr_is_min': True,         # Specify that metrics should report values greater
-                                    # than or equal to the duration threshold.
-
-    'dur_thr_is_max': False,        # Specify that metrics should report values less than
-                                    # or equal to the duration threshold.
-
-    'dur_thr_strict': False,         # Specify if threshold is exclusive (strict: less/greater than)
-                                    # or inclusive (less/greater than or equal to).
-
-    'value_threshold': 0.05,        # The threshold required for the value of an offset
-                                    # for it to be quantified in the resulting metrics report,
-                                    # with respect to the units of the data (meters, feet, etc.).
-
-    'use_abs': True,                # Offsets whose absolute values meet the value threshold
-                                    # criteria will be quantified in the resulting metrics report.
-
-    'val_thr_is_min': True,         # Specify that metrics should report values greater
-                                    # than or equal to the value threshold.
-
-    'val_thr_is_max': False,        # Specify that metrics should report values greater
-                                    # than or equal to the value threshold.
-
-    'val_thr_strict': False,        # Specify if threshold is exclusive (strict: less/greater than)
-                                    # or inclusive (less/greater than or equal to).
-
-    'intervals_criteria': 240       # The number of intervals required for an offset to persist
-                                    # for it to be identified as an offset.
-                                    # This is used to determine temporal and vertical offset
-                                    # corrections, and is unrelated to the filtering process
-                                    # done by duration_threshold.
+    'filter_by_duration_parameters': {
+        'threshold': '0 day',
+        'type': 'min',
+        'is_strict': False
+    },
+    'filter_by_value_parameters': {
+        'threshold': 0.0,
+        'use_abs': True,
+        'type': 'min',
+        'is_strict': False
+    },
+    'offset_correction_parameters': {
+        'number_of_intervals': 0  
+    }
 }
 
 
@@ -57,12 +74,17 @@ config = {
 # ***************************************************************************
 
 # Loads configurations, optional to customize by the user, from a JSON file.
+# In case of missing keys in config.json, fall back on default global config
+# dictionary.
 
 def load_configs(file_path):
     global config
     with open(file_path, 'r') as file:
         user_config = json.load(file)
-        config.update(user_config)
+        # config.update(user_config)
+        for key in user_config:
+            if key in config:
+                config[key].update(user_config[key])
 # End load_configs.
 
 
