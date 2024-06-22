@@ -98,7 +98,7 @@ Place the `config.json` file in the root directory of your project.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
 - **Offset correction parameters**
-    - `number_of_intervals`: The number of intervals required for a discrepancy to persist for it to be identified as an offset. This is used to determine temporal and vertical offset corrections, and is unrelated to the filtering by duration process.
+    - `number_of_intervals`: The number of intervals required for a discrepancy to persist for it to be identified as an offset. This is used to determine temporal and vertical offset corrections, and is unrelated to the filter by duration process.
 
 ### Configuration values
 
