@@ -547,15 +547,18 @@ def get_metrics(run_data_df):
     min_offset_start_date = run_data_df.loc[bool_mask, 'start date'].to_list()
     min_offset_end_date = run_data_df.loc[bool_mask, 'end date'].to_list()
 
+    # Get strings for metrics configured by user.
+    metric_strings = get_metric_key_strings()
+
     # Hold these metrics in metric_data.
     metric_data = [
-        (f"Number of offsets (non-NaN) with duration >= 1 day", long_offsets_count),
-        (f"Number of gaps with duration >= 1 day", long_gaps_count),
+        (f"{metric_strings['offset_dur']}", long_offsets_count),
+        (f"{metric_strings['gap_dur']}", long_gaps_count),
         (f"Duration of longest gap", f"{max_gap_duration}"),
         (f"Start/end date(s) of <{max_gap_duration}> gap", f"{gap_start_date} / {gap_end_date}"),
         (f"Maximum duration of an offset", f"{max_offset_duration}"),
         (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
-        (f"Number of offsets with abs value >= 5 cm", f"{large_offsets_count}"),
+        (f"{metric_strings['offset_val']} (unit)", f"{large_offsets_count}"),
         (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
         (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} / "
                                                                       f"{max_offset_end_date}"),
@@ -570,15 +573,55 @@ def get_metrics(run_data_df):
 # ***************************************************************************
 # ******************* FUNCTION GET_METRIC_KEY_STRINGS ***********************
 # ***************************************************************************
+
+# Gets the appropriate strings to define metrics as configured by the user.
+
 def get_metric_key_strings():
-    key_str_dict = {}
+    # Initialize strings.
+    key_str_dict = {
+        'offset_dur': "Number of offsets (non-NaN) with duration ",
+        'gap_dur': "Number of gaps with duration ",
+        'offset_val': "Number of offsets with "
+    }
 
-    dur_params = config['filter_by_duration_parameters']
-    val_params = config['filter_by_value_parameters']
-    gaps_params = config['filter_gaps_parameters']
+    # Get string for offset duration.
+    key_str_dict['offset_dur'] += generate_duration_string(config['filter_by_duration_parameters'])
 
-    key_str_dict['offset_dur'] =
+    # Get string for gap duration.
+    key_str_dict['gap_dur'] += generate_duration_string(config['filter_gaps_parameters'])
 
+    # Get string for offset value.
+    key_str_dict['offset_val'] += generate_value_string(config['filter_by_value_parameters'])
+
+    return key_str_dict
+# End get_metric_key_strings.
+
+
+def generate_duration_string(params):
+    if 'type' in params:
+        if params['type'] == 'min':
+            return f"> {'' if params['is_strict'] else '='} {params['threshold']}"
+        elif params['type'] == 'max':
+            return f"< {'' if params['is_strict'] else '='} {params['threshold']}"
+    return "[Type of threshold not specified]"
+# End generate_duration_string.
+
+
+def generate_value_string(params):
+    result = ""
+    if params.get('use_abs'):
+        result += "abs "
+
+    if 'type' in params:
+        if params['type'] == 'min':
+            result += f"> {'' if params['is_strict'] else '='} {params['threshold']}"
+        elif params['type'] == 'max':
+            result += f"< {'' if params['is_strict'] else '='} {params['threshold']}"
+    else:
+        result += "[Type of threshold not specified]"
+
+    return result
+# End generate_value_string.
 
 
 # ***************************************************************************
