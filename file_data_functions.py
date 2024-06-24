@@ -495,7 +495,7 @@ def write_report(stats_df, metrics, offsets_dict, write_path, filename, year):
 def get_metrics(run_data_df):
 
     # Filter for offsets (runs) >= 1 day.
-    long_offsets_df = do_filter_by_duration(run_data_df)
+    long_offsets_df = filter_offsets_by_duration(run_data_df)
 
     # Separate dataframe into NaNs and non-NaNs offsets.
     nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].isna()]
@@ -506,7 +506,7 @@ def get_metrics(run_data_df):
 
     # Count number of long gaps. Threshold may be different than for offsets
     # so call do_filter_gaps.
-    long_gaps_count = len(do_filter_gaps(run_data_df))
+    long_gaps_count = len(filter_gaps_by_duration(run_data_df))
 
     # Get the maximum duration where offset is NaN.
     max_gap_duration = nan_df['durations'].max()
@@ -528,7 +528,7 @@ def get_metrics(run_data_df):
     # max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
 
     # Filter by value >= 5 cm.
-    large_offsets_df = do_filter_by_value(run_data_df)
+    large_offsets_df = filter_offsets_by_value(run_data_df)
     large_offsets_count = len(large_offsets_df)
 
     # Get min and max discrepancies.
@@ -568,6 +568,20 @@ def get_metrics(run_data_df):
 
 
 # ***************************************************************************
+# ******************* FUNCTION GET_METRIC_KEY_STRINGS ***********************
+# ***************************************************************************
+def get_metric_key_strings():
+    key_str_dict = {}
+
+    dur_params = config['filter_by_duration_parameters']
+    val_params = config['filter_by_value_parameters']
+    gaps_params = config['filter_gaps_parameters']
+
+    key_str_dict['offset_dur'] =
+
+
+
+# ***************************************************************************
 # ******************* FUNCTION GET_LONG_OFFSETS_DICT ************************
 # ***************************************************************************
 
@@ -577,7 +591,7 @@ def get_metrics(run_data_df):
 def get_long_offsets_dict(run_data_df):
 
     # Filter for offsets (runs) by duration.
-    long_offsets_df = do_filter_by_duration(run_data_df)
+    long_offsets_df = filter_offsets_by_duration(run_data_df)
 
     # Get dictionary of info about the unique offsets in long_offsets_df.
     long_offsets_dict = get_unique_offsets_dict(long_offsets_df)
@@ -940,7 +954,7 @@ def get_discrepancies(offset_column, reference_column, size):
 # Requires the passed dataframe to be generated from get_run_data.
 # Returns the filtered dataframe.
 
-def do_filter_by_duration(df):
+def filter_offsets_by_duration(df):
 
     # Read in configurations.
     params = config['filter_by_duration_parameters']
@@ -960,7 +974,7 @@ def do_filter_by_duration(df):
 # Requires the passed dataframe to be generated from get_run_data.
 # Returns the filtered dataframe.
 
-def do_filter_gaps(df):
+def filter_gaps_by_duration(df):
 
     # Read in configurations.
     params = config['filter_gaps_parameters']
@@ -1014,7 +1028,7 @@ def filter_by_duration(dataframe, threshold=timedelta(0), type='min', is_strict=
 # Requires the passed dataframe to be generated from get_run_data.
 # Returns the filtered dataframe.
 
-def do_filter_by_value(df):
+def filter_offsets_by_value(df):
 
     # Read in configurations.
     params = config['filter_by_value_parameters']
