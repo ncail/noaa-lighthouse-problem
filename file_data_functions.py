@@ -517,12 +517,22 @@ def get_metrics(run_data_df):
     # Filter by value >= 5 cm.
     large_offsets_df = do_filter_by_value(run_data_df)
     large_offsets_count = len(large_offsets_df)
+
+    # Get min and max discrepancies.
     max_offset = run_data_df['offset (ref - primary, unit)'].max()
     min_offset = run_data_df['offset (ref - primary, unit)'].min()
+
+    # Get start and end date of the max discrepancy.
     bool_mask = run_data_df['offset (ref - primary, unit)'] == max_offset
-    max_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    # max_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    max_offset_start_date = run_data_df.loc[bool_mask, 'start date'].to_list()
+    max_offset_end_date = run_data_df.loc[bool_mask, 'end date'].to_list()
+
+    # Get start and end date of the min discrepancy.
     bool_mask = run_data_df['offset (ref - primary, unit)'] == min_offset
-    min_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    # min_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    min_offset_start_date = run_data_df.loc[bool_mask, 'start date'].to_list()
+    min_offset_end_date = run_data_df.loc[bool_mask, 'end date'].to_list()
 
     # Hold these metrics in metric_data.
     metric_data = [
@@ -532,8 +542,10 @@ def get_metrics(run_data_df):
         (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
         (f"Number of offsets with abs value >= 5 cm", f"{large_offsets_count}"),
         (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
-        (f"Duration(s) of offset with value <{max_offset}> cm", f"{max_offset_durations}"),
-        (f"Duration(s) of offset with value <{min_offset}> cm", f"{min_offset_durations}")
+        (f"Duration(s) of offset with value <{max_offset}> cm", f"Start date(s): {max_offset_start_date}"
+                                                                f"    End date(s): {max_offset_end_date}"),
+        (f"Duration(s) of offset with value <{min_offset}> cm", f"Start date(s): {min_offset_start_date}"
+                                                                f"    End date(s): {min_offset_end_date}")
     ]
 
     return metric_data
