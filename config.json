@@ -14,6 +14,13 @@
         "is_strict": false
     },
 
+    "filter_gaps_parameters":
+    {
+        "threshold": "1 day",
+        "type": "min",
+        "is_strict": false
+    },
+
     "offset_correction_parameters": 
     {
         "number_of_intervals": 240

@@ -92,7 +92,7 @@ Place the `config.json` file in the root directory of your project.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
 - **Filter by value parameters**
-    - `threshold`: The value of an offset required for it to be quantified in the result file. Value is irrespective of the units of chosen data (meters, feet, etc.).
+    - `threshold`: The value of an offset required for it to be quantified in the result file.
     - `use_abs`: Specifies to use the absolute values of offsets to determine if they meet the threshold criteria.
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
@@ -117,11 +117,11 @@ Default values are used if a parameter is not specified in `config.json`:
 - `offset_correction_parameters`: `number_of_intervals` = 0.
 
 ### Example configuration
-```js
+```perl
 {
     "filter_by_duration_parameters":
     {
-        "threshold": "1 day",
+        "offset_threshold": "1 day",
         "type": "min",
         "is_strict": false
     },
@@ -130,6 +130,13 @@ Default values are used if a parameter is not specified in `config.json`:
     {
         "threshold": 0.05,
         "use_abs": true,
+        "type": "min",
+        "is_strict": false
+    },
+
+    "filter_gaps_parameters":
+    {
+        "threshold": "1 day",
         "type": "min",
         "is_strict": false
     },

@@ -14,13 +14,18 @@ pd.set_option('future.no_silent_downcasting', True)
 # Default configuration dictionary.
 config = {
     'filter_by_duration_parameters': {
-        'threshold': '0 day',
+        'threshold': '0 days',
         'type': 'min',
         'is_strict': False
     },
     'filter_by_value_parameters': {
         'threshold': 0.0,
         'use_abs': True,
+        'type': 'min',
+        'is_strict': False
+    },
+    'filter_gaps_parameters': {
+        'threshold': '0 days',
         'type': 'min',
         'is_strict': False
     },
@@ -499,8 +504,16 @@ def get_metrics(run_data_df):
     # Count long offsets.
     long_offsets_count = len(non_nan_df)
 
+    # Count number of long gaps. Threshold may be different than for offsets
+    # so call do_filter_gaps.
+    long_gaps_count = len(do_filter_gaps(run_data_df))
+
     # Get the maximum duration where offset is NaN.
     max_gap_duration = nan_df['durations'].max()
+
+    # Get start/end date(s) of this gap.
+    gap_start_date = nan_df[nan_df['durations'] == max_gap_duration]['start date'].tolist()
+    gap_end_date = nan_df[nan_df['durations'] == max_gap_duration]['end date'].to_list()
 
     # Get maximum duration where offset is a real value.
     non_nan_runs = run_data_df[run_data_df['offset (ref - primary, unit)'].notna()]
@@ -536,16 +549,18 @@ def get_metrics(run_data_df):
 
     # Hold these metrics in metric_data.
     metric_data = [
-        (f"Number of offsets (non-NaN) with duration >= one day", long_offsets_count),
+        (f"Number of offsets (non-NaN) with duration >= 1 day", long_offsets_count),
+        (f"Number of gaps with duration >= 1 day", long_gaps_count),
         (f"Duration of longest gap", f"{max_gap_duration}"),
+        (f"Start/end date(s) of <{max_gap_duration}> gap", f"{gap_start_date} / {gap_end_date}"),
         (f"Maximum duration of an offset", f"{max_offset_duration}"),
         (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
         (f"Number of offsets with abs value >= 5 cm", f"{large_offsets_count}"),
         (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
-        (f"Duration(s) of offset with value <{max_offset}> cm", f"Start date(s): {max_offset_start_date}"
-                                                                f"    End date(s): {max_offset_end_date}"),
-        (f"Duration(s) of offset with value <{min_offset}> cm", f"Start date(s): {min_offset_start_date}"
-                                                                f"    End date(s): {min_offset_end_date}")
+        (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} / "
+                                                                      f"{max_offset_end_date}"),
+        (f"Start/end date(s) of offset with value <{min_offset}> cm", f"{min_offset_start_date} / "
+                                                                      f"{min_offset_end_date}")
     ]
 
     return metric_data
@@ -929,6 +944,26 @@ def do_filter_by_duration(df):
 
     # Read in configurations.
     params = config['filter_by_duration_parameters']
+    threshold = parse_timedelta(params['threshold'])
+    type = params['type']
+    is_strict = params['is_strict']
+
+    return filter_by_duration(df, threshold, type, is_strict)
+# End do_filter_by_duration.
+
+
+# ***************************************************************************
+# ******************* FUNCTION DO_FILTER_GAPS *******************************
+# ***************************************************************************
+
+# Gets configurations and passes them to filter_by_duration.
+# Requires the passed dataframe to be generated from get_run_data.
+# Returns the filtered dataframe.
+
+def do_filter_gaps(df):
+
+    # Read in configurations.
+    params = config['filter_gaps_parameters']
     threshold = parse_timedelta(params['threshold'])
     type = params['type']
     is_strict = params['is_strict']
