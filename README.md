@@ -1,6 +1,6 @@
 # NOAA-Lighthouse-Problem
 
-**noaa-lighthouse-problem** is a project aimed at recording useful metrics for assessing the nature and severity of discrepancies between data from tide gauge stations shared by the organizations NOAA and Lighthouse. Of the many Lighthouse stations in coastal Texas, some are also NOAA stations, meaning that both organizations receive data from the station's water level sensor before processing the data to distribute sea level products. Strangely, we find that the station data available to download from NOAA and Lighthouse have major discrepancies, including vertical and temporal offsets, unshared missing values, flatlines, spikes, and more. NOAA, being a federal agency, defines the standard for data quality, so it is important to understand how and why the Lighthouse data differs so that data quality from other Lighthouse stations, not shared by NOAA, can be assured.
+**noaa-lighthouse-problem** is a project aimed at recording useful metrics for assessing the nature and severity of discrepancies between water level data from tide gauge stations shared by the organizations NOAA and Lighthouse. Of the many Lighthouse stations in coastal Texas, some are also NOAA stations, meaning that both organizations receive data from the station's water level sensor before processing the data to distribute sea level products. Strangely, we find that the station data available to download from NOAA and Lighthouse have major discrepancies, including vertical and temporal offsets, unshared missing values, flatlines, spikes, and more. NOAA, being a federal agency, defines the standard for data quality, so it is important to understand how and why the Lighthouse data differs so that water level data quality from other Lighthouse stations, not shared by NOAA, can be assured.
 
 The main program, `analyze_data_discrepancies.py`, uses functions implemented in `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv). It calculates their statistical differences and directly compares the datasets using discrepancy analysis.
 
@@ -35,7 +35,7 @@ If not specified, the program will write the file in the `generated_files` direc
 --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files
 ```
 
-These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and years chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data` directory as an example.<br><br>
+These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and year range chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data` directory as an example.<br><br>
 
 - By default, the program will write messages about the execution of the program at the top of the results text file. To aid in creating these messages, the program will ask the user to input the start and end year of their data. This is an optional feature the user can opt out of using command line argument
 ```shell
@@ -140,6 +140,17 @@ Default values are used if a parameter is not specified in `config.json`:
     }
 }
 ```
+
+## Technical details and limitations
+
+### Data requirements
+
+- **Data format**: 
+- **Column order**:
+
+### Dependencies
+
+- **Libraies**: The program performs data cleansing with the help of the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above.
 
 
 ## Downloading data
