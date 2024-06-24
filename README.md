@@ -44,7 +44,7 @@ These paths should be to water level CSV files for a specific tide gauge station
 
 ## Output
 
-The program generates a text file in the `generated_files` directory or directory specified by the user, containing the annual statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp. Some example results are available to view in `generated_files`.
+The program generates a text file in the `generated_files` directory or directory specified by the user, containing the annual statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp. Some example results are available to view in `generated_files`. The user may configure the metrics by customizing field values in the `config.json` file.
 
 ## Requirements
 
@@ -117,7 +117,7 @@ Default values are used if a parameter is not specified in `config.json`:
 - `offset_correction_parameters`: `number_of_intervals` = 0.
 
 ### Example configuration
-```elixir
+```js
 {
     "filter_by_duration_parameters":
     {
@@ -150,7 +150,7 @@ Default values are used if a parameter is not specified in `config.json`:
 
 ### Dependencies
 
-- **Libraies**: The program performs data cleansing with the help of the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above.
+- **Libraies**: The program cleans the data by replacing corrupt or missing values in the data with null values using the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above.
 
 ### Preparing your data
 
