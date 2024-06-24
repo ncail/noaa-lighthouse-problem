@@ -152,18 +152,17 @@ Default values are used if a parameter is not specified in `config.json`:
 
 - **Libraies**: The program performs data cleansing with the help of the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above.
 
+### Preparing your data
 
-## Downloading data
+- **NOAA data**
 
-**NOAA Data**
+   1. Visit the NOAA Tides & Currents website: [NOAA Tides & Currents](https://tidesandcurrents.noaa.gov/)
+   2. Use the search bar or map to select a tide gauge station.
+   3. Specify the date range, units, and datum for the data you want to download.
+   4. Download the data in CSV format and save it to a directory, e.g., path/to/NOAA/files.
 
-1. Visit the NOAA Tides & Currents website: [NOAA Tides & Currents](https://tidesandcurrents.noaa.gov/)
-2. Use the search bar or map to select a tide gauge station.
-3. Specify the date range, units, datum, etc. for the data you want to download.
-4. Download the data in CSV format and save it to a directory, e.g., path/to/NOAA/files.
+- **Lighthouse data**
 
-**Lighthouse Data**
-
-1. Access the Lighthouse data portal: [Lighthouse Data Portal]"(link?)"
-2. Locate the relevant tide gauge station and specify the date range, etc. for the data.
-3. Download the data in CSV format and save it to a directory, e.g., path/to/Lighthouse/files.
+   1. Access the Lighthouse data portal: [Lighthouse Data Portal]"(link?)"
+   2. Locate the relevant tide gauge station and specify the date range, etc. for the data.
+   3. Be sure to download the data in CSV format by selecting to download as "Comma-separated values."
