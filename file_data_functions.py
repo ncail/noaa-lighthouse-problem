@@ -13,6 +13,14 @@ pd.set_option('future.no_silent_downcasting', True)
 
 # Default configuration dictionary.
 config = {
+    'primary_data_column_names': {
+        'datetime': '',
+        'water_level': ''
+    },
+    'reference_data_column_names': {
+        'datetime': '',
+        'water_level': ''
+    },
     'filter_by_duration_parameters': {
         'threshold': '0 days',
         'type': 'min',
@@ -464,9 +472,9 @@ def write_report(stats_df, metrics, offsets_dict, write_path, filename, year):
                 file.write(f"{offset:<7} | ")
 
                 # Iterate through the data corresponding to the current offset.
-                for iLoop in range(len(data['durations'])):
+                for iLoop in range(len(data['duration'])):
                     # Convert timedeltas to strings.
-                    duration_str = str(data['durations'][iLoop])
+                    duration_str = str(data['duration'][iLoop])
                     start_date_str = str(data['start_dates'][iLoop])
                     end_date_str = str(data['end_dates'][iLoop])
 
@@ -498,8 +506,8 @@ def get_metrics(run_data_df):
     long_offsets_df = filter_offsets_by_duration(run_data_df)
 
     # Separate dataframe into NaNs and non-NaNs offsets.
-    nan_df = run_data_df[run_data_df['offset (ref - primary, unit)'].isna()]
-    non_nan_df = long_offsets_df[long_offsets_df['offset (ref - primary, unit)'].notna()]
+    nan_df = run_data_df[run_data_df['offset'].isna()]
+    non_nan_df = long_offsets_df[long_offsets_df['offset'].notna()]
 
     # Count long offsets.
     long_offsets_count = len(non_nan_df)
@@ -509,41 +517,41 @@ def get_metrics(run_data_df):
     long_gaps_count = len(filter_gaps_by_duration(run_data_df))
 
     # Get the maximum duration where offset is NaN.
-    max_gap_duration = nan_df['durations'].max()
+    max_gap_duration = nan_df['duration'].max()
 
     # Get start/end date(s) of this gap.
-    gap_start_date = nan_df[nan_df['durations'] == max_gap_duration]['start date'].tolist()
-    gap_end_date = nan_df[nan_df['durations'] == max_gap_duration]['end date'].to_list()
+    gap_start_date = nan_df[nan_df['duration'] == max_gap_duration]['start date'].tolist()
+    gap_end_date = nan_df[nan_df['duration'] == max_gap_duration]['end date'].to_list()
 
     # Get maximum duration where offset is a real value.
-    non_nan_runs = run_data_df[run_data_df['offset (ref - primary, unit)'].notna()]
-    max_offset_duration = non_nan_runs['durations'].max()
+    non_nan_runs = run_data_df[run_data_df['offset'].notna()]
+    max_offset_duration = non_nan_runs['duration'].max()
 
     # Get offsets corresponding to the maximum non-NaN offset duration.
-    longest_offsets = non_nan_runs[non_nan_runs['durations'] ==
-                                   max_offset_duration]['offset (ref - primary, unit)'].tolist()
+    longest_offsets = non_nan_runs[non_nan_runs['duration'] ==
+                                   max_offset_duration]['offset'].tolist()
 
-    # max_duration = runs_df['durations'].max()
-    # bool_mask = runs_df['durations'] == max_duration
-    # max_duration_offsets = runs_df.loc[bool_mask, 'offset (ref - primary, unit)'].to_list()
+    # max_duration = runs_df['duration'].max()
+    # bool_mask = runs_df['duration'] == max_duration
+    # max_duration_offsets = runs_df.loc[bool_mask, 'offset'].to_list()
 
     # Filter by value >= 5 cm.
     large_offsets_df = filter_offsets_by_value(run_data_df)
     large_offsets_count = len(large_offsets_df)
 
     # Get min and max discrepancies.
-    max_offset = run_data_df['offset (ref - primary, unit)'].max()
-    min_offset = run_data_df['offset (ref - primary, unit)'].min()
+    max_offset = run_data_df['offset'].max()
+    min_offset = run_data_df['offset'].min()
 
     # Get start and end date of the max discrepancy.
-    bool_mask = run_data_df['offset (ref - primary, unit)'] == max_offset
-    # max_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    bool_mask = run_data_df['offset'] == max_offset
+    # max_offset_durations = run_data_df.loc[bool_mask, 'duration'].to_list()
     max_offset_start_date = run_data_df.loc[bool_mask, 'start date'].to_list()
     max_offset_end_date = run_data_df.loc[bool_mask, 'end date'].to_list()
 
     # Get start and end date of the min discrepancy.
-    bool_mask = run_data_df['offset (ref - primary, unit)'] == min_offset
-    # min_offset_durations = run_data_df.loc[bool_mask, 'durations'].to_list()
+    bool_mask = run_data_df['offset'] == min_offset
+    # min_offset_durations = run_data_df.loc[bool_mask, 'duration'].to_list()
     min_offset_start_date = run_data_df.loc[bool_mask, 'start date'].to_list()
     min_offset_end_date = run_data_df.loc[bool_mask, 'end date'].to_list()
 
@@ -610,7 +618,7 @@ def generate_duration_string(params):
 def generate_value_string(params):
     result = ""
     if params.get('use_abs'):
-        result += "abs "
+        result += "absolute "
 
     if 'type' in params:
         if params['type'] == 'min':
@@ -654,7 +662,7 @@ def get_long_offsets_dict(run_data_df):
 def get_unique_offsets_dict(run_data_df):
 
     # Get the unique offset values from long offsets.
-    unique_offsets = run_data_df['offset (ref - primary, unit)'].unique()
+    unique_offsets = run_data_df['offset'].unique()
 
     # Get all the durations, start dates, and end dates that correspond
     # to each long offset value. Organize into a dictionary.
@@ -667,9 +675,9 @@ def get_unique_offsets_dict(run_data_df):
 
         # Add offset (key) and corresponding info from get_run_data df structure
         # to dictionary.
-        offset_data = run_data_df[run_data_df['offset (ref - primary, unit)'] == offset]
+        offset_data = run_data_df[run_data_df['offset'] == offset]
         unique_offsets_dict[offset] = {
-            'durations': offset_data['durations'].tolist(),
+            'duration': offset_data['duration'].tolist(),
             'start_dates': offset_data['start date'].tolist(),
             'end_dates': offset_data['end date'].tolist()
         }
@@ -953,10 +961,10 @@ def get_run_data(offset_column, reference_column, ref_dates, size, create_table=
     if create_table is True:
         # Create the dataframe.
         summary_df = pd.DataFrame()
-        summary_df['offset (ref - primary, unit)'] = run_values
+        summary_df['offset'] = run_values
         summary_df['start date'] = ref_dates.iloc[start_indices].tolist()
         summary_df['end date'] = ref_dates.iloc[end_indices].tolist()
-        summary_df['durations'] = summary_df['end date'] - summary_df['start date']
+        summary_df['duration'] = summary_df['end date'] - summary_df['start date']
 
         return summary_df
 
@@ -1042,7 +1050,7 @@ def filter_by_duration(dataframe, threshold=timedelta(0), type='min', is_strict=
 
     filtered_df = dataframe.copy()
 
-    series = filtered_df['durations']
+    series = filtered_df['duration']
 
     if type == 'min':
         if is_strict:
@@ -1098,8 +1106,8 @@ def filter_by_value(dataframe, threshold=0.0, type='min', use_abs=True, is_stric
     filtered_df = dataframe.copy()
 
     # Apply absolute value if needed.
-    series = abs(filtered_df['offset (ref - primary, unit)']) if use_abs else filtered_df[
-        'offset (ref - primary, unit)']
+    series = abs(filtered_df['offset']) if use_abs else filtered_df[
+        'offset']
 
     # Define the filtering logic.
     if type == 'min':
