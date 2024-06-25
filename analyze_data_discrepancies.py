@@ -240,9 +240,9 @@ def main(args):
         runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
                                   merged_df[noaa_dt_col_name], size)
 
-        metrics = da.get_metrics(runs_df, offsets_df_columns)
+        metrics = da.get_metrics(runs_df)
 
-        offsets_dict = da.get_long_offsets_dict(runs_df, offsets_df_columns)
+        offsets_dict = da.get_long_offsets_dict(runs_df)
 
         # Write stats and metrics for {year} to a txt file.
         da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
