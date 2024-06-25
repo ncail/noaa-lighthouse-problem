@@ -119,30 +119,31 @@ Default values are used if a parameter is not specified in `config.json`:
 ### Example configuration
 ```perl
 {
-    "filter_by_duration_parameters":
-    {
-        "offset_threshold": "1 day",
+    "primary_data_column_names": {
+        "datetime": "",
+        "water_level": ""
+    },
+    "reference_data_column_names": {
+        "datetime": "",
+        "water_level": ""
+    },
+    "filter_by_duration_parameters": {
+        "threshold": "1 day",
         "type": "min",
         "is_strict": false
     },
-
-    "filter_by_value_parameters":
-    {
+    "filter_by_value_parameters": {
         "threshold": 0.05,
         "use_abs": true,
         "type": "min",
         "is_strict": false
     },
-
-    "filter_gaps_parameters":
-    {
+    "filter_gaps_parameters": {
         "threshold": "1 day",
         "type": "min",
         "is_strict": false
     },
-
-    "offset_correction_parameters": 
-    {
+    "offset_correction_parameters": {
         "number_of_intervals": 240
     }
 }

@@ -1,4 +1,16 @@
 {
+    "primary_data_column_names": 
+    {
+        "datetime": "",
+        "water_level": ""
+    },
+
+    "reference_data_column_names": 
+    {
+        "datetime": "",
+        "water_level": ""
+    },
+
     "filter_by_duration_parameters":
     {
         "threshold": "1 day",

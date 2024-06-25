@@ -10,6 +10,12 @@ import glob
 import pandas as pd
 
 
+# Default configuration for the column names of discrepancy info dataframe.
+offset_info_cols = {
+
+}
+
+
 # parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Parse arguments from user.")
