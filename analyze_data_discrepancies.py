@@ -1,6 +1,9 @@
 # Import file_data_functions.py as da (discrepancy analysis).
 import file_data_functions as da
 
+# Import MetricsCalculator.py as mc
+import MetricsCalculator as mc
+
 # Imports continued...
 import argparse
 import os
