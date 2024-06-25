@@ -5,30 +5,6 @@ from datetime import timedelta
 import re
 
 
-# Default configuration dictionary.
-config = {
-    'filter_by_duration_parameters': {
-        'threshold': '0 days',
-        'type': 'min',
-        'is_strict': False
-    },
-    'filter_by_value_parameters': {
-        'threshold': 0.0,
-        'use_abs': True,
-        'type': 'min',
-        'is_strict': False
-    },
-    'filter_gaps_parameters': {
-        'threshold': '0 days',
-        'type': 'min',
-        'is_strict': False
-    },
-    'offset_correction_parameters': {
-        'number_of_intervals': 0
-    }
-}
-
-
 class MetricsCalculator:
 
     def __init__(self, col_config=None):
@@ -68,7 +44,13 @@ class MetricsCalculator:
         self.config = self.default_config.copy()
     # End constructor.
 
-    # def set_col_configs(self, col_configs):
+    def set_column_names(self, duration_column, offset_column,
+                         start_date_column, end_date_column):
+        self.col_config['duration_column'] = duration_column
+        self.col_config['offset_column'] = offset_column
+        self.col_config['start_date_column'] = start_date_column
+        self.col_config['end_date_column'] = end_date_column
+    # End set_column_names.
 
     def set_configs(self, file_path):
         global config
