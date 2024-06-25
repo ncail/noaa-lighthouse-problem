@@ -42,8 +42,31 @@ class MetricsCalculator:
         else:
             self.col_config = col_config
 
+        self.default_config = {
+            'filter_by_duration_parameters': {
+                'threshold': '0 days',
+                'type': 'min',
+                'is_strict': False
+            },
+            'filter_by_value_parameters': {
+                'threshold': 0.0,
+                'use_abs': True,
+                'type': 'min',
+                'is_strict': False
+            },
+            'filter_gaps_parameters': {
+                'threshold': '0 days',
+                'type': 'min',
+                'is_strict': False
+            },
+            'offset_correction_parameters': {
+                'number_of_intervals': 0
+            }
+        }
+
         self.run_data_df = None
-        self.config = config
+        self.config = self.default_config.copy()
+    # End constructor.
 
     # def set_col_configs(self, col_configs):
 
@@ -56,9 +79,7 @@ class MetricsCalculator:
                 user_config = json.load(file)
                 for section, settings in user_config.items():
                     if section in config:
-                        config[section].update(settings)
-            # Reassign self.config.
-            self.config = config
+                        self.config[section].update(settings)
         except FileNotFoundError:
             print(f"Error: Config file '{file_path}' not found. Using default configuration.")
     # End set_configs.
@@ -73,10 +94,12 @@ class MetricsCalculator:
         for col in required_columns:
             if col not in df.columns:
                 raise ValueError(f"DataFrame must contain column: {col}")
+    # End validate_dataframe.
 
     def set_dataframe(self, df):
         self.validate_dataframe(df)
         self.run_data_df = df
+    # End set_dataframe.
 
     def get_run_data(self, offset_column, reference_column, ref_dates, size, create_df=True):
         offsets = self.get_discrepancies(offset_column, reference_column, size)
@@ -141,8 +164,10 @@ class MetricsCalculator:
 
         if df is not None:
             self.validate_dataframe(df)
-        else:
+        elif self.run_data_df is not None:
             df = self.run_data_df
+        else:
+            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
         # Filter dataframes.
         long_offsets_df = self.filter_offsets_by_duration()
@@ -259,13 +284,21 @@ class MetricsCalculator:
         return result
     # End generate_value_string.
 
-    def filter_offsets_by_duration(self, df=None, duration_col=None):
-        if df is None or duration_col is None:
-            df = self.run_data_df
-            duration_col = self.col_config['duration_column']
+    def _get_validated_dataframe(self, df, col_name):
+        if df is not None:
+            self.validate_dataframe(df)
+            return df, col_name
+        elif self.run_data_df is not None:
+            return self.run_data_df,  self.col_config[col_name]
+        else:
+            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
+
+    def filter_offsets_by_duration(self, df=None, duration_col=None, **kwargs):
+        df, duration_col = self._get_validated_dataframe(df, 'duration_column')
 
         # Read in configurations.
-        params = config['filter_by_duration_parameters']
+        default_params = self.config['filter_by_duration_parameters']
+        params = {**default_params, **kwargs}
         threshold = self.parse_timedelta(params['threshold'])
         type = params['type']
         is_strict = params['is_strict']
@@ -273,13 +306,12 @@ class MetricsCalculator:
         return self.filter_by_duration(df, duration_col, threshold, type, is_strict)
     # End filter_offsets_by_duration.
 
-    def filter_gaps_by_duration(self, df=None, duration_col=None):
-        if df is None or duration_col is None:
-            df = self.run_data_df
-            duration_col = self.col_config['duration_column']
+    def filter_gaps_by_duration(self, df=None, duration_col=None, **kwargs):
+        df, duration_col = self._get_validated_dataframe(df, 'duration_column')
 
-        # Read in configurations.
-        params = config['filter_gaps_parameters']
+        # Read in configurations. Allow user's kwargs to override set configurations.
+        default_params = self.config['filter_gaps_parameters']
+        params = {**default_params, **kwargs}
         threshold = self.parse_timedelta(params['threshold'])
         type = params['type']
         is_strict = params['is_strict']
@@ -311,13 +343,12 @@ class MetricsCalculator:
         return filtered_df
     # End filter_by_duration.
 
-    def filter_offsets_by_value(self, df=None, offset_col=None):
-        if df is None or offset_col is None:
-            df = self.run_data_df
-            offset_col = self.col_config['offset_column']
+    def filter_offsets_by_value(self, df=None, offset_col=None, **kwargs):
+        df, offset_col = self._get_validated_dataframe(df, 'offset_column')
 
-        # Read in configurations.
-        params = self.config['filter_by_value_parameters']
+        # Read in configurations. Allow user's kwargs to override set configurations.
+        default_params = self.config['filter_by_value_parameters']
+        params = {**default_params, **kwargs}
         threshold = params['threshold']
         type = params['type']
         use_abs = params['use_abs']
@@ -326,7 +357,8 @@ class MetricsCalculator:
         return self.filter_by_value(df, offset_col, threshold, type, use_abs, is_strict)
     # End filter_offsets_by_value.
 
-    def filter_by_value(self, dataframe, offset_col, threshold=0.0, type='min', use_abs=True, is_strict=False):
+    def filter_by_value(self, dataframe, offset_col, threshold=0.0, type='min',
+                        use_abs=True, is_strict=False):
         # Copy dataframe.
         filtered_df = dataframe.copy()
 
