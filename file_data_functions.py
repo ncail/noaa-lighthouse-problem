@@ -578,6 +578,120 @@ def get_metrics(run_data_df):
 # End get_metrics.
 
 
+def get_metrics(run_data_df, col_config):
+
+    # Validate run_data_df.
+    validate_dataframe(run_data_df, col_config)
+
+    # Filter dataframes.
+    long_offsets_df = filter_offsets_by_duration(run_data_df)
+    nan_df = run_data_df[run_data_df[col_config['offset_column']].isna()]
+    long_non_nan_df = long_offsets_df[long_offsets_df[col_config['offset_column']].notna()]
+    non_nan_runs = run_data_df[run_data_df[col_config['offset_column']].notna()]
+    large_offsets_df = filter_offsets_by_value(run_data_df)
+
+    # Calculate metrics.
+    long_offsets_count = count_long_offsets(long_non_nan_df)
+    long_gaps_count = count_long_gaps(run_data_df)
+    max_gap_duration, gap_start_date, gap_end_date = get_longest_gap_info(nan_df, col_config['duration_column'],
+                                                                          col_config['start_date_column'],
+                                                                          col_config['end_date_column'])
+    max_offset_duration, longest_offsets = get_max_offset_duration_info(non_nan_runs, col_config['duration_column'],
+                                                                        col_config['offset_column'])
+    large_offsets_count = count_large_offsets(large_offsets_df)
+    max_offset, min_offset = get_min_max_offsets(run_data_df, col_config['offset_column'])
+    max_offset_start_date, max_offset_end_date = get_offset_dates(run_data_df, col_config['offset_column'], max_offset,
+                                                                  col_config['start_date_column'],
+                                                                  col_config['end_date_column'])
+    min_offset_start_date, min_offset_end_date = get_offset_dates(run_data_df, col_config['offset_column'], min_offset,
+                                                                  col_config['start_date_column'],
+                                                                  col_config['end_date_column'])
+    metric_strings = get_metric_key_strings()
+
+    # Aggregate results.
+    metric_data = [
+        (f"{metric_strings['offset_dur']}", long_offsets_count),
+        (f"{metric_strings['gap_dur']}", long_gaps_count),
+        (f"Duration of longest gap", f"{max_gap_duration}"),
+        (f"Start/end date(s) of <{max_gap_duration}> gap", f"{gap_start_date} / {gap_end_date}"),
+        (f"Maximum duration of an offset", f"{max_offset_duration}"),
+        (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
+        (f"{metric_strings['offset_val']} (unit)", f"{large_offsets_count}"),
+        (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
+        (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} "
+                                                                      f"/ {max_offset_end_date}"),
+        (f"Start/end date(s) of offset with value <{min_offset}> cm", f"{min_offset_start_date} "
+                                                                      f"/ {min_offset_end_date}")
+    ]
+
+    return metric_data
+# End get_metrics.
+
+
+# ***************************************************************************
+# ******************* GETS_METRICS HELPER FUNCTIONS *************************
+# ***************************************************************************
+
+def validate_dataframe(df, col_config):
+    required_columns = [col_config['duration_column'], col_config['offset_column'], col_config['start_date_column'],
+                        col_config['end_date_column']]
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f"DataFrame must contain column: {col}")
+# End validate_dataframe.
+
+
+# ***************************************************************************
+# ******************* GETS_METRICS HELPER FUNCTIONS *************************
+# ***************************************************************************
+
+def count_long_offsets(non_nan_df):
+    return len(non_nan_df)
+# End count_long_offsets.
+
+
+def count_long_gaps(run_data_df):
+    return len(filter_gaps_by_duration(run_data_df))
+# End count_long_gaps.
+
+
+def get_longest_gap_info(nan_df, duration_column, start_date_column, end_date_column):
+    max_gap_duration = nan_df[duration_column].max()
+    gap_start_date = nan_df[nan_df[duration_column] == max_gap_duration][start_date_column].tolist()
+    gap_end_date = nan_df[nan_df[duration_column] == max_gap_duration][end_date_column].tolist()
+    return max_gap_duration, gap_start_date, gap_end_date
+# End get_longest_gap_info.
+
+
+def get_max_offset_duration_info(non_nan_runs, duration_column, offset_column):
+    max_offset_duration = non_nan_runs[duration_column].max()
+    longest_offsets = non_nan_runs[non_nan_runs[duration_column]
+                                   == max_offset_duration][offset_column].tolist()
+    return max_offset_duration, longest_offsets
+# End get_max_offset_duration_info.
+
+
+def count_large_offsets(large_offsets_df):
+    return len(large_offsets_df)
+# End count_large_offsets.
+
+
+def get_min_max_offsets(run_data_df, offset_column):
+    max_offset = run_data_df[offset_column].max()
+    min_offset = run_data_df[offset_column].min()
+    return max_offset, min_offset
+# End get_min_max_offsets.
+
+
+def get_offset_dates(run_data_df, offset_column, offset_value,
+                     start_date_column, end_date_column):
+    bool_mask = run_data_df[offset_column] == offset_value
+    start_dates = run_data_df.loc[bool_mask, start_date_column].tolist()
+    end_dates = run_data_df.loc[bool_mask, end_date_column].tolist()
+    return start_dates, end_dates
+# End get_offset_dates.
+
+
 # ***************************************************************************
 # ******************* FUNCTION GET_METRIC_KEY_STRINGS ***********************
 # ***************************************************************************
@@ -604,6 +718,10 @@ def get_metric_key_strings():
     return key_str_dict
 # End get_metric_key_strings.
 
+
+# ***************************************************************************
+# ************** GET_METRIC_KEY_STRINGS HELPER FUNCTIONS ********************
+# ***************************************************************************
 
 def generate_duration_string(params):
     if 'type' in params:
@@ -639,7 +757,10 @@ def generate_value_string(params):
 # Returns a dictionary of information about long offsets.
 # Requires a dataframe generated by get_run_data().
 
-def get_long_offsets_dict(run_data_df):
+def get_long_offsets_dict(run_data_df, col_config):
+
+    # Validate run_data_df.
+    validate_dataframe(run_data_df, col_config)
 
     # Filter for offsets (runs) by duration.
     long_offsets_df = filter_offsets_by_duration(run_data_df)
@@ -665,7 +786,7 @@ def get_unique_offsets_dict(run_data_df):
     unique_offsets = run_data_df['offset'].unique()
 
     # Get all the durations, start dates, and end dates that correspond
-    # to each long offset value. Organize into a dictionary.
+    # to each offset value. Organize into a dictionary.
     unique_offsets_dict = {}
     for offset in unique_offsets:
 
@@ -1046,11 +1167,11 @@ def filter_gaps_by_duration(df):
 # Passed dataframe must be generated by get_run_data.
 # Threshold must be a time delta so that units passed into function are flexible.
 
-def filter_by_duration(dataframe, threshold=timedelta(0), type='min', is_strict=False):
+def filter_by_duration(dataframe, duration_col, threshold=timedelta(0), type='min', is_strict=False):
 
     filtered_df = dataframe.copy()
 
-    series = filtered_df['duration']
+    series = filtered_df[duration_col]
 
     if type == 'min':
         if is_strict:
@@ -1076,7 +1197,6 @@ def filter_by_duration(dataframe, threshold=timedelta(0), type='min', is_strict=
 # ***************************************************************************
 
 # Gets configurations and passes them to filter_by_value.
-# Requires the passed dataframe to be generated from get_run_data.
 # Returns the filtered dataframe.
 
 def filter_offsets_by_value(df):
@@ -1098,16 +1218,14 @@ def filter_offsets_by_value(df):
 
 # Return a dataframe filtered for a threshold value of the discrepancy.
 # For example, returns all discrepancies greater than 5 cm.
-# Passed dataframe must be generated by get_run_data.
 
-def filter_by_value(dataframe, threshold=0.0, type='min', use_abs=True, is_strict=False):
+def filter_by_value(dataframe, offset_col, threshold=0.0, type='min', use_abs=True, is_strict=False):
 
     # Copy dataframe.
     filtered_df = dataframe.copy()
 
     # Apply absolute value if needed.
-    series = abs(filtered_df['offset']) if use_abs else filtered_df[
-        'offset']
+    series = abs(filtered_df[offset_col]) if use_abs else filtered_df[offset_col]
 
     # Define the filtering logic.
     if type == 'min':
