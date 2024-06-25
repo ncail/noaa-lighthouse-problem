@@ -73,7 +73,7 @@ def main(args):
     # Determine the filename results will be written to.
     filename = get_filename(args)
 
-    # Get path that program will write results to.
+    # Get path that program will write results to. Default generated_files.
     write_path = args.writepath
 
     # Assign paths to station data for Lighthouse and NOAA.
@@ -114,14 +114,11 @@ def main(args):
     # Initialize a summary of error messages to be written to the results file.
     error_summary = ["Messages about the program execution are below: \n"]
 
-    # Initialize dataframe arrays to hold the yearly Lighthouse and NOAA data.
-    lh_df_arr = []
-    noaa_df_arr = []
-
     # Initialize a flag pointer to check if da.read_file() is successful.
     flag_ptr = [False]
 
     # Read and split up the lighthouse files.
+    lh_df_arr = []
     for lh_file in lighthouse_csv_files:
 
         # Read the file into a dataframe.
@@ -140,6 +137,7 @@ def main(args):
     # End for.
 
     # Send NOAA data into dataframes. The files are already split by year.
+    noaa_df_arr = []
     for noaa_file in noaa_csv_files:
 
         df = da.read_file(noaa_file, flag=flag_ptr)
