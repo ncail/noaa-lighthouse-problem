@@ -20,6 +20,25 @@ config = {
     'reference_data_column_names': {
         'datetime': '',
         'water_level': ''
+    },
+    'filter_by_duration_parameters': {
+        'threshold': '0 days',
+        'type': 'min',
+        'is_strict': False
+    },
+    'filter_by_value_parameters': {
+        'threshold': 0.0,
+        'use_abs': True,
+        'type': 'min',
+        'is_strict': False
+    },
+    'filter_gaps_parameters': {
+        'threshold': '0 days',
+        'type': 'min',
+        'is_strict': False
+    },
+    'offset_correction_parameters': {
+        'number_of_intervals': 0
     }
 }
 
