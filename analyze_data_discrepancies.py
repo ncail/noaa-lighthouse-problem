@@ -207,6 +207,17 @@ def main(args):
                 bad_years.append(year)
         # End for.
 
+    # Write error_summary and header to the text file if include_msgs is True.
+    if args.include_msgs:
+        bad_years.sort()
+        header.extend([str(y) + " " for y in bad_years])
+        results_title = ["***************************************************************************\n"
+                         "******************************* RESULTS ***********************************\n"
+                         "***************************************************************************\n\n"]
+        text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
+            file.write(''.join(text_list))
+
     # Process the dataframes of common years to get statistics.
     for year in common_years:
 
@@ -245,16 +256,6 @@ def main(args):
         # Write stats and metrics for {year} to a txt file.
         da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
     # End for.
-
-    # Prepend error_summary and header to the text file if include_msgs is True.
-    if args.include_msgs:
-        bad_years.sort()
-        header.extend([str(y) + " " for y in bad_years])
-        results_title = ["***************************************************************************\n"
-                         "******************************* RESULTS ***********************************\n"
-                         "***************************************************************************\n\n"]
-        prepend_text = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-        da.prepend_to_file(f'{write_path}/{filename}.txt', prepend_text)
 # End main.
 
 
