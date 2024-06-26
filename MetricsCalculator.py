@@ -40,8 +40,9 @@ class MetricsCalculator:
             }
         }
 
-        self.run_data_df = None
         self.config = self.default_config.copy()
+        self.run_data_df = None
+        self.metrics = None
     # End constructor.
 
     def set_column_names(self, duration_column, offset_column,
@@ -76,14 +77,16 @@ class MetricsCalculator:
                 raise ValueError(f"DataFrame must contain column: {col}")
     # End validate_dataframe.
 
-    def _get_validated_dataframe(self, df, col_name):
-        if df is not None and col_name in df.columns:
-            # self.validate_dataframe(df)
-            return df, col_name
+    def _get_validated_dataframe(self, df, col_name, config_col_name):
+        if None not in (df, col_name):
+            if col_name in df.columns:
+                # self.validate_dataframe(df)
+                return df, col_name
         elif self.run_data_df is not None:
-            return self.run_data_df,  self.col_config[col_name]
+            return self.run_data_df,  self.col_config[config_col_name]
         else:
-            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
+            raise ValueError("No DataFrame provided, or column not in DataFrame, "
+                             "and no pre-set DataFrame found.")
 
     def set_dataframe(self, df):
         self.validate_dataframe(df)
@@ -149,7 +152,7 @@ class MetricsCalculator:
         return discrepancies
     # End get_discrepancies.
 
-    def get_metrics(self, df=None):
+    def calculate_metrics(self, df=None, **kwargs):
 
         if df is not None:
             self.validate_dataframe(df)
@@ -158,33 +161,45 @@ class MetricsCalculator:
         else:
             raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
-        # Filter dataframes.
-        long_offsets_df = self.filter_offsets_by_duration()
-        nan_df = df[df[self.col_config['offset_column']].isna()]
-        long_non_nan_df = long_offsets_df[long_offsets_df[self.col_config['offset_column']].notna()]
-        non_nan_runs = self.run_data_df[self.run_data_df[self.col_config['offset_column']].notna()]
-        large_offsets_df = self.filter_offsets_by_value()
+        available_metrics = {
+            "long_offsets_count": self.count_long_offsets,
+            "long_gaps_count": self.count_long_gaps,
+            "max_gap_duration": self.get_max_gap_duration,
+            "max_gap_dates": lambda: self.get_max_gap_dates(self.get_max_gap_duration()),
+            "max_offset_duration": self.get_max_offset_duration(),
+            "longest_offsets": lambda: self.get_longest_offsets(self.get_max_offset_duration()),
+            "large_offsets_count": self.count_large_offsets(),
+            "min_max_offsets": self.get_min_max_offsets(),
+            "max_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[0]),
+            "min_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[1])
+        }
 
-        # Calculate metrics.
-        long_offsets_count = len(long_non_nan_df)
-        long_gaps_count = self.count_long_gaps()
-        max_gap_duration, gap_start_date, gap_end_date = self.get_longest_gap_info(nan_df)
-        max_offset_duration, longest_offsets = self.get_max_offset_duration_info(non_nan_runs)
-        large_offsets_count = len(large_offsets_df)
-        max_offset, min_offset = self.get_min_max_offsets()
-        max_offset_start_date, max_offset_end_date = self.get_offset_dates(max_offset)
-        min_offset_start_date, min_offset_end_date = self.get_offset_dates(min_offset)
+        metrics = {}
+        for key, func in available_metrics.items():
+            if key in kwargs:
+                metrics[key] = func()
+
+        return metrics
+
+    def set_metrics(self, metrics):
+        if type(metrics) is dict:
+            self.metrics = metrics
+
+    def get_metrics(self):
+        return self.metrics
+
+    def format_metrics(self):
         metric_strings = self.get_metric_key_strings()
 
         # Aggregate results.
         metric_data = [
-            (f"{metric_strings['offset_dur']}", long_offsets_count),
-            (f"{metric_strings['gap_dur']}", long_gaps_count),
+            (f"{metric_strings['offset_dur']}", self.count_long_offsets()),
+            (f"{metric_strings['gap_dur']}", self.count_long_gaps()),
             (f"Duration of longest gap", f"{max_gap_duration}"),
             (f"Start/end date(s) of <{max_gap_duration}> gap", f"{gap_start_date} / {gap_end_date}"),
             (f"Maximum duration of an offset", f"{max_offset_duration}"),
             (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
-            (f"{metric_strings['offset_val']} (unit)", f"{large_offsets_count}"),
+            (f"{metric_strings['offset_val']} (unit)", f"{self.count_large_offsets()}"),
             (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
             (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} "
                                                                           f"/ {max_offset_end_date}"),
@@ -196,23 +211,44 @@ class MetricsCalculator:
     # End get_metrics.
 
     def count_long_gaps(self):
-        return len(self.filter_gaps_by_duration())
+        long_gaps_count = len(self.filter_gaps_by_duration())
+        return long_gaps_count
     # End count_long_gaps.
 
-    def get_longest_gap_info(self, nan_df):
+    def count_long_offsets(self):
+        long_offsets_df = self.filter_offsets_by_duration()
+        long_non_nan_df = long_offsets_df[long_offsets_df[self.col_config['offset_column']].notna()]
+        long_offsets_count = len(long_non_nan_df)
+        return long_offsets_count
+
+    def count_large_offsets(self):
+        large_offsets_df = self.filter_offsets_by_value()
+        large_offsets_count = len(large_offsets_df)
+        return large_offsets_count
+
+    def get_max_gap_duration(self):
+        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
         max_gap_duration = nan_df[self.col_config['duration_column']].max()
+        return max_gap_duration
+
+    def get_max_gap_dates(self, max_gap_duration):
+        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
         gap_start_date = nan_df[nan_df[self.col_config['duration_column']]
                                 == max_gap_duration][self.col_config['start_date_column']].tolist()
         gap_end_date = nan_df[nan_df[self.col_config['duration_column']]
                               == max_gap_duration][self.col_config['end_date_column']].tolist()
-        return max_gap_duration, gap_start_date, gap_end_date
-    # End get_longest_gap_info.
+        return gap_start_date, gap_end_date
 
-    def get_max_offset_duration_info(self, non_nan_runs):
+    def get_max_offset_duration(self):
+        non_nan_runs = self.run_data_df[self.run_data_df[self.col_config['offset_column']].notna()]
         max_offset_duration = non_nan_runs[self.col_config['duration_column']].max()
+        return max_offset_duration
+
+    def get_longest_offsets(self, max_offset_duration):
+        non_nan_runs = self.run_data_df[self.run_data_df[self.col_config['offset_column']].notna()]
         longest_offsets = non_nan_runs[non_nan_runs[self.col_config['duration_column']]
                                        == max_offset_duration][self.col_config['offset_column']].tolist()
-        return max_offset_duration, longest_offsets
+        return longest_offsets
     # End get_max_offset_duration_info.
 
     def get_min_max_offsets(self):
@@ -274,7 +310,7 @@ class MetricsCalculator:
     # End generate_value_string.
 
     def filter_offsets_by_duration(self, df=None, duration_col=None, **kwargs):
-        df, duration_col = self._get_validated_dataframe(df, duration_col)
+        df, duration_col = self._get_validated_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations.
         default_params = self.config['filter_by_duration_parameters']
@@ -287,7 +323,7 @@ class MetricsCalculator:
     # End filter_offsets_by_duration.
 
     def filter_gaps_by_duration(self, df=None, duration_col=None, **kwargs):
-        df, duration_col = self._get_validated_dataframe(df, duration_col)
+        df, duration_col = self._get_validated_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
         default_params = self.config['filter_gaps_parameters']
@@ -324,7 +360,7 @@ class MetricsCalculator:
     # End filter_by_duration.
 
     def filter_offsets_by_value(self, df=None, offset_col=None, **kwargs):
-        df, offset_col = self._get_validated_dataframe(df, offset_col)
+        df, offset_col = self._get_validated_dataframe(df, offset_col, 'offset_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
         default_params = self.config['filter_by_value_parameters']
