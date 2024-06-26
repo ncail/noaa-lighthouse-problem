@@ -200,7 +200,7 @@ def main(args):
     # Record which years have no data for analysis.
     header = ["Analysis could not be done for year(s): \n"]
     bad_years = []
-    if args.include_msgs: # Skip if user has opted out of program messages.
+    if args.include_msgs:  # Skip if user has opted out of program messages.
         for year in year_range:
             if year not in common_years:
                 bad_years.append(year)
