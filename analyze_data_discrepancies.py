@@ -13,15 +13,6 @@ import glob
 import pandas as pd
 
 
-# Default configuration for the column names of discrepancy info dataframe.
-offsets_df_columns = {
-    'offset_column': 'offset',
-    'start_date_column': 'start date',
-    'end_date_column': 'end date',
-    'duration_column': 'duration'
-}
-
-
 # parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Parse arguments from user.")
@@ -150,14 +141,7 @@ def main(args):
             error_summary.append(msg)
     # End for.
 
-    # Get column names. Assumes all dataframes in the list have same column names.
-    # Avoids repeated assignment in the loop which would not make this assumption.
-    lh_dt_col_name = lh_df_arr[0].columns[0]
-    lh_pwl_col_name = lh_df_arr[0].columns[1]
-    noaa_dt_col_name = noaa_df_arr[0].columns[0]
-    noaa_pwl_col_name = noaa_df_arr[0].columns[1]
-
-    # Use da.config to get the necessary columns.
+    # Use da.config to get the necessary columns for assigning column names.
     lh_data_cols = da.config['primary_data_column_names']
     noaa_data_cols = da.config['reference_data_column_names']
 
