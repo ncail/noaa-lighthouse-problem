@@ -2,7 +2,7 @@
 import file_data_functions as da
 
 # Import MetricsCalculator.py as mc
-import MetricsCalculator as mc
+from MetricsCalculator import MetricsCalculator
 
 # Imports continued...
 import argparse
@@ -60,6 +60,9 @@ def get_data_paths(user_args, flag=[False]):
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
 def main(args):
+
+    # Store loaded configs.
+    config = MetricsCalculator.load_configs('config.json')
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
@@ -226,11 +229,13 @@ def main(args):
 
         # Drop unrelated columns.
         for col in lh_df.columns:
-            if col is not (lh_dt_col_name or lh_pwl_col_name):
+            if col not in (lh_dt_col_name, lh_pwl_col_name):
                 lh_df.drop(columns=col, inplace=True)
         for col in noaa_df.columns:
-            if col is not (noaa_dt_col_name or noaa_pwl_col_name):
+            if col not in (noaa_dt_col_name, noaa_pwl_col_name):
                 noaa_df.drop(columns=col, inplace=True)
+
+        # print(lh_df, "\n", noaa_df)
 
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
         # will result in the addition of a NaN in the other.
@@ -249,18 +254,37 @@ def main(args):
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
                                            merged_df[noaa_pwl_col_name], size)
 
-        calculator = mc.MetricsCalculator()
+        # Instantiate an object to get metrics. Set configs.
+        calculator = MetricsCalculator()
+        calculator.set_configs(config)
 
         # Get runs data and send into get_metrics and get_long_offsets_dict.
-        runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
-                                  merged_df[noaa_dt_col_name], size)
+        # runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
+        # merged_df[noaa_dt_col_name], size)
+        run_data_df = calculator.get_run_data(merged_df[lh_pwl_col_name],
+                                              merged_df[noaa_pwl_col_name], merged_df[noaa_dt_col_name], size)
 
-        metrics = da.get_metrics(runs_df)
+        # Set the dataframe.
+        calculator.set_dataframe(run_data_df)
 
-        offsets_dict = da.get_long_offsets_dict(runs_df)
+        # Get metrics.
+        metrics = calculator.calculate_metrics()
+        # metrics = da.get_metrics(runs_df)
+        print(metrics, "\n")
+
+        # Set metrics.
+        calculator.set_metrics(metrics)
+
+        # Format metrics
+        metrics_list = calculator.format_metrics(metrics)
+
+        for item in metrics_list:
+            print(item, "\n")
+
+        # offsets_dict = da.get_long_offsets_dict(runs_df)
 
         # Write stats and metrics for {year} to a txt file.
-        da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
+        # da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
     # End for.
 # End main.
 

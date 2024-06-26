@@ -53,17 +53,21 @@ class MetricsCalculator:
         self.col_config['end_date_column'] = end_date_column
     # End set_column_names.
 
-    def set_configs(self, file_path):
+    @staticmethod
+    def load_configs(file_path):
         try:
             # Update config dictionary only if section exists.
             with open(file_path, 'r') as file:
                 user_config = json.load(file)
-                for section, settings in user_config.items():
-                    if section in self.config:
-                        self.config[section].update(settings)
         except FileNotFoundError:
             print(f"Error: Config file '{file_path}' not found. Using default "
                   f"MetricsCalculator configuration.")
+        return user_config
+
+    def set_configs(self, user_config):
+        for section, settings in user_config.items():
+            if section in self.config:
+                self.config[section].update(settings)
     # End set_configs.
 
     def get_configs(self):
@@ -170,20 +174,19 @@ class MetricsCalculator:
             "long_gaps_count": self.count_long_gaps,
             "max_gap_duration": self.get_max_gap_duration,
             "max_gap_dates": lambda: self.get_max_gap_dates(self.get_max_gap_duration()),
-            "max_offset_duration": self.get_max_offset_duration(),
+            "max_offset_duration": self.get_max_offset_duration,
             "longest_offsets": lambda: self.get_longest_offsets(self.get_max_offset_duration()),
-            "large_offsets_count": self.count_large_offsets(),
-            "min_max_offsets": self.get_min_max_offsets(),
+            "large_offsets_count": self.count_large_offsets,
+            "min_max_offsets": self.get_min_max_offsets,
             "max_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[0]),
             "min_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[1])
         }
 
-        if calc_all:
-            return available_metrics.copy()
-
         metrics = {}
         for key, func in available_metrics.items():
-            if key in kwargs:
+            if calc_all:
+                metrics[key] = func()
+            elif key in kwargs:
                 metrics[key] = func()
 
         return metrics
@@ -236,7 +239,8 @@ class MetricsCalculator:
         metric_strings = self.get_metric_key_strings()
 
         long_offsets_count = long_gaps_count = max_gap_duration = max_gap_dates = max_offset_duration = \
-            longest_offsets = large_offsets_count = min_max_offsets = max_offset_dates = min_offset_dates = None
+            longest_offsets = large_offsets_count = None
+        min_max_offsets = max_offset_dates = min_offset_dates = (None, None)
 
         available_metric_data = {
             'long_offsets_count': (f"{metric_strings['offset_dur']}",
