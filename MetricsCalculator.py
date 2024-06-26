@@ -178,12 +178,12 @@ class MetricsCalculator:
             (f"Start/end date(s) of <{max_gap_duration}> gap", f"{gap_start_date} / {gap_end_date}"),
             (f"Maximum duration of an offset", f"{max_offset_duration}"),
             (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
-            (f"{metric_strings['offset_val']} (unit)", f"{large_offsets_count}"),
-            (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
-            (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} "
-                                                                          f"/ {max_offset_end_date}"),
-            (f"Start/end date(s) of offset with value <{min_offset}> cm", f"{min_offset_start_date} "
-                                                                          f"/ {min_offset_end_date}")
+            (f"{metric_strings['offset_val']}", f"{large_offsets_count}"),
+            (f"Maximum/minimum offset value", f"{max_offset}/{min_offset}"),
+            (f"Start/end date(s) of offset with value <{max_offset}>", f"{max_offset_start_date} "
+                                                                       f"/ {max_offset_end_date}"),
+            (f"Start/end date(s) of offset with value <{min_offset}>", f"{min_offset_start_date} "
+                                                                       f"/ {min_offset_end_date}")
         ]
 
         return metric_data
