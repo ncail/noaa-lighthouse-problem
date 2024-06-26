@@ -58,7 +58,7 @@ class MetricsCalculator:
             with open(file_path, 'r') as file:
                 user_config = json.load(file)
                 for section, settings in user_config.items():
-                    if section in config:
+                    if section in self.config:
                         self.config[section].update(settings)
         except FileNotFoundError:
             print(f"Error: Config file '{file_path}' not found. Using default configuration.")
