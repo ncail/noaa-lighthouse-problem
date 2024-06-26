@@ -5,6 +5,20 @@ from datetime import timedelta
 import re
 
 
+valid_metrics_keys = [
+    "long_offsets_count",
+    "long_gaps_count",
+    "max_gap_duration",
+    "max_gap_dates",
+    "max_offset_duration",
+    "longest_offsets",
+    "large_offsets_count",
+    "min_max_offsets",
+    "max_offset_dates",
+    "min_offset_dates"
+]
+
+
 class MetricsCalculator:
 
     def __init__(self, col_config=None):
@@ -77,7 +91,7 @@ class MetricsCalculator:
                 raise ValueError(f"DataFrame must contain column: {col}")
     # End validate_dataframe.
 
-    def _get_validated_dataframe(self, df, col_name, config_col_name):
+    def _get_valid_dataframe(self, df, col_name, config_col_name):
         if None not in (df, col_name):
             if col_name in df.columns:
                 # self.validate_dataframe(df)
@@ -181,14 +195,22 @@ class MetricsCalculator:
 
         return metrics
 
-    def set_metrics(self, metrics):
+    def set_metrics(self, metrics, is_set=[False]):
+        is_set[0] = True
+
         if type(metrics) is dict:
+            for key in metrics.keys():
+                if key not in valid_metrics_keys:
+                    is_set[0] = False
+                    break
+
+        if is_set[0]:
             self.metrics = metrics
 
     def get_metrics(self):
         return self.metrics
 
-    def format_metrics(self):
+    def format_metrics(self, metrics=None):
         metric_strings = self.get_metric_key_strings()
 
         # Aggregate results.
@@ -208,7 +230,6 @@ class MetricsCalculator:
         ]
 
         return metric_data
-    # End get_metrics.
 
     def count_long_gaps(self):
         long_gaps_count = len(self.filter_gaps_by_duration())
@@ -310,7 +331,7 @@ class MetricsCalculator:
     # End generate_value_string.
 
     def filter_offsets_by_duration(self, df=None, duration_col=None, **kwargs):
-        df, duration_col = self._get_validated_dataframe(df, duration_col, 'duration_column')
+        df, duration_col = self._get_valid_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations.
         default_params = self.config['filter_by_duration_parameters']
@@ -323,7 +344,7 @@ class MetricsCalculator:
     # End filter_offsets_by_duration.
 
     def filter_gaps_by_duration(self, df=None, duration_col=None, **kwargs):
-        df, duration_col = self._get_validated_dataframe(df, duration_col, 'duration_column')
+        df, duration_col = self._get_valid_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
         default_params = self.config['filter_gaps_parameters']
@@ -360,7 +381,7 @@ class MetricsCalculator:
     # End filter_by_duration.
 
     def filter_offsets_by_value(self, df=None, offset_col=None, **kwargs):
-        df, offset_col = self._get_validated_dataframe(df, offset_col, 'offset_column')
+        df, offset_col = self._get_valid_dataframe(df, offset_col, 'offset_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
         default_params = self.config['filter_by_value_parameters']
