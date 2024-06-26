@@ -157,6 +157,21 @@ def main(args):
     noaa_dt_col_name = noaa_df_arr[0].columns[0]
     noaa_pwl_col_name = noaa_df_arr[0].columns[1]
 
+    # Use da.config to get the necessary columns.
+    lh_data_cols = da.config['primary_data_column_names']
+    noaa_data_cols = da.config['reference_data_column_names']
+
+    # Assign column names. If not configured, assume their positions in the dataframe,
+    # and that all dfs in the array have same column names.
+    lh_dt_col_name = lh_df_arr[0].columns[0] if not lh_data_cols['datetime'] \
+        else lh_data_cols['datetime']
+    lh_pwl_col_name = lh_df_arr[0].columns[1] if not lh_data_cols['water_level'] \
+        else lh_data_cols['water_level']
+    noaa_dt_col_name = noaa_df_arr[0].columns[0] if not noaa_data_cols['datetime'] \
+        else noaa_data_cols['datetime']
+    noaa_pwl_col_name = noaa_df_arr[0].columns[1] if not noaa_data_cols['water_level'] \
+        else noaa_data_cols['water_level']
+
     # Clean lighthouse dataframes. Print error messages.
     for lh_df in lh_df_arr:
 
@@ -225,17 +240,6 @@ def main(args):
         lh_df = lh_dfs_dict[year]
         noaa_df = noaa_dfs_dict[year]
 
-        # Process: Drop unrelated columns. Merge. Rename columns.
-        # Use da.config to get the necessary columns.
-        lh_data_cols = da.config['primary_data_column_names']
-        noaa_data_cols = da.config['reference_data_column_names']
-
-        # Assign column names. If not configured, assume their positions in the dataframe.
-        lh_dt_col_name = lh_df.columns[0] if not lh_data_cols['datetime'] else lh_data_cols['datetime']
-        lh_pwl_col_name = lh_df.columns[1] if not lh_data_cols['water_level'] else lh_data_cols['water_level']
-        noaa_dt_col_name = noaa_df.columns[0] if not noaa_data_cols['datetime'] else noaa_data_cols['datetime']
-        noaa_pwl_col_name = noaa_df.columns[1] if not noaa_data_cols['water_level'] else noaa_data_cols['water_level']
-
         # Drop unrelated columns.
         for col in lh_df.columns:
             if col is not (lh_dt_col_name or lh_pwl_col_name):
@@ -256,13 +260,6 @@ def main(args):
 
         # Get size of merged dataframe.
         size = len(merged_df)
-
-
-
-        # Reassign column names in case suffixes were added for repeated column names
-        # found during merge. Column indices chosen because merged df still includes other
-        # columns like bwl, harmwl, etc.
-
 
         # Get comparison table.
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
