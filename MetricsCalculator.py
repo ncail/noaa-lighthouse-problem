@@ -215,7 +215,7 @@ class MetricsCalculator:
         is_set[0] = self.validate_metrics(metrics)
 
         if is_set[0]:
-            self.metrics = metrics
+            self.metrics = metrics.copy()
 
     def get_metrics(self):
         return self.metrics.copy()
