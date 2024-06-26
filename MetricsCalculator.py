@@ -5,20 +5,6 @@ from datetime import timedelta
 import re
 
 
-valid_metrics_keys = [
-    "long_offsets_count",
-    "long_gaps_count",
-    "max_gap_duration",
-    "max_gap_dates",
-    "max_offset_duration",
-    "longest_offsets",
-    "large_offsets_count",
-    "min_max_offsets",
-    "max_offset_dates",
-    "min_offset_dates"
-]
-
-
 class MetricsCalculator:
 
     def __init__(self, col_config=None):
@@ -195,7 +181,23 @@ class MetricsCalculator:
 
         return metrics
 
-    def set_metrics(self, metrics, is_set=[False]):
+    def get_valid_metrics_list(self):
+        valid_metrics_keys = [
+            "long_offsets_count",
+            "long_gaps_count",
+            "max_gap_duration",
+            "max_gap_dates",
+            "max_offset_duration",
+            "longest_offsets",
+            "large_offsets_count",
+            "min_max_offsets",
+            "max_offset_dates",
+            "min_offset_dates"
+        ]
+        return valid_metrics_keys
+
+    def validate_metrics(self, metrics, is_set=[False]):
+        valid_metrics_keys = self.get_valid_metrics_list()
         is_set[0] = True
 
         if type(metrics) is dict:
@@ -203,6 +205,11 @@ class MetricsCalculator:
                 if key not in valid_metrics_keys:
                     is_set[0] = False
                     break
+        else:
+            is_set[0] = False
+
+    def set_metrics(self, metrics, is_set=[False]):
+        self.validate_metrics(metrics, is_set)
 
         if is_set[0]:
             self.metrics = metrics
@@ -211,6 +218,14 @@ class MetricsCalculator:
         return self.metrics
 
     def format_metrics(self, metrics=None):
+        if metrics is None:
+            if self.metrics is not None:
+                metrics = self.metrics
+            else:
+                raise ValueError("No Metrics provided, and no pre-set Metrics found.")
+        else:
+
+
         metric_strings = self.get_metric_key_strings()
 
         # Aggregate results.
@@ -222,11 +237,11 @@ class MetricsCalculator:
             (f"Maximum duration of an offset", f"{max_offset_duration}"),
             (f"Offset value(s) with <{max_offset_duration}> duration", f"{longest_offsets}"),
             (f"{metric_strings['offset_val']} (unit)", f"{self.count_large_offsets()}"),
-            (f"Maximum/minimum offset value (m)", f"{max_offset}/{min_offset}"),
-            (f"Start/end date(s) of offset with value <{max_offset}> cm", f"{max_offset_start_date} "
-                                                                          f"/ {max_offset_end_date}"),
-            (f"Start/end date(s) of offset with value <{min_offset}> cm", f"{min_offset_start_date} "
-                                                                          f"/ {min_offset_end_date}")
+            (f"Maximum/minimum offset value", f"{max_offset}/{min_offset}"),
+            (f"Start/end date(s) of offset with value <{max_offset}>", f"{max_offset_start_date} "
+                                                                       f"/ {max_offset_end_date}"),
+            (f"Start/end date(s) of offset with value <{min_offset}>", f"{min_offset_start_date} "
+                                                                       f"/ {min_offset_end_date}")
         ]
 
         return metric_data
