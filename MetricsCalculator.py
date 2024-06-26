@@ -62,7 +62,8 @@ class MetricsCalculator:
                     if section in self.config:
                         self.config[section].update(settings)
         except FileNotFoundError:
-            print(f"Error: Config file '{file_path}' not found. Using default configuration.")
+            print(f"Error: Config file '{file_path}' not found. Using default "
+                  f"MetricsCalculator configuration.")
     # End set_configs.
 
     def get_configs(self):

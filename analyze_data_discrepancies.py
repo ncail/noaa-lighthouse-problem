@@ -13,15 +13,6 @@ import glob
 import pandas as pd
 
 
-# Default configuration for the column names of discrepancy info dataframe.
-offsets_df_columns = {
-    'offset_column': 'offset',
-    'start_date_column': 'start date',
-    'end_date_column': 'end date',
-    'duration_column': 'duration'
-}
-
-
 # parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Parse arguments from user.")
@@ -150,12 +141,20 @@ def main(args):
             error_summary.append(msg)
     # End for.
 
-    # Get column names. Assumes all dataframes in the list have same column names.
-    # Avoids repeated assignment in the loop which would not make this assumption.
-    lh_dt_col_name = lh_df_arr[0].columns[0]
-    lh_pwl_col_name = lh_df_arr[0].columns[1]
-    noaa_dt_col_name = noaa_df_arr[0].columns[0]
-    noaa_pwl_col_name = noaa_df_arr[0].columns[1]
+    # Use da.config to get the necessary columns for assigning column names.
+    lh_data_cols = da.config['primary_data_column_names']
+    noaa_data_cols = da.config['reference_data_column_names']
+
+    # Assign column names. If not configured, assume their positions in the dataframe,
+    # and that all dfs in the array have same column names.
+    lh_dt_col_name = lh_df_arr[0].columns[0] if not lh_data_cols['datetime'] \
+        else lh_data_cols['datetime']
+    lh_pwl_col_name = lh_df_arr[0].columns[1] if not lh_data_cols['water_level'] \
+        else lh_data_cols['water_level']
+    noaa_dt_col_name = noaa_df_arr[0].columns[0] if not noaa_data_cols['datetime'] \
+        else noaa_data_cols['datetime']
+    noaa_pwl_col_name = noaa_df_arr[0].columns[1] if not noaa_data_cols['water_level'] \
+        else noaa_data_cols['water_level']
 
     # Clean lighthouse dataframes. Print error messages.
     for lh_df in lh_df_arr:
@@ -201,7 +200,7 @@ def main(args):
     # Record which years have no data for analysis.
     header = ["Analysis could not be done for year(s): \n"]
     bad_years = []
-    if args.include_msgs: # Skip if user has opted out of program messages.
+    if args.include_msgs:  # Skip if user has opted out of program messages.
         for year in year_range:
             if year not in common_years:
                 bad_years.append(year)
@@ -225,25 +224,32 @@ def main(args):
         lh_df = lh_dfs_dict[year]
         noaa_df = noaa_dfs_dict[year]
 
+        # Drop unrelated columns.
+        for col in lh_df.columns:
+            if col is not (lh_dt_col_name or lh_pwl_col_name):
+                lh_df.drop(columns=col, inplace=True)
+        for col in noaa_df.columns:
+            if col is not (noaa_dt_col_name or noaa_pwl_col_name):
+                noaa_df.drop(columns=col, inplace=True)
+
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
         # will result in the addition of a NaN in the other.
         merged_df = pd.merge(lh_df, noaa_df, how='outer', left_on=lh_dt_col_name,
                              right_on=noaa_dt_col_name, suffixes=('_primary', '_reference'))
 
+        # Reassign column names.
+        lh_pwl_col_name = merged_df.columns[1]
+        noaa_dt_col_name = merged_df.columns[2]
+        noaa_pwl_col_name = merged_df.columns[3]
+
         # Get size of merged dataframe.
         size = len(merged_df)
-
-        # Reassign column names in case suffixes were added for repeated column names
-        # found during merge. Column indices chosen because merged df still includes other
-        # columns like bwl, harmwl, etc.
-        lh_dt_col_name = merged_df.columns[0]
-        lh_pwl_col_name = merged_df.columns[1]
-        noaa_dt_col_name = merged_df.columns[4]
-        noaa_pwl_col_name = merged_df.columns[5]
 
         # Get comparison table.
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
                                            merged_df[noaa_pwl_col_name], size)
+
+        calculator = mc.MetricsCalculator()
 
         # Get runs data and send into get_metrics and get_long_offsets_dict.
         runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
