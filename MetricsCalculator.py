@@ -78,6 +78,15 @@ class MetricsCalculator:
                 raise ValueError(f"DataFrame must contain column: {col}")
     # End validate_dataframe.
 
+    def _get_validated_dataframe(self, df, col_name):
+        if df is not None:
+            self.validate_dataframe(df)
+            return df, col_name
+        elif self.run_data_df is not None:
+            return self.run_data_df,  self.col_config[col_name]
+        else:
+            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
+
     def set_dataframe(self, df):
         self.validate_dataframe(df)
         self.run_data_df = df
@@ -265,15 +274,6 @@ class MetricsCalculator:
 
         return result
     # End generate_value_string.
-
-    def _get_validated_dataframe(self, df, col_name):
-        if df is not None:
-            self.validate_dataframe(df)
-            return df, col_name
-        elif self.run_data_df is not None:
-            return self.run_data_df,  self.col_config[col_name]
-        else:
-            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
     def filter_offsets_by_duration(self, df=None, duration_col=None, **kwargs):
         df, duration_col = self._get_validated_dataframe(df, 'duration_column')
