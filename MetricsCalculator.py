@@ -93,7 +93,7 @@ class MetricsCalculator:
 
     def set_dataframe(self, df):
         self.validate_dataframe(df)
-        self.run_data_df = df
+        self.run_data_df = df.copy()
     # End set_dataframe.
 
     def get_run_data(self, offset_column, reference_column, ref_dates, size, create_df=True):
