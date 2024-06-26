@@ -196,20 +196,20 @@ class MetricsCalculator:
         ]
         return valid_metrics_keys
 
-    def validate_metrics(self, metrics, is_set=[False]):
+    def validate_metrics(self, metrics):
         valid_metrics_keys = self.get_valid_metrics_list()
-        is_set[0] = True
 
         if type(metrics) is dict:
             for key in metrics.keys():
                 if key not in valid_metrics_keys:
-                    is_set[0] = False
-                    break
+                    return False
         else:
-            is_set[0] = False
+            return False
+
+        return True
 
     def set_metrics(self, metrics, is_set=[False]):
-        self.validate_metrics(metrics, is_set)
+        is_set[0] = self.validate_metrics(metrics)
 
         if is_set[0]:
             self.metrics = metrics
@@ -224,7 +224,7 @@ class MetricsCalculator:
             else:
                 raise ValueError("No Metrics provided, and no pre-set Metrics found.")
         else:
-
+            self.validate_metrics(metrics)
 
         metric_strings = self.get_metric_key_strings()
 
