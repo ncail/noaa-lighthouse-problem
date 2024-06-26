@@ -53,8 +53,6 @@ class MetricsCalculator:
     # End set_column_names.
 
     def set_configs(self, file_path):
-        global config
-
         try:
             # Update config dictionary only if section exists.
             with open(file_path, 'r') as file:
