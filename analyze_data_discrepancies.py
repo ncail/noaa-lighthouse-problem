@@ -225,21 +225,44 @@ def main(args):
         lh_df = lh_dfs_dict[year]
         noaa_df = noaa_dfs_dict[year]
 
+        # Process: Drop unrelated columns. Merge. Rename columns.
+        # Use da.config to get the necessary columns.
+        lh_data_cols = da.config['primary_data_column_names']
+        noaa_data_cols = da.config['reference_data_column_names']
+
+        # Assign column names. If not configured, assume their positions in the dataframe.
+        lh_dt_col_name = lh_df.columns[0] if not lh_data_cols['datetime'] else lh_data_cols['datetime']
+        lh_pwl_col_name = lh_df.columns[1] if not lh_data_cols['water_level'] else lh_data_cols['water_level']
+        noaa_dt_col_name = noaa_df.columns[0] if not noaa_data_cols['datetime'] else noaa_data_cols['datetime']
+        noaa_pwl_col_name = noaa_df.columns[1] if not noaa_data_cols['water_level'] else noaa_data_cols['water_level']
+
+        # Drop unrelated columns.
+        for col in lh_df.columns:
+            if col is not (lh_dt_col_name or lh_pwl_col_name):
+                lh_df.drop(columns=col, inplace=True)
+        for col in noaa_df.columns:
+            if col is not (noaa_dt_col_name or noaa_pwl_col_name):
+                noaa_df.drop(columns=col, inplace=True)
+
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
         # will result in the addition of a NaN in the other.
         merged_df = pd.merge(lh_df, noaa_df, how='outer', left_on=lh_dt_col_name,
                              right_on=noaa_dt_col_name, suffixes=('_primary', '_reference'))
 
+        # Reassign column names.
+        lh_pwl_col_name = merged_df.columns[1]
+        noaa_dt_col_name = merged_df.columns[2]
+        noaa_pwl_col_name = merged_df.columns[3]
+
         # Get size of merged dataframe.
         size = len(merged_df)
+
+
 
         # Reassign column names in case suffixes were added for repeated column names
         # found during merge. Column indices chosen because merged df still includes other
         # columns like bwl, harmwl, etc.
-        lh_dt_col_name = merged_df.columns[0]
-        lh_pwl_col_name = merged_df.columns[1]
-        noaa_dt_col_name = merged_df.columns[4]
-        noaa_pwl_col_name = merged_df.columns[5]
+
 
         # Get comparison table.
         stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
