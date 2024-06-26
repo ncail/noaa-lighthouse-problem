@@ -65,6 +65,9 @@ class MetricsCalculator:
             print(f"Error: Config file '{file_path}' not found. Using default configuration.")
     # End set_configs.
 
+    def get_configs(self):
+        return self.config.copy()
+
     def validate_dataframe(self, df):
         required_columns = [
             self.col_config['duration_column'],
@@ -194,7 +197,7 @@ class MetricsCalculator:
             "max_offset_dates",
             "min_offset_dates"
         ]
-        return valid_metrics_keys
+        return valid_metrics_keys.copy()
 
     def validate_metrics(self, metrics):
         valid_metrics_keys = self.get_valid_metrics_list()
@@ -215,7 +218,7 @@ class MetricsCalculator:
             self.metrics = metrics
 
     def get_metrics(self):
-        return self.metrics
+        return self.metrics.copy()
 
     def format_metrics(self, metrics=None):
         if metrics is None:
@@ -223,12 +226,11 @@ class MetricsCalculator:
                 metrics = self.metrics
             else:
                 raise ValueError("No Metrics provided, and no pre-set Metrics found.")
-        else:
-            self.validate_metrics(metrics)
+        elif not self.validate_metrics(metrics):
+            raise ValueError("Invalid Metrics provided.")
 
         metric_strings = self.get_metric_key_strings()
 
-        # Aggregate results.
         metric_data = [
             (f"{metric_strings['offset_dur']}", self.count_long_offsets()),
             (f"{metric_strings['gap_dur']}", self.count_long_gaps()),
