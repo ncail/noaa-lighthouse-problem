@@ -271,11 +271,16 @@ def main(args):
         # Set metrics.
         calculator.set_metrics(metrics)
 
-        # Format metrics
+        # Format metrics.
         metrics_list = calculator.format_metrics()
 
         for item in metrics_list:
             print(item, "\n")
+
+        # Get table of long offsets.
+        offsets_dict = calculator.get_long_offsets_info()
+
+        print(offsets_dict, "\n")
 
         # offsets_dict = da.get_long_offsets_dict(runs_df)
 

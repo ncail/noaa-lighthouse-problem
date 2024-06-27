@@ -341,13 +341,13 @@ class MetricsCalculator:
         }
 
         # Get string for offset duration.
-        key_str_dict['offset_dur'] += self.generate_duration_string(self.config['filter_by_duration_parameters'])
+        key_str_dict['offset_dur'] += self.generate_duration_string(self.config['filter_offsets_by_duration'])
 
         # Get string for gap duration.
-        key_str_dict['gap_dur'] += self.generate_duration_string(self.config['filter_gaps_parameters'])
+        key_str_dict['gap_dur'] += self.generate_duration_string(self.config['filter_gaps_by_duration'])
 
         # Get string for offset value.
-        key_str_dict['offset_val'] += self.generate_value_string(self.config['filter_by_value_parameters'])
+        key_str_dict['offset_val'] += self.generate_value_string(self.config['filter_offsets_by_value'])
 
         return key_str_dict
     # End get_metric_key_strings.
@@ -389,9 +389,9 @@ class MetricsCalculator:
     # End get_long_offsets_dict.
 
     def get_unique_offsets_info(self, df=None):
-        if df:
+        if df is not None:
             self.validate_dataframe(df)
-        elif self.run_data_df:
+        elif self.run_data_df is not None:
             df = self.run_data_df
         else:
             raise ValueError("No valid DataFrame provided, and no pre-set DataFrame found.")
@@ -425,7 +425,7 @@ class MetricsCalculator:
         df, duration_col = self._get_valid_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations.
-        default_params = self.config['filter_by_duration_parameters']
+        default_params = self.config['filter_offsets_by_duration']
         params = {**default_params, **kwargs}
         threshold = self.parse_timedelta(params['threshold'])
         type = params['type']
@@ -438,7 +438,7 @@ class MetricsCalculator:
         df, duration_col = self._get_valid_dataframe(df, duration_col, 'duration_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
-        default_params = self.config['filter_gaps_parameters']
+        default_params = self.config['filter_gaps_by_duration']
         params = {**default_params, **kwargs}
         threshold = self.parse_timedelta(params['threshold'])
         type = params['type']
@@ -475,7 +475,7 @@ class MetricsCalculator:
         df, offset_col = self._get_valid_dataframe(df, offset_col, 'offset_column')
 
         # Read in configurations. Allow user's kwargs to override set configurations.
-        default_params = self.config['filter_by_value_parameters']
+        default_params = self.config['filter_offsets_by_value']
         params = {**default_params, **kwargs}
         threshold = params['threshold']
         type = params['type']
