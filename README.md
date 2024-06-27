@@ -1,6 +1,30 @@
-# NOAA-Lighthouse-Problem
+# Table of Contents
 
-**noaa-lighthouse-problem** is a project aimed at assessing the nature and severity of discrepancies between time series water level data from tide gauge stations shared by the organizations NOAA and Lighthouse. Of the many Lighthouse stations in coastal Texas, some are also NOAA stations, meaning that both organizations receive data from the station's water level sensor before processing the data to distribute sea level products. Strangely, we find that the station data available to download from NOAA and Lighthouse have major discrepancies, including vertical and temporal offsets, unshared missing values, flatlines, spikes, and more. NOAA, being a federal agency, defines the standard for data quality, so it is important to understand how and why the Lighthouse data differs so that water level data quality from other Lighthouse stations, not shared by NOAA, can be assured.
+1. [Introduction](#introduction)
+2. [Running the Program](#running-the-program)
+    - [Command Line Arguments](#command-line-arguments)
+3. [Output](#output)
+4. [Requirements](#requirements)
+5. [Installation](#installation)
+6. [Usage Example](#usage-example)
+7. [Configuration](#configuration)
+    - [Overview](#overview)
+    - [File Location](#file-location)
+    - [Configuration Sections](#configuration-sections)
+    - [Configuration Values](#configuration-values)
+    - [Default Values](#default-values)
+    - [Example Configuration](#example-configuration)
+8. [Technical Details and Limitations](#technical-details-and-limitations)
+    - [Data Requirements](#data-requirements)
+    - [Dependencies](#dependencies)
+9. [Downloading Data](#downloading-data)
+    - [NOAA Data](#noaa-data)
+    - [Lighthouse Data](#lighthouse-data)
+10. [Error Handling](#error-handling)
+
+# Introduction
+
+**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from NOAA and Lighthouse. These discrepancies include vertical and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs to ensure the quality of water level data from Lighthouse stations not shared by NOAA.
 
 The main program, `analyze_data_discrepancies.py`, uses functions implemented in `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv). It calculates their statistical differences and directly compares the datasets using discrepancy analysis.
 
@@ -14,7 +38,7 @@ Running the main program, `analyze_data_discrepancies.py`, will write statistics
 
 The `data` directory included in the repository has example CSV files that the program can handle. The program can process all of the files in directories `data/lighthouse/[station]` and `data/NOAA/[station]` at once by reading in all the files and sorting the data into years for year-by-year comparison. 
 
-## Command line arguments
+### Command line arguments
 
 - To specify the name of the file to be written to, use command line argument
 ```shell
