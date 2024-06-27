@@ -270,13 +270,13 @@ def main(args):
         # Get metrics.
         metrics = calculator.calculate_metrics()
         # metrics = da.get_metrics(runs_df)
-        print(metrics, "\n")
+        # print(metrics, "\n")
 
         # Set metrics.
         calculator.set_metrics(metrics)
 
         # Format metrics
-        metrics_list = calculator.format_metrics(metrics)
+        metrics_list = calculator.format_metrics()
 
         for item in metrics_list:
             print(item, "\n")

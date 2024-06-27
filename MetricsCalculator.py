@@ -86,10 +86,14 @@ class MetricsCalculator:
     # End validate_dataframe.
 
     def _get_valid_dataframe(self, df, col_name, config_col_name):
-        if None not in (df, col_name):
-            if col_name in df.columns:
-                # self.validate_dataframe(df)
-                return df, col_name
+        if df is not None:
+            if col_name is not None:
+                if col_name in df.columns:
+                    return df, col_name
+            elif self.col_config[config_col_name] in df.columns:
+                return df, self.col_config[config_col_name]
+            else:
+                raise ValueError("Column could not be found in DataFrame.")
         elif self.run_data_df is not None:
             return self.run_data_df,  self.col_config[config_col_name]
         else:
@@ -239,30 +243,30 @@ class MetricsCalculator:
         metric_strings = self.get_metric_key_strings()
 
         long_offsets_count = long_gaps_count = max_gap_duration = max_gap_dates = max_offset_duration = \
-            longest_offsets = large_offsets_count = None
-        min_max_offsets = max_offset_dates = min_offset_dates = (None, None)
+            longest_offsets = large_offsets_count = 0
+        min_max_offsets = max_offset_dates = min_offset_dates = (0, 0)
 
         available_metric_data = {
             'long_offsets_count': (f"{metric_strings['offset_dur']}",
-                                   f"{long_offsets_count}"),
+                                   "{long_offsets_count}"),
             'long_gaps_count': (f"{metric_strings['gap_dur']}",
-                                f"{long_gaps_count}"),
+                                "{long_gaps_count}"),
             'max_gap_duration': (f"Duration of longest gap",
-                                 f"{max_gap_duration}"),
-            'max_gap_dates': (f"Start/end date(s) of <{max_gap_duration}> gap",
-                              f"{max_gap_dates}"),
+                                 "{max_gap_duration}"),
+            'max_gap_dates': ("Start/end date(s) of <{max_gap_duration}> gap",
+                              "{max_gap_dates}"),
             'max_offset_duration': (f"Maximum duration of an offset",
-                                    f"{max_offset_duration}"),
-            'longest_offsets': (f"Offset value(s) with <{max_offset_duration}> duration",
-                                f"{longest_offsets}"),
+                                    "{max_offset_duration}"),
+            'longest_offsets': ("Offset value(s) with <{max_offset_duration}> duration",
+                                "{longest_offsets}"),
             'large_offsets_count': (f"{metric_strings['offset_val']}",
-                                    f"{large_offsets_count}"),
+                                    "{large_offsets_count}"),
             'min_max_offsets': (f"Maximum/minimum offset value",
-                                f"{min_max_offsets}"),
-            'max_offset_dates': (f"Start/end date(s) of offset with value <{min_max_offsets[0]}>",
-                                 f"{max_offset_dates}"),
-            'min_offset_dates': (f"Start/end date(s) of offset with value <{min_max_offsets[1]}>",
-                                 f"{min_offset_dates}")
+                                "{min_max_offsets[0]} / {min_max_offsets[1]}"),
+            'max_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[0]}>",
+                                 "{max_offset_dates[0]} / {max_offset_dates[1]}"),
+            'min_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[1]}>",
+                                 "{min_offset_dates[0]} / {min_offset_dates[1]}")
         }
 
         formatted_metrics = []
@@ -275,7 +279,8 @@ class MetricsCalculator:
         return formatted_metrics
 
     def count_long_gaps(self):
-        long_gaps_count = len(self.filter_gaps_by_duration())
+        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
+        long_gaps_count = len(self.filter_gaps_by_duration(nan_df))
         return long_gaps_count
     # End count_long_gaps.
 
@@ -359,7 +364,7 @@ class MetricsCalculator:
     def generate_value_string(self, params):
         result = ""
         if params.get('use_abs'):
-            result += "absolute "
+            result += "absolute value "
 
         if 'type' in params:
             if params['type'] == 'min':
