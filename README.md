@@ -124,7 +124,7 @@ Place the `config.json` file in the root directory of your project.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
 - **Filter gaps by duration parameters**
-    - `threshold`: The duration required for a gap (missing values) to persist for it to be quantified in the results file. 
+    - `threshold`: The duration required for a gap (missing values) to persist for it to be quantified in the results file (the total missing values are also provided in the results). 
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
@@ -139,7 +139,7 @@ Place the `config.json` file in the root directory of your project.
 
 ### Configuration values
 
-- `datetime`: Examples include: "Date Time", "
+- `datetime`: Examples include: "Date Time", "myDateTimeColumn".
 - `threshold` (duration): Examples include:  "1 week", "2 days, 12 hours", "30 minutes".
 - `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0.
 - `type`: Must be either "min" or "max".
@@ -198,12 +198,12 @@ Default values are used if a parameter is not specified in `config.json`:
 
 ### Data requirements
 
-- **Data format**: Since the purpose of the program is to analyze the discrepancies between time series water level datasets, the data processed by the program should contain water level measurements with the corresponding timestamps over some time period. The data files must be in CSV format which will automatically sort the data into columns.
-- **Column order**: If the names of the necessary columns (datetime and water level) assume default values in `config.json`, the program will assume that the datetime and water level columns are the first and second columns in the data files, respectively.
+- **Data format**: Since the purpose of the program is to analyze the discrepancies between time series water level datasets, the data processed by the program should contain water level measurements with the corresponding timestamps over some time period. The data files must be in CSV format which will provide the data in columns.
+- **Column order**: If the names of the necessary columns (datetime and water level) are left as default in `config.json`, the program will assume that the datetime and water level columns are the first and second columns in the data files, respectively.
 
 ### Dependencies
 
-- **Libraies**: The program cleans the data by replacing corrupt or missing values in the data with null values using the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
+- **Libraries**: The program cleans the data by replacing corrupt or missing values with null values using the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioning of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
 
 ## Downloading data
 
