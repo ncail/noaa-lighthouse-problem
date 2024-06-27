@@ -377,6 +377,50 @@ class MetricsCalculator:
         return result
     # End generate_value_string.
 
+    def get_long_offsets_info(self, df=None, duration_col=None):
+
+        # Filter for offsets (runs) by duration.
+        long_offsets_df = self.filter_offsets_by_duration(df, duration_col)
+
+        # Get dictionary of info about the unique offsets in long_offsets_df.
+        long_offsets_dict = self.get_unique_offsets_info(long_offsets_df)
+
+        return long_offsets_dict
+    # End get_long_offsets_dict.
+
+    def get_unique_offsets_info(self, df=None):
+        if df:
+            self.validate_dataframe(df)
+        elif self.run_data_df:
+            df = self.run_data_df
+        else:
+            raise ValueError("No valid DataFrame provided, and no pre-set DataFrame found.")
+
+        # Get the unique offset values from long offsets.
+        unique_offsets = df[self.col_config['offset_column']].unique()
+
+        # Get all the durations, start dates, and end dates that correspond
+        # to each offset value. Organize into a dictionary.
+        unique_offsets_dict = {}
+        for offset in unique_offsets:
+
+            # Skip NaNs.
+            if pd.isna(offset):
+                continue
+
+            # Add offset (key) and corresponding info from get_run_data df structure
+            # to dictionary.
+            offset_data = df[df[self.col_config['offset_column']] == offset]
+            unique_offsets_dict[offset] = {
+                'duration': offset_data[self.col_config['duration_column']].tolist(),
+                'start_date': offset_data[self.col_config['start_date_column']].tolist(),
+                'end_date': offset_data[self.col_config['end_date_column']].tolist()
+            }
+        # End for.
+
+        return unique_offsets_dict
+    # End get_unique_offsets_dict.
+
     def filter_offsets_by_duration(self, df=None, duration_col=None, **kwargs):
         df, duration_col = self._get_valid_dataframe(df, duration_col, 'duration_column')
 
