@@ -1,5 +1,5 @@
-# Import file_data_functions.py as da (discrepancy analysis).
-import file_data_functions as da
+# Import file_data_functions.py as da (file processing).
+import file_data_functions as fp
 
 # Import MetricsCalculator.py as mc
 from MetricsCalculator import MetricsCalculator
@@ -98,9 +98,9 @@ def main(args):
     # Prompt user for the start and end year of their data.
     if args.include_msgs:
         prompt = "Enter the starting year <yyyy> of your data: "
-        start_year = da.get_year_from_user(prompt)
+        start_year = fp.get_year_from_user(prompt)
         prompt = "Enter the last year <yyyy> of your data: "
-        end_year = da.get_year_from_user(prompt)
+        end_year = fp.get_year_from_user(prompt)
 
         # Get range of years.
         year_range = range(start_year, end_year + 1)
@@ -116,13 +116,13 @@ def main(args):
     for lh_file in lighthouse_csv_files:
 
         # Read the file into a dataframe.
-        df = da.read_file(lh_file, flag=flag_ptr)
+        df = fp.read_file(lh_file, flag=flag_ptr)
 
         # If read was successful, split into yearly data and append to lh_df_arr.
         if flag_ptr[0]:
             # split_df is a list of dataframes. Use extend() to add each item in the
             # list to lh_df_arr.
-            split_df = da.split_by_year(df, df.columns[0])
+            split_df = fp.split_by_year(df, df.columns[0])
             lh_df_arr.extend(split_df)
         else:
             msg = f"failed to read file: {lh_file}\n"
@@ -134,7 +134,7 @@ def main(args):
     noaa_df_arr = []
     for noaa_file in noaa_csv_files:
 
-        df = da.read_file(noaa_file, flag=flag_ptr)
+        df = fp.read_file(noaa_file, flag=flag_ptr)
 
         if flag_ptr[0] is True:
             noaa_df_arr.append(df)
@@ -145,8 +145,8 @@ def main(args):
     # End for.
 
     # Use da.config to get the necessary columns for assigning column names.
-    lh_data_cols = da.config['primary_data_column_names']
-    noaa_data_cols = da.config['reference_data_column_names']
+    lh_data_cols = fp.config['primary_data_column_names']
+    noaa_data_cols = fp.config['reference_data_column_names']
 
     # Assign column names. If not configured, assume their positions in the dataframe,
     # and that all dfs in the array have same column names.
@@ -165,7 +165,7 @@ def main(args):
         # Initialize error message.
         error_msg = [""]
 
-        da.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
+        fp.clean_dataframe(lh_df, lh_dt_col_name, lh_pwl_col_name, error=error_msg)
         year = lh_df[lh_dt_col_name].dt.year
 
         if not all(e == "" for e in error_msg):
@@ -181,7 +181,7 @@ def main(args):
         # Initialize error message.
         error_msg = [""]
 
-        da.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
+        fp.clean_dataframe(noaa_df, noaa_dt_col_name, noaa_pwl_col_name, error=error_msg)
         year = noaa_df[noaa_dt_col_name].dt.year
 
         if not all(e == "" for e in error_msg):
@@ -196,8 +196,8 @@ def main(args):
     # set() converts the view object into a set of years.
     # Bitwise & is used to find the intersection of two sets, returning a new set that contains
     # the common years.
-    lh_dfs_dict = da.get_df_dictionary(lh_df_arr, lh_dt_col_name)
-    noaa_dfs_dict = da.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
+    lh_dfs_dict = fp.get_df_dictionary(lh_df_arr, lh_dt_col_name)
+    noaa_dfs_dict = fp.get_df_dictionary(noaa_df_arr, noaa_dt_col_name)
     common_years = set(lh_dfs_dict.keys()) & set(noaa_dfs_dict.keys())
 
     # Record which years have no data for analysis.
@@ -251,26 +251,22 @@ def main(args):
         size = len(merged_df)
 
         # Get comparison table.
-        stats_df = da.get_comparison_stats(merged_df[lh_pwl_col_name],
+        stats_df = fp.get_comparison_stats(merged_df[lh_pwl_col_name],
                                            merged_df[noaa_pwl_col_name], size)
 
         # Instantiate an object to get metrics. Set configs.
         calculator = MetricsCalculator()
         calculator.set_configs(config)
 
-        # Get runs data and send into get_metrics and get_long_offsets_dict.
-        # runs_df = da.get_run_data(merged_df[lh_pwl_col_name], merged_df[noaa_pwl_col_name],
-        # merged_df[noaa_dt_col_name], size)
+        # Get offset runs dataframe.
         run_data_df = calculator.get_run_data(merged_df[lh_pwl_col_name],
                                               merged_df[noaa_pwl_col_name], merged_df[noaa_dt_col_name], size)
 
         # Set the dataframe.
         calculator.set_dataframe(run_data_df)
 
-        # Get metrics.
+        # Calculate metrics.
         metrics = calculator.calculate_metrics()
-        # metrics = da.get_metrics(runs_df)
-        # print(metrics, "\n")
 
         # Set metrics.
         calculator.set_metrics(metrics)
@@ -291,7 +287,7 @@ def main(args):
 
 if __name__ == "__main__":
     main_args = parse_arguments()
-    da.load_configs('config.json')
+    fp.load_configs('config.json')
     main(main_args)
 
 # ***************************************************************************
