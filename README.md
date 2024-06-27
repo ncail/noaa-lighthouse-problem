@@ -146,20 +146,20 @@ Default values are used if a parameter is not specified in `config.json`:
     },
     "reference_data_column_names": {
         "datetime": "Date Time",
-        "water_level": " Water Level"
+        "water_level": "Water Level "
     },
-    "filter_by_duration_parameters": {
+    "filter_offsets_by_duration": {
         "threshold": "1 day",
         "type": "min",
         "is_strict": false
     },
-    "filter_by_value_parameters": {
+    "filter_offsets_by_value": {
         "threshold": 0.05,
         "use_abs": true,
         "type": "min",
         "is_strict": false
     },
-    "filter_gaps_parameters": {
+    "filter_gaps_by_duration": {
         "threshold": "1 day",
         "type": "min",
         "is_strict": false
@@ -181,7 +181,7 @@ Default values are used if a parameter is not specified in `config.json`:
 
 - **Libraies**: The program cleans the data by replacing corrupt or missing values in the data with null values using the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioned of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
 
-### Preparing your data
+## Downloading data
 
 - **NOAA data**
 
