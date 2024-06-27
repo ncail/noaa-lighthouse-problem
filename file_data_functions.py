@@ -21,18 +21,18 @@ config = {
         'datetime': '',
         'water_level': ''
     },
-    'filter_by_duration_parameters': {
+    'filter_offsets_by_duration': {
         'threshold': '0 days',
         'type': 'min',
         'is_strict': False
     },
-    'filter_by_value_parameters': {
+    'filter_offsets_by_value': {
         'threshold': 0.0,
         'use_abs': True,
         'type': 'min',
         'is_strict': False
     },
-    'filter_gaps_parameters': {
+    'filter_gaps_by_duration': {
         'threshold': '0 days',
         'type': 'min',
         'is_strict': False

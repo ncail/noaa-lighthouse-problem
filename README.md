@@ -86,6 +86,14 @@ Place the `config.json` file in the root directory of your project.
 
 ### Configuration sections
 
+- **Primary data column names**
+    - `datetime`: Name of the datetime column in the primary data CSV files.
+    - `water_level`: Name of the water level column in the primary data CSV files.
+
+- **Reference data column names**
+    - `datetime`: Name of the datetime column in the reference data CSV files.
+    - `water_level`: Name of the water level column in the reference data CSV files.
+
 - **Filter by duration parameters**
     - `threshold`: The duration required for an offset to persist for it to be quantified in the results file. 
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
@@ -112,20 +120,22 @@ Place the `config.json` file in the root directory of your project.
 
 Default values are used if a parameter is not specified in `config.json`:
 
+- `primary_data_column_names`: `datetime` = "", `water_level` = "".
+- `reference_data_column_names`: `datetime` = "", `water_level` = "".
 - `filter_by_duration_parameters`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`.
 - `filter_by_value_parameters`: `threshold` = 0.0, `type` = "min", `use_abs` = `true`, `is_strict` = `false`.
 - `offset_correction_parameters`: `number_of_intervals` = 0.
 
 ### Example configuration
-```perl
+```elixir
 {
     "primary_data_column_names": {
-        "datetime": "",
-        "water_level": ""
+        "datetime": "#date+time",
+        "water_level": "014-pwl"
     },
     "reference_data_column_names": {
-        "datetime": "",
-        "water_level": ""
+        "datetime": "Date Time",
+        "water_level": " Water Level"
     },
     "filter_by_duration_parameters": {
         "threshold": "1 day",
