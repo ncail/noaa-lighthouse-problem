@@ -46,7 +46,8 @@ class MetricsCalculator:
         self.config = self.default_config.copy()
         self.run_data_df = None
         self.metrics = None
-    # End constructor.
+        self.long_offsets_info = None
+        # End constructor.
 
     # ******************************************************************************
     # ******************************** SETTERS *************************************
@@ -356,18 +357,18 @@ class MetricsCalculator:
         return start_dates, end_dates
     # End get_offset_dates.
 
-    def get_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None):
+    def calc_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None):
 
         # Filter for offsets (runs) by duration.
         long_offsets_df = self.filter_offsets_by_duration(df, duration_column_name)
 
         # Get dictionary of info about the unique offsets in long_offsets_df.
-        long_offsets_dict = self.get_unique_offsets_info(long_offsets_df)
+        long_offsets_dict = self.calc_unique_offsets_info(long_offsets_df)
 
         return long_offsets_dict
-    # End get_long_offsets_dict.
+    # End calc_long_offsets_dict.
 
-    def get_unique_offsets_info(self, df: pd.DataFrame = None):
+    def calc_unique_offsets_info(self, df: pd.DataFrame = None):
         if df is not None:
             self._validate_dataframe(df)
         elif self.run_data_df is not None:
@@ -398,7 +399,7 @@ class MetricsCalculator:
         # End for.
 
         return unique_offsets_dict
-    # End get_unique_offsets_dict.
+    # End calc_unique_offsets_dict.
 
     def filter_offsets_by_duration(self, df: pd.DataFrame = None, duration_column_name: str = None,
                                    **kwargs) -> pd.DataFrame:
@@ -673,7 +674,56 @@ class MetricsCalculator:
         return user_config
     # End load_configs.
 
+    @staticmethod
+    def write_offsets_to_file(offsets_dict, write_path, filename):
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
+            file.write(f"Information about the offsets meeting duration threshold criteria:\n")
 
+            # If dictionary is empty, no offsets meeting the duration threshold criteria were found.
+            if not offsets_dict:
+                file.write("None.")
+
+            else:
+                # Table header.
+                file.write(f"Offset  | Duration             | Start Date           | End Date\n")
+
+                # Iterate through dictionary.
+                for offset, data in offsets_dict.items():
+                    # Set if_fist to true for the first item corresponding to this key (offset value).
+                    is_first = True
+
+                    # Draw offset data divider and write the current offset.
+                    file.write(f"---------------------------------------------------------------------------\n")
+                    file.write(f"{offset:<7} | ")
+
+                    # Iterate through the data corresponding to the current offset.
+                    for iLoop in range(len(data['duration'])):
+                        # Convert timedeltas to strings.
+                        duration_str = str(data['duration'][iLoop])
+                        start_date_str = str(data['start_date'][iLoop])
+                        end_date_str = str(data['end_date'][iLoop])
+
+                        if is_first:
+                            # Print next to the offset if this is the first data entry for the current offset.
+                            file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
+                            is_first = False
+                        else:
+                            # Tab over to align successive data entries for the current offset.
+                            file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
+                    # End inner for.
+                # End outer for.
+            file.write("\n\n\n")
+
+    @staticmethod
+    def write_metrics_to_file(metrics, write_path, filename):
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
+            # Find the longest key length for key alignment.
+            max_key_length = max(len(key) for key, value in metrics)
+
+            # Write each key-value pair aligned.
+            for key, value in metrics:
+                file.write(f"{key:{max_key_length}}: {value}\n")
+            file.write("\n")
 
 
 

@@ -40,7 +40,7 @@ def get_filename(user_args):
         return user_args.filename
     else:
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        return f"output_{timestamp}.txt"
+        return f"output_{timestamp}"
 # End get_filename.
 
 
@@ -259,8 +259,8 @@ def main(args):
         calculator.set_configs(config)
 
         # Get offset runs dataframe.
-        run_data_df = calculator.get_run_data(merged_df[lh_pwl_col_name],
-                                              merged_df[noaa_pwl_col_name], merged_df[noaa_dt_col_name], size)
+        run_data_df = calculator.generate_runs_df(merged_df[lh_pwl_col_name],
+                                                  merged_df[noaa_pwl_col_name], merged_df[noaa_dt_col_name], size)
 
         # Set the dataframe.
         calculator.set_runs_dataframe(run_data_df)
@@ -273,19 +273,17 @@ def main(args):
 
         # Format metrics.
         metrics_list = calculator.format_metrics()
-
-        for item in metrics_list:
-            print(item, "\n")
+        # for item in metrics_list:
+        #     print(item, "\n")
 
         # Get table of long offsets.
-        offsets_dict = calculator.get_long_offsets_info()
+        offsets_dict = calculator.calc_long_offsets_info()
+        # print(offsets_dict, "\n")
 
-        print(offsets_dict, "\n")
-
-        # offsets_dict = da.get_long_offsets_dict(runs_df)
-
-        # Write stats and metrics for {year} to a txt file.
-        # da.write_report(stats_df, metrics, offsets_dict, write_path, filename, year)
+        # Write report.
+        fp.write_stats(stats_df, write_path, filename, year)
+        MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
+        MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
     # End for.
 # End main.
 

@@ -69,38 +69,6 @@ def load_configs(file_path):
 
 
 # ***************************************************************************
-# *********************** FUNCTION PARSE_TIMEDELTA **************************
-# ***************************************************************************
-
-# Parse the duration configuration from the user into a timedelta object.
-
-def parse_timedelta(time_str):
-
-    pattern = r'(\d+)\s*(week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds)'
-    matches = re.findall(pattern, time_str.lower())
-
-    weeks = days = hours = minutes = seconds = milliseconds = 0
-
-    for value, unit in matches:
-        value = int(value)
-        if 'week' in unit:
-            weeks += value
-        elif 'day' in unit:
-            days += value
-        elif 'hour' in unit:
-            hours += value
-        elif 'minute' in unit:
-            minutes += value
-        elif 'second' in unit:
-            seconds += value
-        elif 'millisecond' in unit:
-            milliseconds += value
-
-    return timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds)
-# End parse_timedelta.
-
-
-# ***************************************************************************
 # **************************** FUNCTION READ_FILE ***************************
 # ***************************************************************************
 
@@ -287,129 +255,13 @@ def get_df_dictionary(df_list, dt_col_name):
 
 
 # ***************************************************************************
-# ******************* FUNCTION WRITE_REPORT *********************************
+# ******************* FUNCTION WRITE_STATS **********************************
 # ***************************************************************************
 
-# Write all the comparison statistics and metrics to a file.
-# Helps to modularize the main program so that multiple comparisons can be
-# done: for raw, and manipulated data, for example.
-
-def write_report(stats_df, metrics, offsets_dict, write_path, filename, year):
-
-    # Write all stats to a .txt file (in append mode).
-    with open(f'{write_path}/{filename}.txt', 'a') as file:
-        file.write(f"Comparison Table for year {year}:\n {stats_df.to_string(index=True)}\n\n")
-
-        # Find the longest key length for key alignment.
-        max_key_length = max(len(key) for key, value in metrics)
-
-        # Write each key-value pair aligned.
-        for key, value in metrics:
-            file.write(f"{key:{max_key_length}}: {value}\n")
-        # End for.
-
-        file.write("\n")
-
-        # Write the unique offsets dictionary to the file.
-        # Table title.
-        file.write(f"Information about the offsets meeting duration threshold criteria:\n")
-
-        # If dictionary is empty, no offsets meeting the duration threshold criteria were found.
-        if not offsets_dict:
-            file.write("None.")
-
-        else:
-            # Table header.
-            file.write(f"Offset  | Duration             | Start Date           | End Date\n")
-
-            # Iterate through dictionary.
-            for offset, data in offsets_dict.items():
-                # Set if_fist to true for the first item corresponding to this key (offset value).
-                is_first = True
-
-                # Draw offset data divider and write the current offset.
-                file.write(f"---------------------------------------------------------------------------\n")
-                file.write(f"{offset:<7} | ")
-
-                # Iterate through the data corresponding to the current offset.
-                for iLoop in range(len(data['duration'])):
-                    # Convert timedeltas to strings.
-                    duration_str = str(data['duration'][iLoop])
-                    start_date_str = str(data['start_dates'][iLoop])
-                    end_date_str = str(data['end_dates'][iLoop])
-
-                    if is_first:
-                        # Print next to the offset if this is the first data entry for the current offset.
-                        file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
-                        is_first = False
-                    else:
-                        # Tab over to align successive data entries for the current offset.
-                        file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
-                # End inner for.
-            # End outer for.
-
-        file.write("\n\n\n")
-    # File closed.
-# End write_report.
-
-
-def write_stats_to_file(stats_df, write_path, filename, year):
-    """Write stats DataFrame to file."""
+def write_stats(stats_df, write_path, filename, year):
+    """Write stats from get_comparison_stats DataFrame to file."""
     with open(f'{write_path}/{filename}.txt', 'a') as file:
         file.write(f"Comparison Table for year {year}:\n{stats_df.to_string(index=True)}\n\n")
-
-
-def write_metrics_to_file(metrics, write_path, filename):
-    """Write metrics to file."""
-    with open(f'{write_path}/{filename}.txt', 'a') as file:
-        # Find the longest key length for key alignment.
-        max_key_length = max(len(key) for key, value in metrics)
-
-        # Write each key-value pair aligned.
-        for key, value in metrics:
-            file.write(f"{key:{max_key_length}}: {value}\n")
-        file.write("\n")
-
-
-def write_offsets_to_file(offsets_dict, write_path, filename):
-    """Write offsets dictionary to file."""
-    with open(f'{write_path}/{filename}.txt', 'a') as file:
-        file.write(f"Information about the offsets meeting duration threshold criteria:\n")
-
-        # If dictionary is empty, no offsets meeting the duration threshold criteria were found.
-        if not offsets_dict:
-            file.write("None.")
-
-        else:
-            # Table header.
-            file.write(f"Offset  | Duration             | Start Date           | End Date\n")
-
-            # Iterate through dictionary.
-            for offset, data in offsets_dict.items():
-                # Set if_fist to true for the first item corresponding to this key (offset value).
-                is_first = True
-
-                # Draw offset data divider and write the current offset.
-                file.write(f"---------------------------------------------------------------------------\n")
-                file.write(f"{offset:<7} | ")
-
-                # Iterate through the data corresponding to the current offset.
-                for iLoop in range(len(data['duration'])):
-                    # Convert timedeltas to strings.
-                    duration_str = str(data['duration'][iLoop])
-                    start_date_str = str(data['start_dates'][iLoop])
-                    end_date_str = str(data['end_dates'][iLoop])
-
-                    if is_first:
-                        # Print next to the offset if this is the first data entry for the current offset.
-                        file.write(f"{duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
-                        is_first = False
-                    else:
-                        # Tab over to align successive data entries for the current offset.
-                        file.write(f"        | {duration_str:<20} | {start_date_str:<20} | {end_date_str}\n")
-                # End inner for.
-            # End outer for.
-        file.write("\n\n\n")
 
 
 # ***************************************************************************

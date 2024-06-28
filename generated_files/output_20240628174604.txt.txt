@@ -1,0 +1,23 @@
+Comparison Table for year 1996:
+                     total points  percent
+total agreements            86485  98.4574
+value disagreements            63   0.0717
+total disagreements          1355   1.5426
+missing (primary)            1292   1.4709
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration > = 1 day: 13
+Number of gaps with duration > = 1 day             : 1
+Duration of longest gap                            : 4 days 19:00:00
+Start/end date(s) of <4 days 19:00:00> gap         : ([Timestamp('1996-07-10 21:54:00')], [Timestamp('1996-07-15 16:54:00')])
+Maximum duration of an offset                      : 113 days 00:48:00
+Offset value(s) with <113 days 00:48:00> duration  : [0.0]
+Number of offsets with absolute value > = 0.05     : 6
+Maximum/minimum offset value                       : 2.054 / -0.257
+Start/end date(s) of offset with value <2.054>     : [Timestamp('1996-06-17 14:54:00')] / [Timestamp('1996-06-17 15:00:00')]
+Start/end date(s) of offset with value <-0.257>    : [Timestamp('1996-04-23 01:00:00')] / [Timestamp('1996-04-23 01:06:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 
