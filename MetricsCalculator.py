@@ -739,6 +739,12 @@ class MetricsCalculator:
     # End load_configs.
 
     @staticmethod
+    def write_stats(stats_df, write_path, filename, year):
+        with open(f'{write_path}/{filename}.txt', 'a') as file:
+            file.write(f"Comparison Table for year {year}:\n{stats_df.to_string(index=True)}\n\n")
+    # End write_stats.
+
+    @staticmethod
     def write_offsets_to_file(offsets_dict, write_path, filename):
         with open(f'{write_path}/{filename}.txt', 'a') as file:
             file.write(f"Information about the offsets meeting duration threshold criteria:\n")
@@ -787,6 +793,7 @@ class MetricsCalculator:
                     # End inner for.
                 # End outer for.
             file.write("\n\n\n")
+    # End write_offsets_to_file.
 
     @staticmethod
     def write_metrics_to_file(metrics, write_path, filename):
@@ -798,7 +805,7 @@ class MetricsCalculator:
             for key, value in metrics:
                 file.write(f"{key:{max_key_length}}: {value}\n")
             file.write("\n")
-
+    # End write_metrics_to_file.
 
 
 

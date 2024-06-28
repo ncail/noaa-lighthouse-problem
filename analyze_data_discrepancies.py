@@ -281,7 +281,7 @@ def main(args):
         # print(offsets_dict, "\n")
 
         # Write report.
-        fp.write_stats(stats_df, write_path, filename, year)
+        MetricsCalculator.write_stats(stats_df, write_path, filename, year)
         MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
         MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
     # End for.
