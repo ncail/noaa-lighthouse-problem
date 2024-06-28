@@ -95,6 +95,7 @@ class MetricsCalculator:
             return None
         else:
             return self.run_data_df.copy()
+    # End get_runs_dataframe.
 
     def get_metrics(self):
         if self.metrics is None:
@@ -103,8 +104,25 @@ class MetricsCalculator:
             return self.metrics.copy()
     # End get_metrics.
 
+    @staticmethod
+    def get_valid_metrics_list() -> list:
+        valid_metrics_keys = [
+            "long_offsets_count",
+            "long_gaps_count",
+            "max_gap_duration",
+            "max_gap_dates",
+            "max_offset_duration",
+            "longest_offsets",
+            "large_offsets_count",
+            "min_max_offsets",
+            "max_offset_dates",
+            "min_offset_dates"
+        ]
+        return valid_metrics_keys.copy()
+    # End get_valid_metrics_list.
+
     # ******************************************************************************
-    # *************************** CALCULATING METHODS ******************************
+    # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
     def generate_runs_df(self, offset_column: pd.Series, reference_column: pd.Series,
                          ref_dates: pd.Series, size: int, create_df: bool = True):
@@ -150,6 +168,24 @@ class MetricsCalculator:
             return start_indices, end_indices, run_values
     # End get_run_data.
 
+    @staticmethod
+    def get_discrepancies(offset_column: pd.Series, reference_column: pd.Series,
+                          size: int) -> list[float]:
+        discrepancies = []
+
+        for index in range(size):
+
+            if pd.isna(offset_column.iloc[index]):
+                discrepancies.append(np.nan)
+                continue
+
+            difference = round(reference_column.iloc[index] - offset_column.iloc[index], 4)
+            discrepancies.append(difference)
+        # End for.
+
+        return discrepancies
+    # End get_discrepancies.
+
     def calculate_metrics(self, df: pd.DataFrame = None, calc_all=True, **kwargs):
 
         if df is not None:
@@ -181,52 +217,6 @@ class MetricsCalculator:
 
         return metrics
     # End calculate_metrics.
-
-    def format_metrics(self, metrics: dict = None) -> list[tuple[str, str]]:
-        if metrics is None:
-            if self.metrics is not None:
-                metrics = self.metrics
-            else:
-                raise ValueError("No Metrics provided, and no pre-set Metrics found.")
-        elif not self._validate_metrics(metrics):
-            raise ValueError("Invalid Metrics provided. Metrics must be a Dictionary"
-                             "and must only contain keys found in the list of valid metrics."
-                             "Use MetricsCalculator.get_valid_metrics_list().")
-
-        metric_strings = self._get_metric_key_strings()
-
-        available_metric_data = {
-            'long_offsets_count': (f"{metric_strings['offset_dur']}",
-                                   "{long_offsets_count}"),
-            'long_gaps_count': (f"{metric_strings['gap_dur']}",
-                                "{long_gaps_count}"),
-            'max_gap_duration': (f"Duration of longest gap",
-                                 "{max_gap_duration}"),
-            'max_gap_dates': ("Start/end date(s) of <{max_gap_duration}> gap",
-                              "{max_gap_dates}"),
-            'max_offset_duration': (f"Maximum duration of an offset",
-                                    "{max_offset_duration}"),
-            'longest_offsets': ("Offset value(s) with <{max_offset_duration}> duration",
-                                "{longest_offsets}"),
-            'large_offsets_count': (f"{metric_strings['offset_val']}",
-                                    "{large_offsets_count}"),
-            'min_max_offsets': (f"Maximum/minimum offset value",
-                                "{min_max_offsets[0]} / {min_max_offsets[1]}"),
-            'max_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[0]}>",
-                                 "{max_offset_dates[0]} / {max_offset_dates[1]}"),
-            'min_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[1]}>",
-                                 "{min_offset_dates[0]} / {min_offset_dates[1]}")
-        }
-
-        formatted_metrics = []
-        for key, (description, value) in available_metric_data.items():
-            if key in metrics:
-                formatted_description = description.format(**metrics)
-                formatted_value = value.format(**metrics)
-                formatted_metrics.append((formatted_description, formatted_value))
-
-        return formatted_metrics
-    # End format_metrics.
 
     def count_long_gaps(self, df: pd.DataFrame = None, duration_column_name: str = None,
                         offsets_column_name: str = None, **kwargs) -> int:
@@ -453,8 +443,61 @@ class MetricsCalculator:
         return self.filter_by_value(df, offset_column_name, threshold, type, use_abs, is_strict)
     # End filter_offsets_by_value.
 
+    @staticmethod
+    def filter_by_duration(dataframe: pd.DataFrame, duration_column_name: str, threshold=timedelta(0),
+                           type='min', is_strict=False) -> pd.DataFrame:
+        filtered_df = dataframe.copy()
+
+        series = filtered_df[duration_column_name]
+
+        if type == 'min':
+            if is_strict:
+                filter_series = series > threshold
+            else:
+                filter_series = series >= threshold
+        elif type == 'max':
+            if is_strict:
+                filter_series = series < threshold
+            else:
+                filter_series = series <= threshold
+        else:
+            filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
+
+        filtered_df = filtered_df[filter_series]
+
+        return filtered_df
+    # End filter_by_duration.
+
+    @staticmethod
+    def filter_by_value(dataframe: pd.DataFrame, offset_column_name: str, threshold=0.0, type='min',
+                        use_abs=True, is_strict=False) -> pd.DataFrame:
+        # Copy dataframe.
+        filtered_df = dataframe.copy()
+
+        # Apply absolute value if needed.
+        series = abs(filtered_df[offset_column_name]) if use_abs else filtered_df[offset_column_name]
+
+        # Define the filtering logic.
+        if type == 'min':
+            if is_strict:
+                filter_series = series > threshold
+            else:
+                filter_series = series >= threshold
+        elif type == 'max':
+            if is_strict:
+                filter_series = series < threshold
+            else:
+                filter_series = series <= threshold
+        else:
+            filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
+
+        filtered_df = filtered_df[filter_series]
+
+        return filtered_df
+    # End filter_by_value.
+
     # ******************************************************************************
-    # ***************************** HELPER METHODS *********************************
+    # ***************************** VALIDATING INPUT *******************************
     # ******************************************************************************
     def _validate_dataframe(self, df):
         required_columns = [
@@ -495,6 +538,55 @@ class MetricsCalculator:
 
         return True
     # End _validate_metrics.
+
+    # ******************************************************************************
+    # ***************************** FORMATTING METHODS *****************************
+    # ******************************************************************************
+    def format_metrics(self, metrics: dict = None) -> list[tuple[str, str]]:
+        if metrics is None:
+            if self.metrics is not None:
+                metrics = self.metrics
+            else:
+                raise ValueError("No Metrics provided, and no pre-set Metrics found.")
+        elif not self._validate_metrics(metrics):
+            raise ValueError("Invalid Metrics provided. Metrics must be a Dictionary"
+                             "and must only contain keys found in the list of valid metrics."
+                             "Use MetricsCalculator.get_valid_metrics_list().")
+
+        metric_strings = self._get_metric_key_strings()
+
+        available_metric_data = {
+            'long_offsets_count': (f"{metric_strings['offset_dur']}",
+                                   "{long_offsets_count}"),
+            'long_gaps_count': (f"{metric_strings['gap_dur']}",
+                                "{long_gaps_count}"),
+            'max_gap_duration': (f"Duration of longest gap",
+                                 "{max_gap_duration}"),
+            'max_gap_dates': ("Start/end date(s) of <{max_gap_duration}> gap",
+                              "{max_gap_dates}"),
+            'max_offset_duration': (f"Maximum duration of an offset",
+                                    "{max_offset_duration}"),
+            'longest_offsets': ("Offset value(s) with <{max_offset_duration}> duration",
+                                "{longest_offsets}"),
+            'large_offsets_count': (f"{metric_strings['offset_val']}",
+                                    "{large_offsets_count}"),
+            'min_max_offsets': (f"Maximum/minimum offset value",
+                                "{min_max_offsets[0]} / {min_max_offsets[1]}"),
+            'max_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[0]}>",
+                                 "{max_offset_dates[0]} / {max_offset_dates[1]}"),
+            'min_offset_dates': ("Start/end date(s) of offset with value <{min_max_offsets[1]}>",
+                                 "{min_offset_dates[0]} / {min_offset_dates[1]}")
+        }
+
+        formatted_metrics = []
+        for key, (description, value) in available_metric_data.items():
+            if key in metrics:
+                formatted_description = description.format(**metrics)
+                formatted_value = value.format(**metrics)
+                formatted_metrics.append((formatted_description, formatted_value))
+
+        return formatted_metrics
+    # End format_metrics.
 
     def _get_metric_key_strings(self):
         # Initialize strings.
@@ -567,7 +659,7 @@ class MetricsCalculator:
     # End _parse_timedelta.
 
     # ******************************************************************************
-    # ***************************** STATIC METHODS *********************************
+    # ***************************** FILE HANDLING **********************************
     # ******************************************************************************
     @staticmethod
     def load_configs(file_path: str) -> dict:
@@ -581,92 +673,10 @@ class MetricsCalculator:
         return user_config
     # End load_configs.
 
-    @staticmethod
-    def get_discrepancies(offset_column: pd.Series, reference_column: pd.Series,
-                          size: int) -> list[float]:
-        discrepancies = []
 
-        for index in range(size):
 
-            if pd.isna(offset_column.iloc[index]):
-                discrepancies.append(np.nan)
-                continue
 
-            difference = round(reference_column.iloc[index] - offset_column.iloc[index], 4)
-            discrepancies.append(difference)
-        # End for.
 
-        return discrepancies
-    # End get_discrepancies.
 
-    @staticmethod
-    def get_valid_metrics_list() -> list:
-        valid_metrics_keys = [
-            "long_offsets_count",
-            "long_gaps_count",
-            "max_gap_duration",
-            "max_gap_dates",
-            "max_offset_duration",
-            "longest_offsets",
-            "large_offsets_count",
-            "min_max_offsets",
-            "max_offset_dates",
-            "min_offset_dates"
-        ]
-        return valid_metrics_keys.copy()
-    # End get_valid_metrics_list.
-
-    @staticmethod
-    def filter_by_duration(dataframe: pd.DataFrame, duration_column_name: str, threshold=timedelta(0),
-                           type='min', is_strict=False) -> pd.DataFrame:
-        filtered_df = dataframe.copy()
-
-        series = filtered_df[duration_column_name]
-
-        if type == 'min':
-            if is_strict:
-                filter_series = series > threshold
-            else:
-                filter_series = series >= threshold
-        elif type == 'max':
-            if is_strict:
-                filter_series = series < threshold
-            else:
-                filter_series = series <= threshold
-        else:
-            filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
-
-        filtered_df = filtered_df[filter_series]
-
-        return filtered_df
-    # End filter_by_duration.
-
-    @staticmethod
-    def filter_by_value(dataframe: pd.DataFrame, offset_column_name: str, threshold=0.0, type='min',
-                        use_abs=True, is_strict=False) -> pd.DataFrame:
-        # Copy dataframe.
-        filtered_df = dataframe.copy()
-
-        # Apply absolute value if needed.
-        series = abs(filtered_df[offset_column_name]) if use_abs else filtered_df[offset_column_name]
-
-        # Define the filtering logic.
-        if type == 'min':
-            if is_strict:
-                filter_series = series > threshold
-            else:
-                filter_series = series >= threshold
-        elif type == 'max':
-            if is_strict:
-                filter_series = series < threshold
-            else:
-                filter_series = series <= threshold
-        else:
-            filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
-
-        filtered_df = filtered_df[filter_series]
-
-        return filtered_df
-    # End filter_by_value.
 
 
