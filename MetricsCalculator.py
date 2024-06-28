@@ -357,18 +357,18 @@ class MetricsCalculator:
         return start_dates, end_dates
     # End get_offset_dates.
 
-    def calc_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None):
+    def generate_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None):
 
         # Filter for offsets (runs) by duration.
         long_offsets_df = self.filter_offsets_by_duration(df, duration_column_name)
 
         # Get dictionary of info about the unique offsets in long_offsets_df.
-        long_offsets_dict = self.calc_unique_offsets_info(long_offsets_df)
+        long_offsets_dict = self.generate_unique_offsets_info(long_offsets_df)
 
         return long_offsets_dict
     # End calc_long_offsets_dict.
 
-    def calc_unique_offsets_info(self, df: pd.DataFrame = None):
+    def generate_unique_offsets_info(self, df: pd.DataFrame = None):
         if df is not None:
             self._validate_dataframe(df)
         elif self.run_data_df is not None:
@@ -706,8 +706,12 @@ class MetricsCalculator:
                         except KeyError as e:
                             print(f"KeyError: {e} not found. Expected Keys in Offsets items are"
                                   f"'duration', 'start_date', and 'end_date'. Be sure to use"
-                                  f"MetricsCalculator.calc_long_offsets_info() to generate"
+                                  f"MetricsCalculator.generate_long_offsets_info() or"
+                                  f"MetricsCalculator.generate_unique_offsets_info() to generate"
                                   f"the expected Offsets Dictionary.")
+                            duration_str = ""
+                            start_date_str = ""
+                            end_date_str = ""
 
                         if is_first:
                             # Print next to the offset if this is the first data entry for the current offset.

@@ -277,7 +277,7 @@ def main(args):
         #     print(item, "\n")
 
         # Get table of long offsets.
-        offsets_dict = calculator.calc_long_offsets_info()
+        offsets_dict = calculator.generate_long_offsets_info()
         # print(offsets_dict, "\n")
 
         # Write report.
