@@ -178,16 +178,16 @@ class MetricsCalculator:
             raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
         available_metrics = {
-            "long_offsets_count": self.count_long_offsets,
-            "long_gaps_count": self.count_long_gaps,
-            "max_gap_duration": self.get_max_gap_duration,
-            "max_gap_dates": lambda: self.get_max_gap_dates(self.get_max_gap_duration()),
-            "max_offset_duration": self.get_max_offset_duration,
-            "longest_offsets": lambda: self.get_longest_offsets(self.get_max_offset_duration()),
-            "large_offsets_count": self.count_large_offsets,
-            "min_max_offsets": self.get_min_max_offsets,
-            "max_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[0]),
-            "min_offset_dates": lambda: self.get_offset_dates(self.get_min_max_offsets()[1])
+            "long_offsets_count": lambda df: self.count_long_offsets(df),
+            "long_gaps_count": lambda df: self.count_long_gaps(df),
+            "max_gap_duration": lambda df: self.get_max_gap_duration(df),
+            "max_gap_dates": lambda df: self.get_max_gap_dates(self.get_max_gap_duration(df)),
+            "max_offset_duration": lambda df: self.get_max_offset_duration(df),
+            "longest_offsets": lambda df: self.get_longest_offsets(self.get_max_offset_duration(df)),
+            "large_offsets_count": lambda df: self.count_large_offsets(df),
+            "min_max_offsets": lambda df: self.get_min_max_offsets(df),
+            "max_offset_dates": lambda df: self.get_offset_dates(self.get_min_max_offsets(df)[0]),
+            "min_offset_dates": lambda df: self.get_offset_dates(self.get_min_max_offsets(df)[1])
         }
 
         metrics = {}
@@ -366,7 +366,7 @@ class MetricsCalculator:
             offsets_column_name = self.col_config['offset_column']
 
         non_nan_runs = df[df[offsets_column_name].notna()]
-        max_offset_duration = non_nan_runs[duration_column_name].max().tolist()
+        max_offset_duration = non_nan_runs[duration_column_name].max()
         return max_offset_duration
 
     def get_longest_offsets(self, max_offset_duration=None, df: pd.DataFrame = None,
