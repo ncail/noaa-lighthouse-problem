@@ -97,8 +97,7 @@ class MetricsCalculator:
         elif self.run_data_df is not None:
             return self.run_data_df,  self.col_config[config_col_name]
         else:
-            raise ValueError("No DataFrame provided, or column not in DataFrame, "
-                             "and no pre-set DataFrame found.")
+            raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
     def set_dataframe(self, df):
         self.validate_dataframe(df)
