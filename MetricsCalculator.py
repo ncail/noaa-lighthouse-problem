@@ -699,9 +699,15 @@ class MetricsCalculator:
                     # Iterate through the data corresponding to the current offset.
                     for iLoop in range(len(data['duration'])):
                         # Convert timedeltas to strings.
-                        duration_str = str(data['duration'][iLoop])
-                        start_date_str = str(data['start_date'][iLoop])
-                        end_date_str = str(data['end_date'][iLoop])
+                        try:
+                            duration_str = str(data['duration'][iLoop])
+                            start_date_str = str(data['start_date'][iLoop])
+                            end_date_str = str(data['end_date'][iLoop])
+                        except KeyError as e:
+                            print(f"KeyError: {e} not found. Expected Keys in Offsets items are"
+                                  f"'duration', 'start_date', and 'end_date'. Be sure to use"
+                                  f"MetricsCalculator.calc_long_offsets_info() to generate"
+                                  f"the expected Offsets Dictionary.")
 
                         if is_first:
                             # Print next to the offset if this is the first data entry for the current offset.
