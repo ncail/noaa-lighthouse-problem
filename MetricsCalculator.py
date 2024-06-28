@@ -276,57 +276,129 @@ class MetricsCalculator:
 
         return formatted_metrics
 
-    def count_long_gaps(self):
-        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
-        long_gaps_count = len(self.filter_gaps_by_duration(nan_df))
+    def count_long_gaps(self, df=None, duration_column=None, offsets_column=None, **kwargs):
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        nan_df = df[df[offsets_column].isna()]
+        long_gaps_count = len(self.filter_gaps_by_duration(nan_df, duration_column, **kwargs))
         return long_gaps_count
     # End count_long_gaps.
 
-    def count_long_offsets(self):
-        long_offsets_df = self.filter_offsets_by_duration()
-        long_non_nan_df = long_offsets_df[long_offsets_df[self.col_config['offset_column']].notna()]
+    def count_long_offsets(self, df=None, duration_column=None, offsets_column=None, **kwargs):
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        long_offsets_df = self.filter_offsets_by_duration(df, duration_column, **kwargs)
+        long_non_nan_df = long_offsets_df[long_offsets_df[offsets_column].notna()]
         long_offsets_count = len(long_non_nan_df)
         return long_offsets_count
 
-    def count_large_offsets(self):
-        large_offsets_df = self.filter_offsets_by_value()
+    def count_large_offsets(self, df=None, offsets_column=None, **kwargs):
+        if df is None:
+            df = self.run_data_df
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        large_offsets_df = self.filter_offsets_by_value(df, offsets_column, **kwargs)
         large_offsets_count = len(large_offsets_df)
         return large_offsets_count
 
-    def get_max_gap_duration(self):
-        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
-        max_gap_duration = nan_df[self.col_config['duration_column']].max()
+    def get_max_gap_duration(self, df=None, duration_column=None, offsets_column=None):
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        nan_df = df[df[offsets_column].isna()]
+        max_gap_duration = nan_df[duration_column].max()
         return max_gap_duration
 
-    def get_max_gap_dates(self, max_gap_duration):
-        nan_df = self.run_data_df[self.run_data_df[self.col_config['offset_column']].isna()]
-        gap_start_date = nan_df[nan_df[self.col_config['duration_column']]
-                                == max_gap_duration][self.col_config['start_date_column']].tolist()
-        gap_end_date = nan_df[nan_df[self.col_config['duration_column']]
-                              == max_gap_duration][self.col_config['end_date_column']].tolist()
+    def get_max_gap_dates(self, max_gap_duration=None, df=None, duration_column=None,
+                          offsets_column=None, start_date_column=None, end_date_column=None):
+        if max_gap_duration is None:
+            max_gap_duration = self.get_max_gap_duration(df, duration_column, offsets_column)
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+        if start_date_column is None:
+            start_date_column = self.col_config['start_date_column']
+        if end_date_column is None:
+            end_date_column = self.col_config['end_date_column']
+
+        nan_df = df[df[offsets_column].isna()]
+        gap_start_date = nan_df[nan_df[duration_column]
+                                == max_gap_duration][start_date_column].tolist()
+        gap_end_date = nan_df[nan_df[duration_column]
+                              == max_gap_duration][end_date_column].tolist()
         return gap_start_date, gap_end_date
 
-    def get_max_offset_duration(self):
-        non_nan_runs = self.run_data_df[self.run_data_df[self.col_config['offset_column']].notna()]
-        max_offset_duration = non_nan_runs[self.col_config['duration_column']].max()
+    def get_max_offset_duration(self, df=None, offsets_column=None, duration_column=None):
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        non_nan_runs = df[df[offsets_column].notna()]
+        max_offset_duration = non_nan_runs[duration_column].max()
         return max_offset_duration
 
-    def get_longest_offsets(self, max_offset_duration):
-        non_nan_runs = self.run_data_df[self.run_data_df[self.col_config['offset_column']].notna()]
-        longest_offsets = non_nan_runs[non_nan_runs[self.col_config['duration_column']]
-                                       == max_offset_duration][self.col_config['offset_column']].tolist()
+    def get_longest_offsets(self, max_offset_duration=None, df=None, offsets_column=None,
+                            duration_column=None):
+        if max_offset_duration is None:
+            max_offset_duration = self.get_max_offset_duration(df, offsets_column, duration_column)
+        if df is None:
+            df = self.run_data_df
+        if duration_column is None:
+            duration_column = self.col_config['duration_column']
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        non_nan_runs = df[df[offsets_column].notna()]
+        longest_offsets = non_nan_runs[non_nan_runs[duration_column]
+                                       == max_offset_duration][offsets_column].tolist()
         return longest_offsets
 
-    def get_min_max_offsets(self):
-        max_offset = self.run_data_df[self.col_config['offset_column']].max()
-        min_offset = self.run_data_df[self.col_config['offset_column']].min()
+    def get_min_max_offsets(self, df=None, offsets_column=None):
+        if df is None:
+            df = self.run_data_df
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+
+        max_offset = df[offsets_column].max()
+        min_offset = df[offsets_column].min()
         return max_offset, min_offset
     # End get_min_max_offsets.
 
-    def get_offset_dates(self, offset_value):
-        bool_mask = self.run_data_df[self.col_config['offset_column']] == offset_value
-        start_dates = self.run_data_df.loc[bool_mask, self.col_config['start_date_column']].tolist()
-        end_dates = self.run_data_df.loc[bool_mask, self.col_config['end_date_column']].tolist()
+    def get_offset_dates(self, offset_value, df=None, offsets_column=None,
+                         start_date_column=None, end_date_column=None):
+        if df is None:
+            df = self.run_data_df
+        if offsets_column is None:
+            offsets_column = self.col_config['offset_column']
+        if start_date_column is None:
+            start_date_column = self.col_config['start_date_column']
+        if end_date_column is None:
+            end_date_column = self.col_config['end_date_column']
+
+        bool_mask = df[offsets_column] == offset_value
+        start_dates = df.loc[bool_mask, start_date_column].tolist()
+        end_dates = df.loc[bool_mask, end_date_column].tolist()
         return start_dates, end_dates
     # End get_offset_dates.
 
