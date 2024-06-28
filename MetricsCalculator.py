@@ -47,12 +47,12 @@ class MetricsCalculator:
 
     def set_column_names(self, duration_column_name: str = 'duration_column',
                          offsets_column_name: str = 'offset_column',
-                         start_date_column: str = 'start_date_column',
-                         end_date_column: str = 'end_date_column') -> None:
+                         start_date_column_name: str = 'start_date_column',
+                         end_date_column_name: str = 'end_date_column') -> None:
         self.col_config['duration_column'] = duration_column_name
         self.col_config['offset_column'] = offsets_column_name
-        self.col_config['start_date_column'] = start_date_column
-        self.col_config['end_date_column'] = end_date_column
+        self.col_config['start_date_column'] = start_date_column_name
+        self.col_config['end_date_column'] = end_date_column_name
     # End set_column_names.
 
     @staticmethod
@@ -335,7 +335,7 @@ class MetricsCalculator:
 
     def get_max_gap_dates(self, max_gap_duration=None, df: pd.DataFrame = None,
                           duration_column_name: str = None, offsets_column_name: str = None,
-                          start_date_column: str = None, end_date_column: str = None):
+                          start_date_column_name: str = None, end_date_column_name: str = None):
         if max_gap_duration is None:
             max_gap_duration = self.get_max_gap_duration(df, duration_column_name, offsets_column_name)
         if df is None:
@@ -344,16 +344,16 @@ class MetricsCalculator:
             duration_column_name = self.col_config['duration_column']
         if offsets_column_name is None:
             offsets_column_name = self.col_config['offset_column']
-        if start_date_column is None:
-            start_date_column = self.col_config['start_date_column']
-        if end_date_column is None:
-            end_date_column = self.col_config['end_date_column']
+        if start_date_column_name is None:
+            start_date_column_name = self.col_config['start_date_column']
+        if end_date_column_name is None:
+            end_date_column_name = self.col_config['end_date_column']
 
         nan_df = df[df[offsets_column_name].isna()]
         gap_start_date = nan_df[nan_df[duration_column_name]
-                                == max_gap_duration][start_date_column].tolist()
+                                == max_gap_duration][start_date_column_name].tolist()
         gap_end_date = nan_df[nan_df[duration_column_name]
-                              == max_gap_duration][end_date_column].tolist()
+                              == max_gap_duration][end_date_column_name].tolist()
         return gap_start_date, gap_end_date
 
     def get_max_offset_duration(self, df: pd.DataFrame = None, offsets_column_name: str = None,
@@ -397,19 +397,19 @@ class MetricsCalculator:
     # End get_min_max_offsets.
 
     def get_offset_dates(self, offset_value, df: pd.DataFrame = None, offsets_column_name: str = None,
-                         start_date_column: str = None, end_date_column: str = None):
+                         start_date_column_name: str = None, end_date_column_name: str = None):
         if df is None:
             df = self.run_data_df
         if offsets_column_name is None:
             offsets_column_name = self.col_config['offset_column']
-        if start_date_column is None:
-            start_date_column = self.col_config['start_date_column']
-        if end_date_column is None:
-            end_date_column = self.col_config['end_date_column']
+        if start_date_column_name is None:
+            start_date_column_name = self.col_config['start_date_column']
+        if end_date_column_name is None:
+            end_date_column_name = self.col_config['end_date_column']
 
         bool_mask = df[offsets_column_name] == offset_value
-        start_dates = df.loc[bool_mask, start_date_column].tolist()
-        end_dates = df.loc[bool_mask, end_date_column].tolist()
+        start_dates = df.loc[bool_mask, start_date_column_name].tolist()
+        end_dates = df.loc[bool_mask, end_date_column_name].tolist()
         return start_dates, end_dates
     # End get_offset_dates.
 
