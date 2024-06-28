@@ -263,7 +263,7 @@ def main(args):
                                               merged_df[noaa_pwl_col_name], merged_df[noaa_dt_col_name], size)
 
         # Set the dataframe.
-        calculator.set_dataframe(run_data_df)
+        calculator.set_runs_dataframe(run_data_df)
 
         # Calculate metrics.
         metrics = calculator.calculate_metrics()

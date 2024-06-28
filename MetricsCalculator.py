@@ -93,13 +93,13 @@ class MetricsCalculator:
             elif self.col_config[config_col_name] in df.columns:
                 return df, self.col_config[config_col_name]
             else:
-                raise ValueError("Column could not be found in DataFrame.")
+                raise ValueError(f"Column '{col_name}' could not be found in DataFrame.")
         elif self.run_data_df is not None:
             return self.run_data_df,  self.col_config[config_col_name]
         else:
             raise ValueError("No DataFrame provided and no pre-set DataFrame found.")
 
-    def set_dataframe(self, df):
+    def set_runs_dataframe(self, df):
         self.validate_dataframe(df)
         self.run_data_df = df.copy()
     # End set_dataframe.
