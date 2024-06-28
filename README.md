@@ -20,7 +20,6 @@
 9. [Downloading Data](#downloading-data)
     - [NOAA Data](#noaa-data)
     - [Lighthouse Data](#lighthouse-data)
-10. [Error Handling](#error-handling)
 
 ## Introduction
 
@@ -140,6 +139,7 @@ Place the `config.json` file in the root directory of your project.
 ### Configuration values
 
 - `datetime`: Examples include: "Date Time", "myDateTimeColumn".
+- `water_level`: Examples include: "Water Level", "myWaterLevelColumn".
 - `threshold` (duration): Examples include:  "1 week", "2 days, 12 hours", "30 minutes".
 - `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0.
 - `type`: Must be either "min" or "max".
