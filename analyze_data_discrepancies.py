@@ -251,8 +251,8 @@ def main(args):
         size = len(merged_df)
 
         # Get comparison table.
-        stats_df = fp.get_comparison_stats(merged_df[lh_pwl_col_name],
-                                           merged_df[noaa_pwl_col_name], size)
+        stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
+                                                          merged_df[noaa_pwl_col_name], size)
 
         # Instantiate an object to get metrics. Set configs.
         calculator = MetricsCalculator()

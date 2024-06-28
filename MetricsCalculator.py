@@ -125,6 +125,70 @@ class MetricsCalculator:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
+    @staticmethod
+    def get_comparison_stats(primary_df_col, reference_df_col, size, calc_all=True, **kwargs):
+
+        # Initialize incremented stats.
+        values_disagree = 0
+        values_agree = 0
+        primary_gaps = 0
+        ref_gaps = 0
+        shared_gaps = 0
+
+        for index in range(size):
+            # If neither value is NaN, compare the values and increment disagreements
+            # if not equal.
+            # Round values to millimeters.
+            if not pd.isna(primary_df_col.iloc[index]) and not pd.isna(reference_df_col.iloc[index]):
+                if round(primary_df_col.iloc[index], 4) != round(reference_df_col.iloc[index], 4):
+                    values_disagree += 1
+                else:
+                    values_agree += 1
+
+            if pd.isna(primary_df_col.iloc[index]) and pd.isna(reference_df_col.iloc[index]):
+                shared_gaps += 1
+                continue
+
+            if pd.isna(primary_df_col.iloc[index]):
+                primary_gaps += 1
+
+            if pd.isna(reference_df_col.iloc[index]):
+                ref_gaps += 1
+        # End for.
+
+        total_disagree = values_disagree + primary_gaps + ref_gaps
+        total_agree = values_agree + shared_gaps
+        primary_missing = shared_gaps + primary_gaps
+        ref_missing = shared_gaps + ref_gaps
+
+        percent_agree = round(total_agree / size * 100, 4)
+        percent_val_disagree = round(values_disagree / size * 100, 4)
+        percent_total_disagree = round(total_disagree / size * 100, 4)
+        percent_primary_missing = round(primary_missing / size * 100, 4)
+        percent_ref_missing = round(ref_missing / size * 100, 4)
+
+        table = {
+            'total points': [total_agree, values_disagree, total_disagree, primary_missing,
+                             ref_missing],
+            'percent': [percent_agree, percent_val_disagree, percent_total_disagree,
+                        percent_primary_missing, percent_ref_missing]
+        }
+
+        row_labels = ['total agreements', 'value disagreements', 'total disagreements',
+                      'missing (primary)', 'missing (reference)']
+
+        stats_table = pd.DataFrame(table, index=row_labels)
+
+        if calc_all:
+            return stats_table
+        else:
+            for item in row_labels:
+                if item not in kwargs:
+                    stats_table.drop(index=item)
+
+        return stats_table
+    # End get_comparison_stats.
+
     def generate_runs_df(self, offset_column: pd.Series, reference_column: pd.Series,
                          ref_dates: pd.Series, size: int, create_df: bool = True):
         offsets = self.get_discrepancies(offset_column, reference_column, size)
