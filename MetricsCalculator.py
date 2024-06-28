@@ -194,7 +194,8 @@ class MetricsCalculator:
 
         return metrics
 
-    def get_valid_metrics_list(self):
+    @staticmethod
+    def get_valid_metrics_list():
         valid_metrics_keys = [
             "long_offsets_count",
             "long_gaps_count",
@@ -237,13 +238,11 @@ class MetricsCalculator:
             else:
                 raise ValueError("No Metrics provided, and no pre-set Metrics found.")
         elif not self.validate_metrics(metrics):
-            raise ValueError("Invalid Metrics provided.")
+            raise ValueError("Invalid Metrics provided. Metrics must be a Dictionary"
+                             "and must only contain keys found in the list of valid metrics."
+                             "Use MetricsCalculator.get_valid_metrics_list().")
 
         metric_strings = self.get_metric_key_strings()
-
-        long_offsets_count = long_gaps_count = max_gap_duration = max_gap_dates = max_offset_duration = \
-            longest_offsets = large_offsets_count = 0
-        min_max_offsets = max_offset_dates = min_offset_dates = (0, 0)
 
         available_metric_data = {
             'long_offsets_count': (f"{metric_strings['offset_dur']}",
