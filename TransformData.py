@@ -10,7 +10,9 @@ class TransformData:
     # ******************************************************************************
     def __init__(self, user_config=None):
         default_config = {
-            'number_of_intervals': 0
+            'offset_correction_parameters': {
+                'number_of_intervals': 0
+            }
         }
 
         if user_config is None:
@@ -107,6 +109,8 @@ class TransformData:
     # End temporal_deshifter.
 
     def process_offsets(self, offset_column, reference_column, size, index=0, criteria=None, offset_arr=None):
+        if criteria is None:
+            criteria = self.config['number_of_intervals']
 
         # index = 0
         while index < size:
@@ -118,6 +122,11 @@ class TransformData:
 
             # Get offset.
             offset = self.identify_offset(offset_column, reference_column, index, size, duration=criteria)
+
+            # If offset is zero, no corrections needed. Skip over indices.
+            if offset == 0.0:
+                index += criteria
+                continue
 
             # Skip if no verified offset.
             if pd.isna(offset):
@@ -141,7 +150,7 @@ class TransformData:
 
     def identify_offset(self, offset_column, reference_column, index, size, duration=None):
         if duration is None:
-            duration = self.config['number_of_intervals']
+            duration = self.config['offset_correction_parameters']['number_of_intervals']
 
         offset_value = offset_column.iloc[index]
         ref_value = reference_column.iloc[index]

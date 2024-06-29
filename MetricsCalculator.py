@@ -37,9 +37,6 @@ class MetricsCalculator:
                 'threshold': '0 days',
                 'type': 'min',
                 'is_strict': False
-            },
-            'offset_correction_parameters': {
-                'number_of_intervals': 0
             }
         }
 
