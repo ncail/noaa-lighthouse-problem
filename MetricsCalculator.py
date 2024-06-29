@@ -676,9 +676,9 @@ class MetricsCalculator:
     def _generate_duration_string(self, params):
         if 'type' in params:
             if params['type'] == 'min':
-                return f"> {'' if params['is_strict'] else '='} {params['threshold']}"
+                return f">{'' if params['is_strict'] else '='} {params['threshold']}"
             elif params['type'] == 'max':
-                return f"< {'' if params['is_strict'] else '='} {params['threshold']}"
+                return f"<{'' if params['is_strict'] else '='} {params['threshold']}"
         return "[Type of threshold not specified]"
     # End _generate_duration_string.
 
@@ -689,9 +689,9 @@ class MetricsCalculator:
 
         if 'type' in params:
             if params['type'] == 'min':
-                result += f"> {'' if params['is_strict'] else '='} {params['threshold']}"
+                result += f">{'' if params['is_strict'] else '='} {params['threshold']}"
             elif params['type'] == 'max':
-                result += f"< {'' if params['is_strict'] else '='} {params['threshold']}"
+                result += f"<{'' if params['is_strict'] else '='} {params['threshold']}"
         else:
             result += "[Type of threshold not specified]"
 

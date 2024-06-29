@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import json
 
+
 class TransformData:
 
     # ******************************************************************************
@@ -78,7 +79,7 @@ class TransformData:
             # values contribute to the detection of an offset, but does include them in the
             # duration count.
             vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
-                                          index, size, duration=10)
+                                               index, size, duration=10)
 
             # If there is no consistent vertical offset, try again for next temporal shift value.
             if pd.isna(vert_offset):
