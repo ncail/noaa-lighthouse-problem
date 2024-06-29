@@ -247,7 +247,7 @@ def get_df_dictionary(df_list, dt_col_name):
         year = df[dt_col_name].dt.year
 
         if not pd.isna(year[0]):
-            dfs_dict[year[0]] = df
+            dfs_dict[int(year[0])] = df
     # End for.
 
     return dfs_dict
@@ -423,3 +423,43 @@ def identify_offset(offset_column, reference_column, index, size,
     return difference
 # End identify_offset.
 
+
+def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
+    # Extract all unique column names and determine maximum column width
+    column_names = set()
+    max_column_widths = {}
+
+    # Determine maximum column width based on header and rows
+    for row_name, row_data in nested_dict.items():
+        for column_name, value in row_data.items():
+            column_names.add(column_name)
+            max_width = max(len(str(column_name)), len(str(value)))
+            current_max = max_column_widths.get(column_name, 0)
+            max_column_widths[column_name] = max(current_max, max_width)
+
+    # Sort column names alphabetically
+    column_names = sorted(column_names)
+
+    # Prepare table header
+    header = [row_header.ljust(len(row_header))] + [column_name.ljust(max_column_widths[column_name])
+                                                    for column_name in column_names]
+    header_line = " | ".join(header)
+    divider_line = "-" * len(header_line)
+
+    # Prepare table rows
+    rows = []
+    for row_name, row_data in nested_dict.items():
+        row_values = [str(row_name).ljust(len(row_header))]
+        for column_name in column_names:
+            if column_name in row_data:
+                row_values.append(str(row_data[column_name]).ljust(max_column_widths[column_name]))
+            else:
+                row_values.append("".ljust(max_column_widths[column_name]))  # Handle missing values
+        rows.append(" | ".join(row_values))
+
+    # Write to file
+    with open(f'{write_path}/{filename}.txt', 'a') as file:
+        file.write(header_line + "\n")
+        file.write(divider_line + "\n")
+        for row in rows:
+            file.write(row + "\n")
