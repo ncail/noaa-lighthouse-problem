@@ -117,7 +117,7 @@ def main(args):
     for lh_file in lighthouse_csv_files:
 
         # Read the file into a dataframe.
-        df = fp.read_file(lh_file, flag=flag_ptr)
+        df = fp.read_file_to_df(lh_file, flag=flag_ptr)
 
         # If read was successful, split into yearly data and append to lh_df_arr.
         if flag_ptr[0]:
@@ -135,7 +135,7 @@ def main(args):
     noaa_df_arr = []
     for noaa_file in noaa_csv_files:
 
-        df = fp.read_file(noaa_file, flag=flag_ptr)
+        df = fp.read_file_to_df(noaa_file, flag=flag_ptr)
 
         if flag_ptr[0] is True:
             noaa_df_arr.append(df)
@@ -300,6 +300,7 @@ def main(args):
         MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
     # End for.
 
+    # Write summary file.
     with open(f'{write_path}/{filename}_summary.txt', 'a') as file:
         file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
         file.write(f"% agree: Percentage of values that agree between datasets.\n"

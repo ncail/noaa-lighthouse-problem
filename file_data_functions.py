@@ -1,8 +1,6 @@
 import os
 import pandas as pd
 import numpy as np
-from datetime import timedelta
-import re
 import json
 
 # Opt into future behavior for pandas. Encouraged by FutureWarning message
@@ -46,14 +44,6 @@ config = {
 """ ******************* Function implementation below ******************* """
 
 
-# ***************************************************************************
-# *********************** FUNCTION LOAD_CONFIGS *****************************
-# ***************************************************************************
-
-# Loads configurations, optional to customize by the user, from a JSON file.
-# In case of missing keys in config.json, fall back on default global config
-# dictionary.
-
 def load_configs(file_path):
     global config
 
@@ -68,19 +58,7 @@ def load_configs(file_path):
 # End load_configs.
 
 
-# ***************************************************************************
-# **************************** FUNCTION READ_FILE ***************************
-# ***************************************************************************
-
-# Reads csv file into a dataframe.
-# Pass an index limit to only read file until a certain index.
-# Uses end_file_index to stop reading file when valid data stops.
-# If index_limit is None and assigned None by end_file_index(), then
-# pd.read_csv will read the entire csv file.
-# Option to pass a flag and error message to be retrieved from main() if
-# user wants to verify that read was successful.
-
-def read_file(file, index_limit=None, flag=[False], error=[""]):
+def read_file_to_df(file, index_limit=None, flag=[False], error=[""]):
 
     # Initialize df to None.
     df = None
@@ -109,14 +87,6 @@ def read_file(file, index_limit=None, flag=[False], error=[""]):
 # End read_file.
 
 
-# ***************************************************************************
-# ******************* FUNCTION END_FILE_INDEX VERSION 3 *********************
-# ***************************************************************************
-
-# Simply count the lines in the file (Python's iteration over file does
-# not load the entire file into memory). Then, subtract the number of lines
-# that begin with '# '. This assumes all of them are at the end.
-
 def end_file_index(filename):
 
     line_count = 0
@@ -135,14 +105,6 @@ def end_file_index(filename):
 # End end_file_index().
 
 
-# ***************************************************************************
-# ******************* FUNCTION GET_YEAR_FROM_USER ***************************
-# ***************************************************************************
-
-# Prompts the user to enter a year value. This allows the main program
-# to get the range of years that the data has, and write whether data for
-# a given year was not available to the results file.
-
 def get_year_from_user(prompt):
     while True:
         try:
@@ -158,15 +120,6 @@ def get_year_from_user(prompt):
             print("Please enter a valid number for the year.")
 # End get_year_from_user.
 
-
-# ***************************************************************************
-# ******************* FUNCTION SPLIT_BY_YEAR ********************************
-# ***************************************************************************
-
-# Splits a dataframe into yearly dataframes. Returns a list of
-# yearly dataframes.
-# Lighthouse data files are provided in multi-year csv files but need
-# to be processed year by year so splitting them is necessary.
 
 def split_by_year(df, datetime_col_name):
     # Case if column name is not assigned.
@@ -198,15 +151,6 @@ def split_by_year(df, datetime_col_name):
 # End split_by_year.
 
 
-# ***************************************************************************
-# ******************* FUNCTION CLEAN_DATAFRAME ******************************
-# ***************************************************************************
-
-# Prepare dataframe for analysis by standardizing datetimes and numerical values.
-# Option to clean backup water level (bwl) and harmonic water level (harmwl) columns.
-# Option to pass flag pointer so that status of if clean_dataframe succeeded or failed
-# can be checked by user in main program.
-
 def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
                     bwl_col_name=None, error=[""]):
 
@@ -231,14 +175,6 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
 # End clean_dataframe.
 
 
-# ***************************************************************************
-# ******************* FUNCTION GET_DF_DICTIONARY ****************************
-# ***************************************************************************
-
-# Convert list of dataframes to a dictionary with the year as the keys and
-# corresponding dataframes as values. Then, comparing the NOAA and Lighthouse
-# dictionaries ensures data from the same year will be compared.
-
 def get_df_dictionary(df_list, dt_col_name):
 
     dfs_dict = {}
@@ -252,176 +188,6 @@ def get_df_dictionary(df_list, dt_col_name):
 
     return dfs_dict
 # End get_df_dictionary.
-
-
-# ***************************************************************************
-# ******************* FUNCTION TEMPORAL_DESHIFTER ***************************
-# ***************************************************************************
-
-# Automated process for correcting a changing temporal shift.
-# Writes notes about execution into text file.
-# Returns a time-aligned/corrected copy of the dataframe.
-# Note that vertical offsets are not corrected. This is the purpose of
-# process_offsets.
-
-def temporal_deshifter(merged_df, primary_col_name, ref_col_name, size):
-
-    """ Loop over 7 temporal shifts: from -3 to 3
-            Create copy of merged dataframe.
-            Shift lighthouse by temporal shift loop variable value.
-            Create dataframe to hold the de-shifted data.
-            Call identify_offset.
-                If returns nan, then continue to trying next temporal offset value.
-                If offset,
-                    find index where offset stops.
-                    Save this index, only loop for index < size.
-            Save corrections to de-shifted dataframe.
-            Restart loop, beginning at last index, and first temporal offset value.
-    """
-
-    # Initialize dataframes. df_copy will be shifted to find offsets.
-    # deshifted_df will hold the temporally corrected values.
-    df_copy = merged_df.copy()
-    deshifted_df = merged_df.copy()
-
-    index = 0
-    temporal_shifts = range(-3, 4)
-    shift_val_index = 0
-
-    # While indices of dataframe are valid, correct temporal shifts if possible.
-    while index < size:
-
-        # If all temporal shifts have been tried, consider this segment
-        # of data impossible to automatically correct, possibly because of a
-        # changing vertical offset or skipped values, etc.
-        # Restart process at +10 indices from current.
-        if shift_val_index > 6:
-            shift_val_index = 0
-            while index < index + 10:
-                if index >= size:
-                    break
-                deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
-                index += 1
-
-        # Current shift value.
-        try_shift = temporal_shifts[shift_val_index]
-
-        # Temporally shift the dataframe.
-        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
-
-        # Get the vertical offset. Note that identify_offset does not let missing
-        # values contribute to the detection of an offset, but does include them in the
-        # duration count.
-        vert_offset = identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
-                                      index, size, duration=10)
-
-        # If there is no consistent vertical offset, try again for next temporal shift value.
-        if pd.isna(vert_offset):
-            shift_val_index += 1
-            continue
-
-        # If an offset is found, record df_copy values into deshifted_df while the vertical
-        # offset is valid. Record the index where the offset stops.
-        # When offset stops, undo the shift.
-        while index < size:
-            if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
-                    round(df_copy[ref_col_name].iloc[index], 4)):
-                index += 1
-                deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
-            else:
-                df_copy[primary_col_name] = merged_df[primary_col_name]
-                # df_copy.drop(index, inplace=True)
-                break
-        # End inner while.
-
-        shift_val_index = 0
-    # End outer while.
-
-    return deshifted_df
-# End temporal_deshifter.
-
-
-# ***************************************************************************
-# ******************* FUNCTION PROCESS_OFFSETS ******************************
-# ***************************************************************************
-
-# Correct offsets in a data set, considering that the offset value may change throughout,
-# and that some discrepancies cannot be considered offsets.
-# Includes option to append an array with offset values including NaNs.
-# Modifies passed columns. Returns nothing.
-
-def process_offsets(offset_column, reference_column, size, index=0, offset_arr=None):
-
-    # index = 0
-    while index < size:
-        # Skip NaNs.
-        if pd.isna(offset_column.iloc[index]) or pd.isna(reference_column.iloc[index]):
-            index += 1
-            offset_arr.append(np.nan)
-            continue
-
-        # Get offset.
-        offset = identify_offset(offset_column, reference_column, index, size)
-
-        # Skip if no verified offset.
-        if pd.isna(offset):
-            index += 1
-            offset_arr.append(np.nan)
-            continue
-
-        # Correct offset until the correction stops working.
-        while index < size:
-            if round(offset_column.iloc[index] + offset, 4) == round(reference_column.iloc[index], 4):
-                offset_column.iloc[index] = offset_column.iloc[index] + offset
-                offset_arr.append(offset)
-                index += 1
-                # print("fixing offset at index: ", index, " with difference: ", offset)
-
-            else:
-                break
-        # End inner while.
-    # End outer while.
-# End process_offsets.
-
-
-# ***************************************************************************
-# ******************* FUNCTION IDENTIFY_OFFSET ******************************
-# ***************************************************************************
-
-# If there is an offset identified as a constant difference between the
-# reference and suspected offset data, for [duration] number of intervals
-# then return the offset value, else return NaN.
-# Called by process_offsets and temporal_deshifter.
-
-def identify_offset(offset_column, reference_column, index, size,
-                    duration=config['offset_correction_parameters']['number_of_intervals']):
-    offset_value = offset_column.iloc[index]
-    ref_value = reference_column.iloc[index]
-    difference = round(ref_value - offset_value, 4)
-
-    f_loop = index
-    # for loop in range(index, index + duration):
-    while f_loop < (index + duration):
-        if f_loop + 1 >= size:
-            return np.nan
-
-        # Skips over NaNs. Considers that the offset remains valid even if
-        # some values are missing due to sensor failure or whatever.
-        # This prevents invalidating an offset that is consistent otherwise.
-        if pd.isna(offset_column.iloc[f_loop]) or pd.isna(reference_column.iloc[f_loop]):
-            continue
-
-        current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
-
-        if current_diff != difference:
-            return np.nan
-
-        # Increment index.
-        f_loop += 1
-    # End while.
-
-    return difference
-# End identify_offset.
 
 
 def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
@@ -463,3 +229,4 @@ def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
         file.write(divider_line + "\n")
         for row in rows:
             file.write(row + "\n")
+# End write_table_from_nested_dict.
