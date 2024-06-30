@@ -210,17 +210,6 @@ def main(args):
                 bad_years.append(year)
         # End for.
 
-    # Write error_summary and header to the text file if include_msgs is True.
-    if args.include_msgs:
-        bad_years.sort()
-        header.extend([str(y) + " " for y in bad_years])
-        results_title = ["***************************************************************************\n"
-                         "******************************* RESULTS ***********************************\n"
-                         "***************************************************************************\n\n"]
-        text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-        with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
-            file.write(''.join(text_list))
-
     # Process the dataframes of common years to get statistics. Initialize summary.
     summary = {}
     for year in common_years:
@@ -315,6 +304,17 @@ def main(args):
                    f"maximum value: The maximum discrepancy value.\n\n")
 
     fp.write_table_from_nested_dict(summary, 'Year', write_path, f"{filename}_summary")
+
+    # Write error_summary and header to the text file if include_msgs is True.
+    if args.include_msgs:
+        bad_years.sort()
+        header.extend([str(y) + " " for y in bad_years])
+        results_title = ["***************************************************************************\n"
+                         "******************************* RESULTS ***********************************\n"
+                         "***************************************************************************\n\n"]
+        text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+        with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
+            file.write(''.join(text_list))
 # End main.
 
 
