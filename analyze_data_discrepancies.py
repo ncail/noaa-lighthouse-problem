@@ -3,6 +3,7 @@ import file_data_functions as fp
 
 # Import MetricsCalculator.py as mc
 from MetricsCalculator import MetricsCalculator
+from TransformData import TransformData
 
 # Imports continued...
 import argparse
@@ -242,7 +243,13 @@ def main(args):
         size = len(merged_df)
 
         # If doing analysis on corrected data, correct data here.
+        if year == 1996 or year == 2012:
+            merged_df_copy = merged_df.copy()
+            corrector = TransformData()
+            corrector.temporal_deshifter(merged_df_copy, lh_pwl_col_name, noaa_pwl_col_name, size, year)
 
+
+'''
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
                                                           merged_df[noaa_pwl_col_name], size)
@@ -312,6 +319,7 @@ def main(args):
         text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
         with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
             file.write(''.join(text_list))
+'''
 # End main.
 
 
