@@ -8,17 +8,33 @@ class TransformData:
     # ******************************************************************************
     # ****************************** CONSTRUCTOR ***********************************
     # ******************************************************************************
-    def __init__(self, user_config=None):
+    def __init__(self, user_config=None, df=None, col_names=None):
         default_config = {
             'offset_correction_parameters': {
                 'number_of_intervals': 0
             }
         }
 
+        default_col_config = {
+            'primary_data_column_name': 'primary_col',
+            'reference_data_column_name': 'ref_col',
+            'datetime_column_name': 'dt_col'
+        }
+
         if user_config is None:
-            self.config = default_config
+            self.config = default_config.copy()
         else:
-            self.set_configs(user_config)
+            self.set_configs(user_config.copy())
+
+        if df is None:
+            self.dataframe = pd.DataFrame()
+        else:
+            self.set_dataframe(df)
+
+        if col_names is None:
+            self.col_config = default_col_config.copy()
+        else:
+            self.set_column_names(col_names)
 
     # ******************************************************************************
     # ******************************** SETTERS *************************************
@@ -29,7 +45,52 @@ class TransformData:
                 self.config[section].update(settings)
     # End set_configs.
 
-    def set_data(self, primary_col, reference_col, datetime_col):
+    def set_data(self, primary_column: pd.Series, reference_column: pd.Series,
+                 datetime_column: pd.Series, is_set=[False]) -> None:
+        is_set[0] = True
+
+        length = len(primary_column)
+        if any(len(series) != length for series in [reference_column, datetime_column]):
+            is_set[0] = False
+
+        if is_set[0]:
+            self.dataframe[self.col_config['primary_data_column_name']] = primary_column.copy()
+            self.dataframe[self.col_config['reference_data_column_name']] = reference_column.copy()
+            self.dataframe[self.col_config['datetime_data_column_name']] = datetime_column.copy()
+    # End set_data.
+
+    def set_dataframe(self, dataframe: pd.DataFrame) -> None:
+        self.dataframe = dataframe.copy()
+    # End set_dataframe.
+
+    def set_column_names(self, user_col_config: dict = None, **kwargs) -> None:
+        if user_col_config is None:
+            for key, name in kwargs:
+                if key in self.col_config:
+                    self.col_config[key] = name
+        else:
+            for key, name in user_col_config:
+                if key in self.col_config:
+                    self.col_config[key] = name
+    # End set_column_names.
+
+    # ******************************************************************************
+    # ******************************** GETTERS *************************************
+    # ******************************************************************************
+    def get_configs(self) -> dict:
+        return self.config.copy()
+
+    def get_col_config(self) -> dict:
+        return self.col_config.copy()
+
+    def get_dataframe(self) -> pd.DataFrame:
+        return self.dataframe.copy()
+
+    def get_data_column(self, column_name):
+        for key, name in self.col_config:
+            if name == column_name:
+                return self.dataframe[self.col_config[key]]
+        return None
 
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
