@@ -203,9 +203,6 @@ def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
             current_max = max_column_widths.get(column_name, 0)
             max_column_widths[column_name] = max(current_max, max_width)
 
-    # Sort column names alphabetically
-    column_names = sorted(column_names)
-
     # Prepare table header
     header = [row_header.ljust(len(row_header))] + [column_name.ljust(max_column_widths[column_name])
                                                     for column_name in column_names]

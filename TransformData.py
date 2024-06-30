@@ -29,6 +29,8 @@ class TransformData:
                 self.config[section].update(settings)
     # End set_configs.
 
+    def set_data(self, primary_col, reference_col, datetime_col):
+
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************

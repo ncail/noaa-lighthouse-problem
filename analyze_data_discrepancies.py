@@ -260,18 +260,6 @@ def main(args):
 
         # Calculate metrics.
         metrics = calculator.calculate_metrics()
-
-        # Append year info to summary.
-        summary[year] = {
-            "% agree": stats_df.loc['total agreements', 'percent'],
-            "# long offsets": metrics['long_offsets_count'],
-            "# long gaps": metrics['long_gaps_count'],
-            "longest (duration)": metrics['max_offset_duration'],
-            "longest (value)": metrics['longest_offsets'],
-            "# large offsets": metrics['large_offsets_count'],
-            "minimum value": metrics['min_max_offsets'][1],
-            "maximum value": metrics['min_max_offsets'][0]
-        }
         
         # Set metrics.
         calculator.set_metrics(metrics)
@@ -285,6 +273,17 @@ def main(args):
         offsets_dict = calculator.generate_long_offsets_info()
         # print(offsets_dict, "\n")
 
+        # Append year info to summary.
+        summary[year] = {
+            "% agree": stats_df.loc['total agreements', 'percent'],
+            "# long offsets": metrics['long_offsets_count'],
+            "# long gaps": metrics['long_gaps_count'],
+            "unique long offsets": list(offsets_dict.keys()),
+            "# large offsets": metrics['large_offsets_count'],
+            "minimum value": metrics['min_max_offsets'][1],
+            "maximum value": metrics['min_max_offsets'][0]
+        }
+
         # Write report.
         MetricsCalculator.write_stats(stats_df, write_path, filename, year)
         MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
@@ -297,12 +296,10 @@ def main(args):
         file.write(f"% agree: Percentage of values that agree between datasets.\n"
                    f"# long offsets: The number of offsets that meet the duration threshold.\n"
                    f"# long gaps: The number of gaps that meet the duration threshold.\n"
-                   f"longest (duration): The duration of the longest offset.\n"
-                   f"longest (value): The value of the longest offset.\n"
+                   f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
                    f"# large offsets: The number of offsets that meet the value threshold.\n"
                    f"minimum value: The minimum discrepancy value.\n"
                    f"maximum value: The maximum discrepancy value.\n\n")
-
     fp.write_table_from_nested_dict(summary, 'Year', write_path, f"{filename}_summary")
 
     # Write error_summary and header to the text file if include_msgs is True.
