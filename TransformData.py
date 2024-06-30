@@ -79,18 +79,21 @@ class TransformData:
     # ******************************************************************************
     def get_configs(self) -> dict:
         return self.config.copy()
+    # End get_configs.
 
     def get_col_config(self) -> dict:
         return self.col_config.copy()
+    # End get-col_configs.
 
     def get_dataframe(self) -> pd.DataFrame:
         return self.dataframe.copy()
+    # End get_dataframe.
 
-    def get_data_column(self, column_name):
-        for key, name in self.col_config:
-            if name == column_name:
-                return self.dataframe[self.col_config[key]]
+    def get_data_column(self, column_name: str):
+        if column_name in self.dataframe.columns:
+            return self.dataframe[column_name].copy()
         return None
+    # End get_data_column.
 
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
@@ -111,12 +114,12 @@ class TransformData:
         """
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
-        # deshifted_df will hold the temporally corrected values.
+        # corrected_df will hold the temporally corrected values.
         df_copy = merged_df.copy()
-        deshifted_df = merged_df.copy()
+        corrected_df = merged_df.copy()
 
         index = 0
-        temporal_shifts = range(-3, 4)
+        temporal_shifts = [0, -1, -2, -3, 1, 2, 3]  # A temporal shift of 0 or -1 is most likely.
         shift_val_index = 0
 
         # While indices of dataframe are valid, correct temporal shifts if possible.
@@ -131,7 +134,7 @@ class TransformData:
                 while index < index + 10:
                     if index >= size:
                         break
-                    deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
+                    corrected_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
                     index += 1
 
             # Current shift value.
@@ -151,14 +154,14 @@ class TransformData:
                 shift_val_index += 1
                 continue
 
-            # If an offset is found, record df_copy values into deshifted_df while the vertical
+            # If an offset is found, record df_copy values into corrected_df while the vertical
             # offset is valid. Record the index where the offset stops.
             # When offset stops, undo the shift.
             while index < size:
                 if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                         round(df_copy[ref_col_name].iloc[index], 4)):
                     index += 1
-                    deshifted_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
+                    corrected_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
                 else:
                     df_copy[primary_col_name] = merged_df[primary_col_name]
                     # df_copy.drop(index, inplace=True)
@@ -168,7 +171,7 @@ class TransformData:
             shift_val_index = 0
         # End outer while.
 
-        return deshifted_df
+        return corrected_df
     # End temporal_deshifter.
 
     def process_offsets(self, offset_column, reference_column, size, index=0, criteria=None, offset_arr=None):
