@@ -218,7 +218,7 @@ def main(args):
                          "******************************* RESULTS ***********************************\n"
                          "***************************************************************************\n\n"]
         text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-        with open(f'{write_path}/{filename}.txt', 'a') as file:
+        with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
             file.write(''.join(text_list))
 
     # Process the dataframes of common years to get statistics. Initialize summary.
@@ -251,6 +251,8 @@ def main(args):
 
         # Get size of merged dataframe.
         size = len(merged_df)
+
+        # If doing analysis on corrected data, correct data here.
 
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
