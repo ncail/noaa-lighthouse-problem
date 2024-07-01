@@ -243,10 +243,12 @@ def main(args):
         size = len(merged_df)
 
         # If doing analysis on corrected data, correct data here.
-        if year == 1996 or year == 2012:
-            merged_df_copy = merged_df.copy()
+        if year == 2012:
+            corrected_df = merged_df.copy()
             corrector = TransformData()
-            corrector.temporal_deshifter(merged_df_copy, lh_pwl_col_name, noaa_pwl_col_name, size, year)
+            corrected_df = corrector.temporal_deshifter(corrected_df, lh_pwl_col_name, noaa_pwl_col_name, size, year)
+            with open('correction_reports/dataframe_comparison_5.txt', 'a') as file:
+                file.write(f"{corrected_df.to_string()}")
 
 
 '''

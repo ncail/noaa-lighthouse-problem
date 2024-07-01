@@ -133,6 +133,7 @@ class TransformData:
             # changing vertical offset or skipped values, etc.
             # Restart process at +10 indices from current.
             if shift_val_index > 6:
+                df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                 shift_val_index = 0
                 while index < start_index + 10:
                     if index >= size:
@@ -151,8 +152,8 @@ class TransformData:
             self._report_correction(f"\ntrying shift: {try_shift}", year)
 
             # Temporally shift the dataframe.
-            df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
-            self._report_correction(f"shifted primary column (shift {try_shift}) VS reference column "
+            df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
+            self._report_correction(f"DISPLAYING shifted primary column (shift {try_shift}) VS reference column "
                                     f"for index {start_index} + 10: \nPRIMARY", year)
             self._report_correction(df_copy[primary_col_name].iloc[index:index+10], year)
             self._report_correction("VS REFERENCE", year)
@@ -185,10 +186,10 @@ class TransformData:
                     break
             # End inner while.
             self._report_correction(f"Vertical offset found. Copied the temporally shifted values "
-                                    f"into corrected_df until index {index}\n CORRECTED DF:", year)
+                                    f"into corrected_df until index {index}\nCORRECTED DF:", year)
             self._report_correction(corrected_df[primary_col_name].iloc[start_index:index], year)
             self._report_correction("VS REFERENCE COLUMN", year)
-            self._report_correction(merged_df[primary_col_name].iloc[start_index:index], year)
+            self._report_correction(merged_df[ref_col_name].iloc[start_index:index], year)
 
             shift_val_index = 0
         # End outer while.
@@ -290,7 +291,7 @@ class TransformData:
 
     @staticmethod
     def _report_correction(msg, year):
-        write_path = f"correction_reports/report_{year}_1.txt"
+        write_path = f"correction_reports/report_{year}_5.txt"
 
         with open(write_path, 'a') as file:
             file.write(f"{msg}\n")
