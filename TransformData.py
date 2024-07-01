@@ -100,18 +100,6 @@ class TransformData:
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
     def temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, size, year):
-        """ Loop over 7 temporal shifts: from -3 to 3
-                Create copy of merged dataframe.
-                Shift lighthouse by temporal shift loop variable value.
-                Create dataframe to hold the de-shifted data.
-                Call identify_offset.
-                    If returns nan, then continue to trying next temporal offset value.
-                    If offset,
-                        find index where offset stops.
-                        Save this index, only loop for index < size.
-                Save corrections to de-shifted dataframe.
-                Restart loop, beginning at last index, and first temporal offset value.
-        """
         self._report_correction("TEMPORAL_DESHIFTER BEGIN.", year)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
