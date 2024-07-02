@@ -189,7 +189,7 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
+                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n" alao this
                                      f"{merged_df.iloc[start_index:index]}\n")
                 execution_writes += (f"Corrected dataframe holds:\n"
                                      f"{corrected_df.iloc[start_index:index]}\n")
