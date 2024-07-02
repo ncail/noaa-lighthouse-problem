@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import json
+import datetime
 
 
 class TransformData:
@@ -98,20 +99,8 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, size):
-
-        """ Loop over 7 temporal shifts: from -3 to 3
-                Create copy of merged dataframe.
-                Shift lighthouse by temporal shift loop variable value.
-                Create dataframe to hold the de-shifted data.
-                Call identify_offset.
-                    If returns nan, then continue to trying next temporal offset value.
-                    If offset,
-                        find index where offset stops.
-                        Save this index, only loop for index < size.
-                Save corrections to de-shifted dataframe.
-                Restart loop, beginning at last index, and first temporal offset value.
-        """
+    def temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, size, year):
+        self._report_correction("TEMPORAL_DESHIFTER BEGIN.", year)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values.
@@ -125,33 +114,50 @@ class TransformData:
         # While indices of dataframe are valid, correct temporal shifts if possible.
         while index < size:
 
+            start_index = index
+
             # If all temporal shifts have been tried, consider this segment
             # of data impossible to automatically correct, possibly because of a
             # changing vertical offset or skipped values, etc.
             # Restart process at +10 indices from current.
             if shift_val_index > 6:
+                df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                 shift_val_index = 0
-                while index < index + 10:
+                while index < start_index + 10:
                     if index >= size:
                         break
-                    corrected_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
+                    corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
+                self._report_correction(f"IMPOSSIBLE TO CORRECT from start index {start_index}. "
+                                        f"Skipping to index {index}.\nCopying in the original values to "
+                                        f"corrected_df...\nThe uncorrectable slice: \nPRIMARY", year)
+                self._report_correction(df_copy[primary_col_name].iloc[start_index:index], year)
+                self._report_correction("VS REFERENCE", year)
+                self._report_correction(merged_df[ref_col_name].iloc[start_index:index], year)
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
+            self._report_correction(f"\ntrying shift: {try_shift}", year)
 
             # Temporally shift the dataframe.
-            df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
+            df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
+            self._report_correction(f"DISPLAYING shifted primary column (shift {try_shift}) VS reference column "
+                                    f"for index {start_index} + 10: \nPRIMARY", year)
+            self._report_correction(df_copy[primary_col_name].iloc[index:index+10], year)
+            self._report_correction("VS REFERENCE", year)
+            self._report_correction(merged_df[ref_col_name].iloc[index:index+10], year)
 
             # Get the vertical offset. Note that identify_offset does not let missing
             # values contribute to the detection of an offset, but does include them in the
             # duration count.
             vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
                                                index, size, duration=10)
+            self._report_correction(f"Vertical offset returned from identify_offset: {vert_offset}", year)
 
             # If there is no consistent vertical offset, try again for next temporal shift value.
             if pd.isna(vert_offset):
                 shift_val_index += 1
+                self._report_correction(f"No vertical offset found. Trying next temporal shift value...", year)
                 continue
 
             # If an offset is found, record df_copy values into corrected_df while the vertical
@@ -160,13 +166,18 @@ class TransformData:
             while index < size:
                 if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                         round(df_copy[ref_col_name].iloc[index], 4)):
+                    corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                    corrected_df[primary_col_name].iloc[index] = df_copy[primary_col_name].iloc[index]
                 else:
-                    df_copy[primary_col_name] = merged_df[primary_col_name]
+                    df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                     # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
+            self._report_correction(f"Vertical offset found. Copied the temporally shifted values "
+                                    f"into corrected_df until index {index}\nCORRECTED DF:", year)
+            self._report_correction(corrected_df[primary_col_name].iloc[start_index:index], year)
+            self._report_correction("VS REFERENCE COLUMN", year)
+            self._report_correction(merged_df[ref_col_name].iloc[start_index:index], year)
 
             shift_val_index = 0
         # End outer while.
@@ -218,6 +229,9 @@ class TransformData:
         if duration is None:
             duration = self.config['offset_correction_parameters']['number_of_intervals']
 
+        if index >= size:
+            return np.nan
+
         offset_value = offset_column.iloc[index]
         ref_value = reference_column.iloc[index]
         difference = round(ref_value - offset_value, 4)
@@ -232,6 +246,8 @@ class TransformData:
             # some values are missing due to sensor failure or whatever.
             # This prevents invalidating an offset that is consistent otherwise.
             if pd.isna(offset_column.iloc[f_loop]) or pd.isna(reference_column.iloc[f_loop]):
+                f_loop += 1
+                index += 1
                 continue
 
             current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
@@ -260,6 +276,13 @@ class TransformData:
                   f"MetricsCalculator configuration.")
         return user_config
     # End load_configs.
+
+    @staticmethod
+    def _report_correction(msg, year):
+        write_path = f"correction_reports/report_{year}_5.txt"
+
+        with open(write_path, 'a') as file:
+            file.write(f"{msg}\n")
 
 
 
