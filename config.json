@@ -11,14 +11,14 @@
         "water_level": ""
     },
 
-    "filter_by_duration_parameters":
+    "filter_offsets_by_duration":
     {
         "threshold": "1 day",
         "type": "min",
         "is_strict": false
     },
 
-    "filter_by_value_parameters":
+    "filter_offsets_by_value":
     {
         "threshold": 0.05,
         "use_abs": true,
@@ -26,7 +26,7 @@
         "is_strict": false
     },
 
-    "filter_gaps_parameters":
+    "filter_gaps_by_duration":
     {
         "threshold": "1 day",
         "type": "min",
