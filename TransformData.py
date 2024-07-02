@@ -51,21 +51,23 @@ class TransformData:
     # End set_configs.
 
     def set_data(self, primary_column: pd.Series, reference_column: pd.Series,
-                 datetime_column: pd.Series, is_set=[False]) -> None:
+                 datetime_column: pd.Series = None, is_set=[False]) -> None:
         is_set[0] = True
 
-        length = len(primary_column)
-        if any(len(series) != length for series in [reference_column, datetime_column]):
+        if len(primary_column) != len(reference_column):
             is_set[0] = False
 
         if is_set[0]:
             self.dataframe[self.col_config['primary_data_column_name']] = primary_column.copy()
             self.dataframe[self.col_config['reference_data_column_name']] = reference_column.copy()
+
+        if datetime_column is not None:
             self.dataframe[self.col_config['datetime_data_column_name']] = datetime_column.copy()
     # End set_data.
 
-    def set_dataframe(self, dataframe: pd.DataFrame) -> None:
+    def set_dataframe(self, dataframe: pd.DataFrame, user_col_config: dict = None, **kwargs) -> None:
         self.dataframe = dataframe.copy()
+        self.set_column_names(user_col_config, **kwargs)
     # End set_dataframe.
 
     def set_column_names(self, user_col_config: dict = None, **kwargs) -> None:
@@ -88,7 +90,7 @@ class TransformData:
 
     def get_col_config(self) -> dict:
         return self.col_config.copy()
-    # End get-col_configs.
+    # End get_col_configs.
 
     def get_dataframe(self) -> pd.DataFrame:
         return self.dataframe.copy()
@@ -103,7 +105,42 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, size, filename=None):
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, **kwargs):
+        # Get column names.
+        if 'primary_data_column_name' in kwargs:
+            primary_col_name = kwargs['primary_data_column_name']
+        else:
+            primary_col_name = self.col_config['primary_data_column_name']
+        if 'reference_data_column_name' in kwargs:
+            reference_col_name = kwargs['reference_data_column_name']
+        else:
+            reference_col_name = self.col_config['reference_data_column_name']
+
+        # Get dataframe, with columns corresponding to the column names assigned above.
+        if df is None:
+            if any(item is None for item in [primary_col, reference_col]):
+                if self.dataframe.empty:
+                    raise ValueError("Incorrect data provided to temporal_shift_corrector, and no pre-set data found. "
+                                     "Must either be passed a dataframe, or a primary and reference data Series.")
+            else:
+                df = self.dataframe
+                if len(primary_col) == len(reference_col):
+                    df[primary_col_name] = primary_col
+                    df[reference_col_name] = reference_col
+                else:
+                    raise ValueError(f"Length mismatch: primary_col Series has {len(primary_col)} rows and "
+                                     f"reference_col Series has {len(reference_col)} rows.")
+        else:
+            if not all([primary_col_name, reference_col_name]) in df.columns:
+                raise KeyError("Passed DataFrame is invalid: required columns not found. Be sure to either "
+                               "use TransformData.set_column_names() to set the names of the primary and reference "
+                               "data columns in the DataFrame, or also pass in key word arguments "
+                               "primary_data_column_name and reference_data_column_name to "
+                               "TransformData.temporal_shift_corrector.")
+
+        return self._temporal_deshifter(df, primary_col_name, reference_col_name)
+
+    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, filename=None):
         params = self.config['temporal_shift_correction']
         offset_criteria = params['number_of_intervals']
         insert_nans = params['replace_with_nans']
@@ -122,6 +159,7 @@ class TransformData:
         # While indices of dataframe are valid, correct temporal shifts if possible.
         while index < size:
 
+            # Store starting index.
             start_index = index
 
             # If all temporal shifts have been tried, consider this segment
@@ -131,7 +169,7 @@ class TransformData:
             if shift_val_index > 6:
                 df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                 shift_val_index = 0
-                while index < start_index + 10:
+                while index < start_index + offset_criteria:
                     if index >= size:
                         break
                     if insert_nans:
@@ -139,12 +177,8 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                self._report_correction(f"IMPOSSIBLE TO CORRECT from start index {start_index}. "
-                                        f"Skipping to index {index}.\nCopying in the original values to "
-                                        f"corrected_df...\nThe uncorrectable slice: \nPRIMARY", filename)
-                self._report_correction(df_copy[primary_col_name].iloc[start_index:index], filename)
-                self._report_correction("VS REFERENCE", filename)
-                self._report_correction(merged_df[ref_col_name].iloc[start_index:index], filename)
+                self._report_correction(f"SEGMENT COULD NOT BE CORRECTED:", filename)
+                self._report_correction(merged_df.iloc[start_index:index], filename)
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -198,7 +232,7 @@ class TransformData:
 
     def process_offsets(self, offset_column, reference_column, size, index=0, criteria=None, offset_arr=None):
         if criteria is None:
-            criteria = self.config['number_of_intervals']
+            criteria = self.config['vertical_offset_correction']['number_of_intervals']
 
         # index = 0
         while index < size:
@@ -238,7 +272,7 @@ class TransformData:
 
     def identify_offset(self, offset_column, reference_column, index, size, duration=None):
         if duration is None:
-            duration = self.config['offset_correction_parameters']['number_of_intervals']
+            duration = self.config['vertical_offset_correction']['number_of_intervals']
 
         if index >= size:
             return np.nan
@@ -284,13 +318,16 @@ class TransformData:
                 user_config = json.load(file)
         except FileNotFoundError:
             print(f"Error: Config file '{file_path}' not found. Using default "
-                  f"MetricsCalculator configuration.")
+                  f"TransformData configuration.")
         return user_config
     # End load_configs.
 
     @staticmethod
-    def _report_correction(msg, year):
-        write_path = f"correction_reports/report_{year}_5.txt"
+    def _report_correction(msg, filename):
+        write_path = f"correction_reports/{filename}.txt"
+
+        if isinstance(msg, pd.DataFrame):
+            msg = msg.to_string()
 
         with open(write_path, 'a') as file:
             file.write(f"{msg}\n")
