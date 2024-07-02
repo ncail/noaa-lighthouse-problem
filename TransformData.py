@@ -146,6 +146,7 @@ class TransformData:
     def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name,
                             offset_criteria=None, insert_nans=None, filename=None):
         self._report_correction("TEMPORAL_DESHIFTER BEGIN.", filename)
+        size = len(merged_df)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values.
