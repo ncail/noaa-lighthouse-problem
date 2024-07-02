@@ -11,8 +11,12 @@ class TransformData:
     # ******************************************************************************
     def __init__(self, user_config=None, df=None, col_names=None):
         default_config = {
-            'offset_correction_parameters': {
+            'vertical_offset_correction': {
                 'number_of_intervals': 0
+            },
+            'temporal_shift_correction': {
+                'number_of_intervals': 10,
+                'replace_with_nans': True
             }
         }
 
