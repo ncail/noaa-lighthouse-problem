@@ -107,14 +107,10 @@ class TransformData:
     # ******************************************************************************
     def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, filename=None, **kwargs):
         # Get column names.
-        if 'primary_data_column_name' in kwargs:
-            primary_col_name = kwargs['primary_data_column_name']
-        else:
-            primary_col_name = self.col_config['primary_data_column_name']
-        if 'reference_data_column_name' in kwargs:
-            reference_col_name = kwargs['reference_data_column_name']
-        else:
-            reference_col_name = self.col_config['reference_data_column_name']
+        default_col_names = self.col_config
+        names = {**default_col_names, **kwargs}
+        primary_col_name = names['primary_data_column_name']
+        reference_col_name = names['reference_data_column_name']
 
         # Get dataframe, with columns corresponding to the column names assigned above.
         if df is None:
@@ -123,10 +119,10 @@ class TransformData:
                     raise ValueError("Incorrect data provided to temporal_shift_corrector, and no pre-set data found. "
                                      "Must either be passed a dataframe, or a primary and reference data Series.")
             else:
-                df = self.dataframe
+                df = self.dataframe.copy()
                 if len(primary_col) == len(reference_col):
-                    df[primary_col_name] = primary_col
-                    df[reference_col_name] = reference_col
+                    df[primary_col_name] = primary_col.copy()
+                    df[reference_col_name] = reference_col.copy()
                 else:
                     raise ValueError(f"Length mismatch: primary_col Series has {len(primary_col)} rows and "
                                      f"reference_col Series has {len(reference_col)} rows.")
