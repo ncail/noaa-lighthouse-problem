@@ -16,7 +16,8 @@ class TransformData:
             },
             'temporal_shift_correction': {
                 'number_of_intervals': 10,
-                'replace_with_nans': True
+                'replace_with_nans': True,
+                'enable_write': False
             }
         }
 
@@ -105,7 +106,8 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, filename=None, **kwargs):
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None,
+                                 write_path="", **kwargs):
         # Get column names.
         default_col_names = self.col_config
         names = {**default_col_names, **kwargs}
@@ -139,17 +141,23 @@ class TransformData:
         params = {**default_params, **kwargs}
         offset_criteria = params['number_of_intervals']
         insert_nans = params['replace_with_nans']
+        enable_write = params['enable_write']
 
         return self._temporal_deshifter(df, primary_col_name, reference_col_name, offset_criteria, insert_nans,
-                                        filename)
+                                        enable_write, write_path)
 
     def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name,
-                            offset_criteria=None, insert_nans=None, filename=None):
-        self._report_correction("TEMPORAL_DESHIFTER BEGIN.", filename)
+                            offset_criteria=None, insert_nans=None, enable_write=False, write_path=""):
+        # Set write path if generating temporal correction reports is enabled.
+        if enable_write is True:
+            if not write_path:
+                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                write_path = f"correction_reports/temporal_correction_report_{timestamp}.txt"
+
         size = len(merged_df)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
-        # corrected_df will hold the temporally corrected values.
+        # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
         df_copy = merged_df.copy()
         corrected_df = merged_df.copy()
 
@@ -178,32 +186,24 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                self._report_correction(f"SEGMENT COULD NOT BE CORRECTED:", filename)
-                self._report_correction(merged_df.iloc[start_index:index], filename)
+                self._report_correction(f"SEGMENT COULD NOT BE CORRECTED:", write_path)
+                self._report_correction(merged_df.iloc[start_index:index], write_path)
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
-            self._report_correction(f"\ntrying shift: {try_shift}", filename)
 
             # Temporally shift the dataframe.
             df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
-            self._report_correction(f"DISPLAYING shifted primary column (shift {try_shift}) VS reference column "
-                                    f"for index {start_index} + 10: \nPRIMARY", filename)
-            self._report_correction(df_copy[primary_col_name].iloc[index:index+10], filename)
-            self._report_correction("VS REFERENCE", filename)
-            self._report_correction(merged_df[ref_col_name].iloc[index:index+10], filename)
 
             # Get the vertical offset. Note that identify_offset does not let missing
             # values contribute to the detection of an offset, but does include them in the
             # duration count.
             vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
                                                index, size, duration=offset_criteria)
-            self._report_correction(f"Vertical offset returned from identify_offset: {vert_offset}", filename)
 
             # If there is no consistent vertical offset, try again for next temporal shift value.
             if pd.isna(vert_offset):
                 shift_val_index += 1
-                self._report_correction(f"No vertical offset found. Trying next temporal shift value...", filename)
                 continue
 
             # If an offset is found, record df_copy values into corrected_df while the vertical
@@ -219,11 +219,9 @@ class TransformData:
                     # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
-            self._report_correction(f"Vertical offset found. Copied the temporally shifted values "
-                                    f"into corrected_df until index {index}\nCORRECTED DF:", filename)
-            self._report_correction(corrected_df[primary_col_name].iloc[start_index:index], filename)
-            self._report_correction("VS REFERENCE COLUMN", filename)
-            self._report_correction(merged_df[ref_col_name].iloc[start_index:index], filename)
+            self._report_correction(f"Vertical offset found: {vert_offset}.\nCorrected temporal shift from "
+                                    f"indices {start_index} : {index}")
+            self._report_correction(corrected_df.iloc[start_index:index], write_path)
 
             shift_val_index = 0
         # End outer while.
@@ -324,11 +322,9 @@ class TransformData:
     # End load_configs.
 
     @staticmethod
-    def _report_correction(msg, filename):
-        write_path = f"correction_reports/{filename}.txt"
-
-        if isinstance(msg, pd.DataFrame):
-            msg = msg.to_string()
+    def _report_correction(msg, write_path=""):
+        if not write_path:
+            return
 
         with open(write_path, 'a') as file:
             file.write(f"{msg}\n")
