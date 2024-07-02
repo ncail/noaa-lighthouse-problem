@@ -106,7 +106,7 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None,
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0,
                                  write_path="", **kwargs):
         # Get column names.
         default_col_names = self.col_config
@@ -145,14 +145,18 @@ class TransformData:
 
         return self._temporal_deshifter(df, primary_col_name, reference_col_name, offset_criteria, insert_nans,
                                         enable_write, write_path)
+    # End temporal_shift_corrector.
 
-    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name,
-                            offset_criteria=None, insert_nans=None, enable_write=False, write_path=""):
+    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0,
+                            offset_criteria=10, insert_nans=True, enable_write=False, write_path=""):
         # Set write path if generating temporal correction reports is enabled.
         if enable_write is True:
             if not write_path:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 write_path = f"correction_reports/temporal_correction_report_{timestamp}.txt"
+
+        execution_writes = ""
+        summary = ""
 
         size = len(merged_df)
 
@@ -161,7 +165,6 @@ class TransformData:
         df_copy = merged_df.copy()
         corrected_df = merged_df.copy()
 
-        index = 0
         temporal_shifts = [0, -1, -2, -3, 1, 2, 3]  # A temporal shift of 0 or -1 is most likely.
         shift_val_index = 0
 
@@ -186,10 +189,10 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                self._report_correction(f"SEGMENT COULD NOT BE CORRECTED:", write_path)
-                self._report_correction(merged_df.iloc[start_index:index], write_path)
-                self._report_correction(f"Corrected dataframe holds: ", write_path)
-                self._report_correction(corrected_df.iloc[start_index:index], write_path)
+                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
+                                     f"{merged_df.iloc[start_index:index]}\n")
+                execution_writes += (f"Corrected dataframe holds:\n"
+                                     f"{corrected_df.iloc[start_index:index]}\n")
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -221,17 +224,21 @@ class TransformData:
                     # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
-            self._report_correction(f"Vertical offset found: {vert_offset}.\nCorrected temporal shift from "
-                                    f"indices {start_index} : {index}")
-            self._report_correction(corrected_df.iloc[start_index:index], write_path)
+            execution_writes += (f"Vertical offset found: {vert_offset}.\n"
+                                 f"Corrected temporal shift from indices {start_index} : {index}\n")
+            execution_writes += f"{corrected_df.iloc[start_index:index]}\n"
 
             shift_val_index = 0
         # End outer while.
 
+        # Write report to file.
+        self._report_correction(summary + execution_writes, write_path)
+
+        # Return temporally corrected dataframe.
         return corrected_df
     # End temporal_deshifter.
 
-    def process_offsets(self, offset_column, reference_column, size, index=0, criteria=None, offset_arr=None):
+    def process_offsets(self, offset_column, reference_column, size, index=0, criteria=10, offset_arr=None):
         if criteria is None:
             criteria = self.config['vertical_offset_correction']['number_of_intervals']
 
@@ -271,7 +278,7 @@ class TransformData:
         # End outer while.
     # End process_offsets.
 
-    def identify_offset(self, offset_column, reference_column, index, size, duration=None):
+    def identify_offset(self, offset_column, reference_column, index, size, duration=0):
         if duration is None:
             duration = self.config['vertical_offset_correction']['number_of_intervals']
 
@@ -329,7 +336,7 @@ class TransformData:
             return
 
         with open(write_path, 'a') as file:
-            file.write(f"{msg}\n")
+            file.write(f"{msg}")
 
 
 
