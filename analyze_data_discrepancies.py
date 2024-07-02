@@ -242,12 +242,17 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
+        # Initialize list to hold info about temporal offsets.
+        temporal_offsets_summary = []
+
         # If doing analysis on corrected data, correct data here.
         if year == 2012:
             corrected_df = merged_df.copy()
-            corrector = TransformData()
-            corrected_df = corrector._temporal_deshifter(corrected_df, lh_pwl_col_name, noaa_pwl_col_name, size, year)
-            with open('correction_reports/dataframe_comparison_5.txt', 'a') as file:
+            corrector = TransformData(user_config=config)
+            corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_tuples=temporal_offsets_summary,
+                                                              primary_data_column_name=lh_pwl_col_name,
+                                                              reference_data_column_name=noaa_pwl_col_name)
+            with open('correction_reports/dataframe_comparison_6.txt', 'a') as file:
                 file.write(f"{corrected_df.to_string()}")
 
 

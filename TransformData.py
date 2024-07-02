@@ -27,19 +27,16 @@ class TransformData:
             'datetime_column_name': 'dt_col'
         }
 
-        if user_config is None:
-            self.config = default_config.copy()
-        else:
+        self.config = default_config.copy()
+        if user_config is not None:
             self.set_configs(user_config.copy())
 
-        if df is None:
-            self.dataframe = pd.DataFrame()
-        else:
+        self.dataframe = pd.DataFrame()
+        if df is not None:
             self.set_dataframe(df)
 
-        if col_names is None:
-            self.col_config = default_col_config.copy()
-        else:
+        self.col_config = default_col_config.copy()
+        if col_names is not None:
             self.set_column_names(col_names)
 
     # ******************************************************************************
@@ -106,7 +103,7 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0,
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0, summary_tuples=[],
                                  write_path="", **kwargs):
         # Get column names.
         default_col_names = self.col_config
@@ -129,7 +126,7 @@ class TransformData:
                     raise ValueError(f"Length mismatch: primary_col Series has {len(primary_col)} rows and "
                                      f"reference_col Series has {len(reference_col)} rows.")
         else:
-            if not all([primary_col_name, reference_col_name]) in df.columns:
+            if not all(col in df.columns for col in [primary_col_name, reference_col_name]):
                 raise KeyError("Passed DataFrame is invalid: required columns not found. Be sure to either "
                                "use TransformData.set_column_names() to set the names of the primary and reference "
                                "data columns in the DataFrame, or also pass in key word arguments "
@@ -143,11 +140,11 @@ class TransformData:
         insert_nans = params['replace_with_nans']
         enable_write = params['enable_write']
 
-        return self._temporal_deshifter(df, primary_col_name, reference_col_name, index,
+        return self._temporal_deshifter(df, primary_col_name, reference_col_name, index, summary_tuples,
                                         offset_criteria, insert_nans, enable_write, write_path)
     # End temporal_shift_corrector.
 
-    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0,
+    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0, summary_tuples=[],
                             offset_criteria=10, insert_nans=True, enable_write=False, write_path=""):
         size = len(merged_df)
 
@@ -159,8 +156,7 @@ class TransformData:
 
         # Initialize report strings and assign some summary report info.
         execution_writes = ""
-        summary_list = []
-        initial_nan_percentage = (len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100
+        initial_nan_percentage = round((len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100, 4)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
@@ -195,7 +191,7 @@ class TransformData:
                                      f"{merged_df.iloc[start_index:index]}\n")
                 execution_writes += (f"Corrected dataframe holds:\n"
                                      f"{corrected_df.iloc[start_index:index]}\n")
-                summary_list.append((start_index, index, np.nan, np.nan))
+                summary_tuples.append((start_index, index, np.nan, np.nan))
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -230,16 +226,16 @@ class TransformData:
             execution_writes += (f"Vertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n"
-            summary_list.append((start_index, index, try_shift, vert_offset))
+            summary_tuples.append((start_index, index, try_shift, vert_offset))
 
             shift_val_index = 0
         # End outer while.
 
         # Write report to file.
-        final_nan_percentage = (len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100
+        final_nan_percentage = round((len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100, 4)
         self._report_correction(f"initial missing value percentage: {initial_nan_percentage}\n", write_path)
         self._report_correction(f"final missing value percentage: {final_nan_percentage}\n", write_path)
-        self._report_correction(summary_list, write_path)
+        self._report_correction(summary_tuples, write_path)
         self._report_correction(execution_writes, write_path)
 
         # Return temporally corrected dataframe.
