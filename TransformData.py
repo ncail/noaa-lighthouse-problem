@@ -154,9 +154,8 @@ class TransformData:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 write_path = f"correction_reports/temporal_correction_report_{timestamp}.txt"
 
-        # Initialize report strings and assign some summary report info.
+        # Initialize report string.
         execution_writes = ""
-        initial_nan_percentage = round((len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100, 4)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
@@ -232,10 +231,6 @@ class TransformData:
         # End outer while.
 
         # Write report to file.
-        final_nan_percentage = round((len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100, 4)
-        self._report_correction(f"initial missing value percentage: {initial_nan_percentage}\n", write_path)
-        self._report_correction(f"final missing value percentage: {final_nan_percentage}\n", write_path)
-        self._report_correction(summary_tuples, write_path)
         self._report_correction(execution_writes, write_path)
 
         # Return temporally corrected dataframe.

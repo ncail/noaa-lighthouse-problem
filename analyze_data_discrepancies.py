@@ -252,6 +252,13 @@ def main(args):
             corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_tuples=temporal_offsets_summary,
                                                               primary_data_column_name=lh_pwl_col_name,
                                                               reference_data_column_name=noaa_pwl_col_name)
+
+            initial_nan_percentage = round((len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100, 4)
+            final_nan_percentage = round((len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100, 4)
+            self._report_correction(f"initial missing value percentage: {initial_nan_percentage}\n", write_path)
+            self._report_correction(f"final missing value percentage: {final_nan_percentage}\n", write_path)
+
+
             with open('correction_reports/dataframe_comparison_6.txt', 'a') as file:
                 file.write(f"{corrected_df.to_string()}")
 
