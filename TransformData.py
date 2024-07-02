@@ -105,7 +105,7 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, **kwargs):
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, filename=None, **kwargs):
         # Get column names.
         if 'primary_data_column_name' in kwargs:
             primary_col_name = kwargs['primary_data_column_name']
@@ -138,13 +138,17 @@ class TransformData:
                                "primary_data_column_name and reference_data_column_name to "
                                "TransformData.temporal_shift_corrector.")
 
-        return self._temporal_deshifter(df, primary_col_name, reference_col_name)
-
-    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, filename=None):
-        params = self.config['temporal_shift_correction']
+        # Get configuration parameters for _temporal_deshifter.
+        default_params = self.config['temporal_shift_correction']
+        params = {**default_params, **kwargs}
         offset_criteria = params['number_of_intervals']
         insert_nans = params['replace_with_nans']
 
+        return self._temporal_deshifter(df, primary_col_name, reference_col_name, offset_criteria, insert_nans,
+                                        filename)
+
+    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name,
+                            offset_criteria=None, insert_nans=None, filename=None):
         self._report_correction("TEMPORAL_DESHIFTER BEGIN.", filename)
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
