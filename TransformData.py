@@ -188,6 +188,8 @@ class TransformData:
                     index += 1
                 self._report_correction(f"SEGMENT COULD NOT BE CORRECTED:", write_path)
                 self._report_correction(merged_df.iloc[start_index:index], write_path)
+                self._report_correction(f"Corrected dataframe holds: ", write_path)
+                self._report_correction(corrected_df.iloc[start_index:index], write_path)
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
