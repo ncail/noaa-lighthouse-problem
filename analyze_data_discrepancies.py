@@ -211,9 +211,16 @@ def main(args):
                 bad_years.append(year)
         # End for.
 
-    # Process the dataframes of common years to get statistics. Initialize summary.
+    # Process the dataframes of common years to get statistics.
+    # Initialize summary and temporal offsets dataframe.
     summary = {}
+    all_temporal_shifts = pd.DataFrame()
     for year in common_years:
+
+        # Instantiate an objects to get metrics and process offsets. Set configs.
+        calculator = MetricsCalculator()
+        calculator.set_configs(config)
+        corrector = TransformData(user_config=config)
 
         # Assign dataframes from dictionaries.
         lh_df = lh_dfs_dict[year]
@@ -242,25 +249,28 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        # Initialize list to hold info about temporal offsets.
-        temporal_offsets_summary = []
+        # Initialize list to hold info about temporal offsets, and assign temporal offset stats.
+        shifts_summary_df = pd.DataFrame()
+        initial_nan_percentage = round((len(merged_df[merged_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
         # If doing analysis on corrected data, correct data here.
         if year == 2012:
             corrected_df = merged_df.copy()
-            corrector = TransformData(user_config=config)
-            corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_tuples=temporal_offsets_summary,
+            corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_df=shifts_summary_df,
                                                               primary_data_column_name=lh_pwl_col_name,
                                                               reference_data_column_name=noaa_pwl_col_name)
 
-            initial_nan_percentage = round((len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100, 4)
-            final_nan_percentage = round((len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100, 4)
-            self._report_correction(f"initial missing value percentage: {initial_nan_percentage}\n", write_path)
-            self._report_correction(f"final missing value percentage: {final_nan_percentage}\n", write_path)
+            final_nan_percentage = round((len(corrected_df[corrected_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
+            # Add start/end dates column to summary df.
+            for start_index, end_index in zip(shifts_summary_df['start_index'], shifts_summary_df['end_index']):
+                shifts_summary_df['start_date'] = corrected_df.loc[start_index, noaa_dt_col_name]
+                shifts_summary_df['end_date'] = corrected_df.loc[end_index, noaa_dt_col_name]
 
-            with open('correction_reports/dataframe_comparison_6.txt', 'a') as file:
-                file.write(f"{corrected_df.to_string()}")
+            with open(f"generated_files/correction_reports/{filename}"
+                      f"_temporal_correction_summary_{year}.txt", 'a') as file:
+                file.write(f"initial missing value percentage: {initial_nan_percentage}\n")
+                file.write(f"final missing value percentage: {final_nan_percentage}\n")
 
 
 '''
@@ -268,9 +278,7 @@ def main(args):
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
                                                           merged_df[noaa_pwl_col_name], size)
 
-        # Instantiate an object to get metrics. Set configs.
-        calculator = MetricsCalculator()
-        calculator.set_configs(config)
+        
 
         # Get offset runs dataframe.
         run_data_df = calculator.generate_runs_df(merged_df[lh_pwl_col_name],

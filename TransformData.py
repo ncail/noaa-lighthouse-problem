@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import json
 import datetime
+from collections import namedtuple
 
 
 class TransformData:
@@ -103,7 +104,7 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
-    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0, summary_tuples=[],
+    def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0, summary_df=None,
                                  write_path="", **kwargs):
         # Get column names.
         default_col_names = self.col_config
@@ -144,7 +145,7 @@ class TransformData:
                                         offset_criteria, insert_nans, enable_write, write_path)
     # End temporal_shift_corrector.
 
-    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0, summary_tuples=[],
+    def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0, summary_df=None,
                             offset_criteria=10, insert_nans=True, enable_write=False, write_path=""):
         size = len(merged_df)
 
@@ -152,10 +153,12 @@ class TransformData:
         if enable_write is True:
             if not write_path:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                write_path = f"correction_reports/temporal_correction_report_{timestamp}.txt"
+                write_path = f"generated_files/correction_reports/temporal_correction_report_{timestamp}.txt"
 
-        # Initialize report string.
+        # Initialize report string. And define dataframe to store metrics about the
+        # offset correction.
         execution_writes = ""
+        summary_df = pd.DataFrame(columns=['start_index', 'end_index', 'temporal_shift', 'vertical_offset'])
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
@@ -190,7 +193,12 @@ class TransformData:
                                      f"{merged_df.iloc[start_index:index]}\n")
                 execution_writes += (f"Corrected dataframe holds:\n"
                                      f"{corrected_df.iloc[start_index:index]}\n")
-                summary_tuples.append((start_index, index, np.nan, np.nan))
+                summary_df = summary_df.append({
+                    'start_index': start_index,
+                    'end_index': index,
+                    'temporal_shift': np.nan,
+                    'vertical_offset': np.nan
+                }, ignore_index=True)
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -225,7 +233,12 @@ class TransformData:
             execution_writes += (f"Vertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n"
-            summary_tuples.append((start_index, index, try_shift, vert_offset))
+            summary_df = summary_df.append({
+                'start_index': start_index,
+                'end_index': index,
+                'temporal_shift': try_shift,
+                'vertical_offset': vert_offset
+            }, ignore_index=True)
 
             shift_val_index = 0
         # End outer while.
