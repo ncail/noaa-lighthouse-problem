@@ -143,22 +143,24 @@ class TransformData:
         insert_nans = params['replace_with_nans']
         enable_write = params['enable_write']
 
-        return self._temporal_deshifter(df, primary_col_name, reference_col_name, offset_criteria, insert_nans,
-                                        enable_write, write_path)
+        return self._temporal_deshifter(df, primary_col_name, reference_col_name, index,
+                                        offset_criteria, insert_nans, enable_write, write_path)
     # End temporal_shift_corrector.
 
     def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, index=0,
                             offset_criteria=10, insert_nans=True, enable_write=False, write_path=""):
+        size = len(merged_df)
+
         # Set write path if generating temporal correction reports is enabled.
         if enable_write is True:
             if not write_path:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 write_path = f"correction_reports/temporal_correction_report_{timestamp}.txt"
 
+        # Initialize report strings and assign some summary report info.
         execution_writes = ""
-        summary = ""
-
-        size = len(merged_df)
+        summary_list = []
+        initial_nan_percentage = (len(merged_df[merged_df[primary_col_name].isna()]) / size) * 100
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
@@ -189,10 +191,11 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n" alao this
+                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
                                      f"{merged_df.iloc[start_index:index]}\n")
                 execution_writes += (f"Corrected dataframe holds:\n"
                                      f"{corrected_df.iloc[start_index:index]}\n")
+                summary_list.append((start_index, index, np.nan, np.nan))
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -224,15 +227,20 @@ class TransformData:
                     # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
-            execution_writes += (f"Vertical offset found: {vert_offset}.\n"
+            execution_writes += (f"Vertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n"
+            summary_list.append((start_index, index, try_shift, vert_offset))
 
             shift_val_index = 0
         # End outer while.
 
         # Write report to file.
-        self._report_correction(summary + execution_writes, write_path)
+        final_nan_percentage = (len(corrected_df[corrected_df[primary_col_name].isna()]) / size) * 100
+        self._report_correction(f"initial missing value percentage: {initial_nan_percentage}\n", write_path)
+        self._report_correction(f"final missing value percentage: {final_nan_percentage}\n", write_path)
+        self._report_correction(summary_list, write_path)
+        self._report_correction(execution_writes, write_path)
 
         # Return temporally corrected dataframe.
         return corrected_df
