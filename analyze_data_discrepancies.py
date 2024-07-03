@@ -1,7 +1,7 @@
 # Import file_data_functions.py as da (file processing).
 import file_data_functions as fp
 
-# Import MetricsCalculator.py as mc
+# Import classes.
 from MetricsCalculator import MetricsCalculator
 from TransformData import TransformData
 
@@ -12,7 +12,7 @@ import sys
 import datetime
 import glob
 import pandas as pd
-import json
+import numpy as np
 
 
 # parse_arguments will get command line arguments needed for program execution.
@@ -194,8 +194,6 @@ def main(args):
     # End for.
 
     # Make sure only common years are compared.
-    # .keys() returns a view object that displays the list of dictionary keys.
-    # set() converts the view object into a set of years.
     # Bitwise & is used to find the intersection of two sets, returning a new set that contains
     # the common years.
     lh_dfs_dict = fp.get_df_dictionary(lh_df_arr, lh_dt_col_name)
@@ -212,9 +210,11 @@ def main(args):
         # End for.
 
     # Process the dataframes of common years to get statistics.
-    # Initialize summary and temporal offsets dataframe.
+    # Initialize summary and temporal offsets summary dataframe.
     summary = {}
-    all_temporal_shifts = pd.DataFrame()
+    all_processed_years_df = pd.DataFrame(columns=['temporal_offsets', 'vertical_offsets',
+                                                   'initial_nan_percent', 'final_nan_percent'])
+    # all_processed_years_df.set_index(list(common_years))
     for year in common_years:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
@@ -234,8 +234,6 @@ def main(args):
             if col not in (noaa_dt_col_name, noaa_pwl_col_name):
                 noaa_df.drop(columns=col, inplace=True)
 
-        # print(lh_df, "\n", noaa_df)
-
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
         # will result in the addition of a NaN in the other.
         merged_df = pd.merge(lh_df, noaa_df, how='outer', left_on=lh_dt_col_name,
@@ -249,8 +247,8 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        # Initialize list to hold info about temporal offsets, and assign temporal offset stats.
-        shifts_summary_df = pd.DataFrame()
+        # Initialize dataframe pointer to hold info about temporal offsets, and assign temporal offset stats.
+        shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
         initial_nan_percentage = round((len(merged_df[merged_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
         # If doing analysis on corrected data, correct data here.
@@ -263,17 +261,34 @@ def main(args):
             final_nan_percentage = round((len(corrected_df[corrected_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
             # Add start/end dates column to summary df.
+            start_dates = []
+            end_dates = []
+            shifts_summary_df = shifts_summary_df[0]
             for start_index, end_index in zip(shifts_summary_df['start_index'], shifts_summary_df['end_index']):
-                shifts_summary_df['start_date'] = corrected_df.loc[start_index, noaa_dt_col_name]
-                shifts_summary_df['end_date'] = corrected_df.loc[end_index, noaa_dt_col_name]
+                start_dates.append(corrected_df.loc[start_index, noaa_dt_col_name])
+                end_dates.append(corrected_df.loc[end_index, noaa_dt_col_name])
+            shifts_summary_df['start_date'] = pd.Series(start_dates)
+            shifts_summary_df['end_date'] = pd.Series(end_dates)
 
+            # Drop index columns.
+            shifts_summary_df = shifts_summary_df.drop(columns=['start_index', 'end_index'])
+
+            # Add to all-years summary dataframe.
+            processed_year_row = pd.DataFrame({
+                'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
+                'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
+                'initial_nan_percent': [initial_nan_percentage],
+                'final_nan_percent': [final_nan_percentage]
+            })
+            all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row], ignore_index=True)
+
+            # Write temporal shift summary for the year.
             with open(f"generated_files/correction_reports/{filename}"
                       f"_temporal_correction_summary_{year}.txt", 'a') as file:
-                file.write(f"initial missing value percentage: {initial_nan_percentage}\n")
-                file.write(f"final missing value percentage: {final_nan_percentage}\n")
+                file.write(shifts_summary_df.to_string())
 
 
-'''
+        '''
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
                                                           merged_df[noaa_pwl_col_name], size)
@@ -308,7 +323,7 @@ def main(args):
             "# long offsets": metrics['long_offsets_count'],
             "# long gaps": metrics['long_gaps_count'],
             "unique long offsets": list(offsets_dict.keys()),
-            "# large offsets": metrics['large_offsets_count'],
+            "# large discrepancies": metrics['large_offsets_count'],
             "minimum value": metrics['min_max_offsets'][1],
             "maximum value": metrics['min_max_offsets'][0]
         }
@@ -326,7 +341,7 @@ def main(args):
                    f"# long offsets: The number of offsets that meet the duration threshold.\n"
                    f"# long gaps: The number of gaps that meet the duration threshold.\n"
                    f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
-                   f"# large offsets: The number of offsets that meet the value threshold.\n"
+                   f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
                    f"minimum value: The minimum discrepancy value.\n"
                    f"maximum value: The maximum discrepancy value.\n\n")
     fp.write_table_from_nested_dict(summary, 'Year', write_path, f"{filename}_summary")
@@ -341,7 +356,11 @@ def main(args):
         text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
         with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
             file.write(''.join(text_list))
-'''
+    '''
+
+    with open(f"generated_files/correction_reports/{filename}"
+              f"_temporal_correction_summary_all_years.txt", 'a') as file:
+        file.write(all_processed_years_df.to_string())
 # End main.
 
 

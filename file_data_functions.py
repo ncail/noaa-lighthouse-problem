@@ -190,7 +190,7 @@ def get_df_dictionary(df_list, dt_col_name):
 # End get_df_dictionary.
 
 
-def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
+def write_table_from_nested_dict(nested_dict, row_header, write_path):
     # Extract all unique column names and determine maximum column width
     column_names = set()
     max_column_widths = {}
@@ -221,7 +221,7 @@ def write_table_from_nested_dict(nested_dict, row_header, write_path, filename):
         rows.append(" | ".join(row_values))
 
     # Write to file
-    with open(f'{write_path}/{filename}.txt', 'a') as file:
+    with open(write_path, 'a') as file:
         file.write(header_line + "\n")
         file.write(divider_line + "\n")
         for row in rows:
