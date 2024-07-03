@@ -175,7 +175,7 @@ class TransformData:
         start_index = index
         end_reached = False
         while index < size:
-
+            print("top of while in temporal_deshifter, index: ", index, "\n")
             # Store starting index.
             if not end_reached:
                 start_index = index
@@ -232,9 +232,11 @@ class TransformData:
             # duration count.
             vert_offset, is_end = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
                                                        index, size, duration=offset_criteria)
+            print(f"identify_offset returned {vert_offset}\n")
 
             if is_end:
                 end_reached = True
+                shift_val_index = 7
                 index = size - 1
                 continue
 
@@ -247,7 +249,10 @@ class TransformData:
             # offset is valid. Record the index where the offset stops.
             # When offset stops, undo the shift.
             while index < size:
-                if (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
+                if pd.isna(df_copy[primary_col_name].iloc[index]):
+                    corrected_df.loc[index, primary_col_name] = np.nan
+                    index += 1
+                elif (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
                         round(df_copy[ref_col_name].iloc[index], 4)):
                     corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
@@ -265,6 +270,8 @@ class TransformData:
                 'vertical_offset': [vert_offset]
             })
             summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+
+            print("did the correction\n")
 
             shift_val_index = 0
         # End outer while.
@@ -325,9 +332,16 @@ class TransformData:
         if index >= size:
             return np.nan, end_reached
 
-        offset_value = offset_column.iloc[index]
-        ref_value = reference_column.iloc[index]
-        difference = round(ref_value - offset_value, 4)
+        while index < size:
+            offset_value = offset_column.iloc[index]
+            ref_value = reference_column.iloc[index]
+            difference = round(ref_value - offset_value, 4)
+
+            if pd.isna(difference):
+                index += 1
+                continue
+            else:
+                break
 
         f_loop = index
         # for loop in range(index, index + duration):

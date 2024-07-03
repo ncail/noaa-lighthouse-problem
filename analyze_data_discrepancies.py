@@ -34,6 +34,9 @@ def parse_arguments():
                         help="Correct temporal offsets in the data before carrying out "
                              "discrepancy analysis")
     parser.set_defaults(correct_data=False)
+    parser.add_argument('--detail-report', dest='summary_only', action='store_false',
+                        help="Write a detailed annual metrics report to a text file.")
+    parser.set_defaults(summary_only=True)
     return parser.parse_args()
 # End parse_arguments.
 
@@ -70,8 +73,9 @@ def main(args):
     config = MetricsCalculator.load_configs('config.json')
 
     # Save flag to determine whether discrepancy analysis will be done on
-    # raw or corrected data.
+    # raw or corrected data, and to do a detailed report.
     do_correction = args.correct_data
+    do_detailed_report = args.summary_only
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
@@ -222,7 +226,9 @@ def main(args):
     all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
                                                    'initial_nan_percent', 'final_nan_percent'])
 
-    for year in common_years:
+    # for year in common_years:
+    year = 1999
+    if True:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
@@ -321,9 +327,10 @@ def main(args):
         }
 
         # Write report.
-        MetricsCalculator.write_stats(stats_df, write_path, filename, year)
-        MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
-        MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
+        if do_detailed_report:
+            MetricsCalculator.write_stats(stats_df, write_path, filename, year)
+            MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
+            MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
     # End for.
 
     # Write summary file.
@@ -355,7 +362,7 @@ def main(args):
     # Write temporal offset correction summary for all years.
     if do_correction:
         with open(f"generated_files/correction_reports/{filename}"
-                  f"_temporal_correction_summary_all_years.txt", 'a') as file:
+                  f"_temporal_correction_summary.txt", 'a') as file:
             file.write(all_processed_years_df.to_string())
 # End main.
 

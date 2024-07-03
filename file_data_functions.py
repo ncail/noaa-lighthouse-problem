@@ -192,16 +192,18 @@ def get_df_dictionary(df_list, dt_col_name):
 
 def write_table_from_nested_dict(nested_dict, row_header, write_path):
     # Extract all unique column names and determine maximum column width
-    column_names = []
+    column_names = set()
     max_column_widths = {}
 
     # Determine maximum column width based on header and rows
     for row_name, row_data in nested_dict.items():
         for column_name, value in row_data.items():
-            column_names.append(column_name)
+            column_names.add(column_name)
             max_width = max(len(str(column_name)), len(str(value)))
             current_max = max_column_widths.get(column_name, 0)
             max_column_widths[column_name] = max(current_max, max_width)
+
+    column_names = sorted(column_names)
 
     # Prepare table header
     header = [row_header.ljust(len(row_header))] + [column_name.ljust(max_column_widths[column_name])
