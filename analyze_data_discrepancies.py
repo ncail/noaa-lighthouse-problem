@@ -222,10 +222,7 @@ def main(args):
     all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
                                                    'initial_nan_percent', 'final_nan_percent'])
 
-    # for year in common_years:
-
-    year = 2020
-    if True:
+    for year in common_years:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
@@ -271,17 +268,6 @@ def main(args):
             final_nan_percentage = round((len(corrected_df[corrected_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
             shifts_summary_df = shifts_summary_df[0]
-            # Add start/end dates column to summary df.
-            # start_dates = []
-            # end_dates = []
-            # for start_index, end_index in zip(shifts_summary_df['start_index'], shifts_summary_df['end_index']):
-            #     start_dates.append(corrected_df.loc[start_index, noaa_dt_col_name])
-            #     end_dates.append(corrected_df.loc[end_index, noaa_dt_col_name])
-            # shifts_summary_df['start_date'] = pd.Series(start_dates)
-            # shifts_summary_df['end_date'] = pd.Series(end_dates)
-
-            # Drop index columns.
-            # shifts_summary_df = shifts_summary_df.drop(columns=['start_index', 'end_index'])
 
             # Add to all-years summary dataframe.
             processed_year_row = pd.DataFrame({
@@ -292,11 +278,6 @@ def main(args):
                 'final_nan_percent': [final_nan_percentage]
             })
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row], ignore_index=True)
-
-            # Write temporal shift summary for the year.
-            # with open(f"generated_files/correction_reports/{filename}"
-            #           f"_temporal_correction_summary_{year}.txt", 'a') as file:
-            #     file.write(shifts_summary_df.to_string())
 
             # Update merged_df.
             merged_df = corrected_df.copy()
@@ -321,12 +302,9 @@ def main(args):
 
         # Format metrics.
         metrics_list = calculator.format_metrics()
-        # for item in metrics_list:
-        #     print(item, "\n")
 
         # Get table of long offsets.
         offsets_dict = calculator.generate_long_offsets_info()
-        # print(offsets_dict, "\n")
 
         # Append year info to summary.
         summary[year] = {
