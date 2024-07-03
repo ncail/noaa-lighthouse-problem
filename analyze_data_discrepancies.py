@@ -13,6 +13,7 @@ import datetime
 import glob
 import pandas as pd
 import numpy as np
+import json
 
 
 # parse_arguments will get command line arguments needed for program execution.
@@ -26,11 +27,13 @@ def parse_arguments():
                         help='Path to directory of primary data', default=None)
     parser.add_argument('--writepath', type=str,
                         help='Path to write results text file in', default='generated_files')
-    parser.add_argument('--include-msgs', action='store_true',
-                        help="Enable writing program execution messages to results text file")
     parser.add_argument('--no-msgs', dest='include_msgs', action='store_false',
                         help="Opt out of writing execution messages to results text file")
     parser.set_defaults(include_msgs=True)
+    parser.add_argument('--do-correction', dest='correct_data', action='store_true',
+                        help="Correct temporal offsets in the data before carrying out "
+                             "discrepancy analysis")
+    parser.set_defaults(correct_data=False)
     return parser.parse_args()
 # End parse_arguments.
 
@@ -65,6 +68,10 @@ def main(args):
 
     # Store loaded configs.
     config = MetricsCalculator.load_configs('config.json')
+
+    # Save flag to determine whether discrepancy analysis will be done on
+    # raw or corrected data.
+    do_correction = args.correct_data
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
@@ -212,14 +219,16 @@ def main(args):
     # Process the dataframes of common years to get statistics.
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
-    all_processed_years_df = pd.DataFrame(columns=['temporal_offsets', 'vertical_offsets',
+    all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
                                                    'initial_nan_percent', 'final_nan_percent'])
-    # all_processed_years_df.set_index(list(common_years))
-    for year in common_years:
+
+    # for year in common_years:
+
+    year = 2020
+    if True:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
-        calculator = MetricsCalculator()
-        calculator.set_configs(config)
+        calculator = MetricsCalculator(user_config=config)
         corrector = TransformData(user_config=config)
 
         # Assign dataframes from dictionaries.
@@ -247,12 +256,13 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        # Initialize dataframe pointer to hold info about temporal offsets, and assign temporal offset stats.
-        shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
-        initial_nan_percentage = round((len(merged_df[merged_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
-
         # If doing analysis on corrected data, correct data here.
-        if year == 2012:
+        if do_correction:
+
+            # Initialize dataframe pointer to hold info about temporal offsets, and assign temporal offset stats.
+            shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
+            initial_nan_percentage = round((len(merged_df[merged_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
+
             corrected_df = merged_df.copy()
             corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_df=shifts_summary_df,
                                                               primary_data_column_name=lh_pwl_col_name,
@@ -260,21 +270,22 @@ def main(args):
 
             final_nan_percentage = round((len(corrected_df[corrected_df[lh_pwl_col_name].isna()]) / size) * 100, 4)
 
-            # Add start/end dates column to summary df.
-            start_dates = []
-            end_dates = []
             shifts_summary_df = shifts_summary_df[0]
-            for start_index, end_index in zip(shifts_summary_df['start_index'], shifts_summary_df['end_index']):
-                start_dates.append(corrected_df.loc[start_index, noaa_dt_col_name])
-                end_dates.append(corrected_df.loc[end_index, noaa_dt_col_name])
-            shifts_summary_df['start_date'] = pd.Series(start_dates)
-            shifts_summary_df['end_date'] = pd.Series(end_dates)
+            # Add start/end dates column to summary df.
+            # start_dates = []
+            # end_dates = []
+            # for start_index, end_index in zip(shifts_summary_df['start_index'], shifts_summary_df['end_index']):
+            #     start_dates.append(corrected_df.loc[start_index, noaa_dt_col_name])
+            #     end_dates.append(corrected_df.loc[end_index, noaa_dt_col_name])
+            # shifts_summary_df['start_date'] = pd.Series(start_dates)
+            # shifts_summary_df['end_date'] = pd.Series(end_dates)
 
             # Drop index columns.
-            shifts_summary_df = shifts_summary_df.drop(columns=['start_index', 'end_index'])
+            # shifts_summary_df = shifts_summary_df.drop(columns=['start_index', 'end_index'])
 
             # Add to all-years summary dataframe.
             processed_year_row = pd.DataFrame({
+                'year': [year],
                 'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
                 'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
                 'initial_nan_percent': [initial_nan_percentage],
@@ -283,17 +294,17 @@ def main(args):
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row], ignore_index=True)
 
             # Write temporal shift summary for the year.
-            with open(f"generated_files/correction_reports/{filename}"
-                      f"_temporal_correction_summary_{year}.txt", 'a') as file:
-                file.write(shifts_summary_df.to_string())
+            # with open(f"generated_files/correction_reports/{filename}"
+            #           f"_temporal_correction_summary_{year}.txt", 'a') as file:
+            #     file.write(shifts_summary_df.to_string())
 
+            # Update merged_df.
+            merged_df = corrected_df.copy()
+        # End temporal correction.
 
-        '''
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[lh_pwl_col_name],
                                                           merged_df[noaa_pwl_col_name], size)
-
-        
 
         # Get offset runs dataframe.
         run_data_df = calculator.generate_runs_df(merged_df[lh_pwl_col_name],
@@ -320,6 +331,9 @@ def main(args):
         # Append year info to summary.
         summary[year] = {
             "% agree": stats_df.loc['total agreements', 'percent'],
+            "% values disagree": stats_df.loc['value disagreements', 'percent'],
+            "% total disagree": stats_df.loc['total disagreements', 'percent'],
+            "% missing": stats_df.loc['missing (primary)', 'percent'],
             "# long offsets": metrics['long_offsets_count'],
             "# long gaps": metrics['long_gaps_count'],
             "unique long offsets": list(offsets_dict.keys()),
@@ -338,13 +352,16 @@ def main(args):
     with open(f'{write_path}/{filename}_summary.txt', 'a') as file:
         file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
         file.write(f"% agree: Percentage of values that agree between datasets.\n"
+                   f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
+                   f"% total disagree: Percentage of data that disagrees (including NaNs).\n" 
+                   f"% missing: Percentage of the primary data that is missing (NaN).\n"
                    f"# long offsets: The number of offsets that meet the duration threshold.\n"
                    f"# long gaps: The number of gaps that meet the duration threshold.\n"
                    f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
                    f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
                    f"minimum value: The minimum discrepancy value.\n"
                    f"maximum value: The maximum discrepancy value.\n\n")
-    fp.write_table_from_nested_dict(summary, 'Year', write_path, f"{filename}_summary")
+    fp.write_table_from_nested_dict(summary, 'Year', f'{write_path}/{filename}_summary.txt')
 
     # Write error_summary and header to the text file if include_msgs is True.
     if args.include_msgs:
@@ -356,11 +373,12 @@ def main(args):
         text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
         with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
             file.write(''.join(text_list))
-    '''
 
-    with open(f"generated_files/correction_reports/{filename}"
-              f"_temporal_correction_summary_all_years.txt", 'a') as file:
-        file.write(all_processed_years_df.to_string())
+    # Write temporal offset correction summary for all years.
+    if do_correction:
+        with open(f"generated_files/correction_reports/{filename}"
+                  f"_temporal_correction_summary_all_years.txt", 'a') as file:
+            file.write(all_processed_years_df.to_string())
 # End main.
 
 

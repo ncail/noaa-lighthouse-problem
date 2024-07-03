@@ -172,16 +172,32 @@ class TransformData:
         shift_val_index = 0
 
         # While indices of dataframe are valid, correct temporal shifts if possible.
-        is_finished = False
+        start_index = index
+        end_reached = False
         while index < size:
 
             # Store starting index.
-            start_index = index
+            if not end_reached:
+                start_index = index
 
             # If all temporal shifts have been tried, consider this segment
-            # of data impossible to automatically correct, possibly because of a
-            # changing vertical offset or skipped values, etc.
-            # Restart process at +10 indices from current.
+            # of data impossible to automatically correct. Handle case where end
+            # of dataset is reached by identify_offset.
+            if end_reached:
+                corrected_df.loc[start_index:index, primary_col_name] = np.nan
+                execution_writes += (f"End of data was reached:\n"
+                                     f"{merged_df.iloc[start_index:index+1]}\n\n")
+                execution_writes += (f"Corrected dataframe holds:\n"
+                                     f"{corrected_df.iloc[start_index:index+1]}\n\n")
+                summary_row = pd.DataFrame({
+                    'start_index': [start_index],
+                    'end_index': [index if index < size else index - 1],
+                    'temporal_shift': [np.nan],
+                    'vertical_offset': [np.nan]
+                })
+                summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+                break
+
             if shift_val_index > 6:
                 df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                 shift_val_index = 0
@@ -193,23 +209,17 @@ class TransformData:
                     else:
                         corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
                     index += 1
-                    if index == size:
-                        index -= 1
-                        is_finished = True
-                        break
                 execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
                                      f"{merged_df.iloc[start_index:index]}\n\n")
                 execution_writes += (f"Corrected dataframe holds:\n"
                                      f"{corrected_df.iloc[start_index:index]}\n\n")
                 summary_row = pd.DataFrame({
                     'start_index': [start_index],
-                    'end_index': [index],
+                    'end_index': [index if index < size else index - 1],
                     'temporal_shift': [np.nan],
                     'vertical_offset': [np.nan]
                 })
                 summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
-                if is_finished:
-                    break
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -220,8 +230,13 @@ class TransformData:
             # Get the vertical offset. Note that identify_offset does not let missing
             # values contribute to the detection of an offset, but does include them in the
             # duration count.
-            vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
-                                               index, size, duration=offset_criteria)
+            vert_offset, is_end = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
+                                                       index, size, duration=offset_criteria)
+
+            if is_end:
+                end_reached = True
+                index = size - 1
+                continue
 
             # If there is no consistent vertical offset, try again for next temporal shift value.
             if pd.isna(vert_offset):
@@ -238,7 +253,6 @@ class TransformData:
                     index += 1
                 else:
                     df_copy[primary_col_name] = merged_df[primary_col_name].copy()
-                    # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
             execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
@@ -246,7 +260,7 @@ class TransformData:
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n\n"
             summary_row = pd.DataFrame({
                 'start_index': [start_index],
-                'end_index': [index],
+                'end_index': [index if index < size else index - 1],
                 'temporal_shift': [try_shift],
                 'vertical_offset': [vert_offset]
             })
@@ -303,11 +317,13 @@ class TransformData:
     # End process_offsets.
 
     def identify_offset(self, offset_column, reference_column, index, size, duration=0):
-        if duration is None:
+        if duration == 0:
             duration = self.config['vertical_offset_correction']['number_of_intervals']
 
+        end_reached = False
+
         if index >= size:
-            return np.nan
+            return np.nan, end_reached
 
         offset_value = offset_column.iloc[index]
         ref_value = reference_column.iloc[index]
@@ -317,7 +333,8 @@ class TransformData:
         # for loop in range(index, index + duration):
         while f_loop < (index + duration):
             if f_loop + 1 >= size:
-                return np.nan
+                end_reached = True
+                return np.nan, end_reached
 
             # Skips over NaNs. Considers that the offset remains valid even if
             # some values are missing due to sensor failure or whatever.
@@ -330,13 +347,13 @@ class TransformData:
             current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
 
             if current_diff != difference:
-                return np.nan
+                return np.nan, end_reached
 
             # Increment index.
             f_loop += 1
         # End while.
 
-        return difference
+        return difference, end_reached
     # End identify_offset.
 
     # ******************************************************************************

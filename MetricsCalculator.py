@@ -10,7 +10,7 @@ class MetricsCalculator:
     # ******************************************************************************
     # ****************************** CONSTRUCTOR ***********************************
     # ******************************************************************************
-    def __init__(self, col_config=None):
+    def __init__(self, col_config=None, user_config=None):
         if col_config is None:
             self.col_config = {
                 'offset_column': 'offset',
@@ -41,6 +41,9 @@ class MetricsCalculator:
         }
 
         self.config = self.default_config.copy()
+        if user_config is not None:
+            self.set_configs(user_config)
+
         self.run_data_df = None
         self.metrics = None
         self.long_offsets_info = None
