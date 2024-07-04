@@ -75,7 +75,7 @@ def main(args):
     # Save flag to determine whether discrepancy analysis will be done on
     # raw or corrected data, and to do a detailed report.
     do_correction = args.correct_data
-    do_detailed_report = args.summary_only
+    do_detailed_report = not args.summary_only
 
     # Determine the filename results will be written to.
     filename = get_filename(args)
@@ -226,9 +226,9 @@ def main(args):
     all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
                                                    'initial_nan_percent', 'final_nan_percent'])
 
-    # for year in common_years:
-    year = 2021
-    if True:
+    for year in common_years:
+    # year = 2021
+    # if True:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
