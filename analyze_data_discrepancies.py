@@ -227,7 +227,7 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent'])
 
     # for year in common_years:
-    year = 1999
+    year = 2021
     if True:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.

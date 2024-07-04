@@ -183,10 +183,11 @@ class TransformData:
                 df_copy[primary_col_name] = merged_df[primary_col_name].copy()
                 shift_val_index = 0
 
-                if start_index + offset_criteria >= size:
-                    index = size - 1
-                else:
-                    index = start_index + offset_criteria
+                if not is_end[0]:
+                    if start_index + offset_criteria >= size:
+                        index = size - 1
+                    else:
+                        index = start_index + offset_criteria
 
                 if insert_nans:
                     corrected_df.loc[start_index:index, primary_col_name] = np.nan
@@ -205,6 +206,10 @@ class TransformData:
                     'vertical_offset': [np.nan]
                 })
                 summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+
+                if is_end[0]:
+                    break
+            # End uncorrectable case.
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
@@ -243,12 +248,13 @@ class TransformData:
                     index += 1
                 else:
                     df_copy[primary_col_name] = merged_df[primary_col_name].copy()
-                    # df_copy.drop(index, inplace=True)
                     break
             # End inner while.
+
             execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n\n"
+
             summary_row = pd.DataFrame({
                 'start_index': [start_index],
                 'end_index': [index if index < size else index - 1],
@@ -321,22 +327,22 @@ class TransformData:
             ref_value = reference_column.iloc[index]
             difference = round(ref_value - offset_value, 4)
 
-            print(f"getting difference: {difference} at index: {index}\n"
-                  f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
+            #print(f"getting difference: {difference} at index: {index}\n"
+            #      f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
 
             if pd.isna(difference):
                 index += 1
             else:
-                print(f"EXITING get difference while with difference: {difference} "
-                      f"at index: {index}\n"
-                      f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
+                #print(f"EXITING get difference while with difference: {difference} "
+                #      f"at index: {index}\n"
+                #      f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
                 break
 
         f_loop = index
         # for loop in range(index, index + duration):
         while f_loop < (index + duration):
-            print(f"in verifying offset loop.\n"
-                  f"     index: {f_loop}, index+duration: {index + duration}\n")
+            #print(f"in verifying offset loop.\n"
+            #      f"     index: {f_loop}, index+duration: {index + duration}\n")
             if f_loop + 1 >= size:
                 end_reached[0] = True
                 return np.nan
@@ -345,13 +351,13 @@ class TransformData:
             # some values are missing due to sensor failure or whatever.
             # This prevents invalidating an offset that is consistent otherwise.
             if pd.isna(offset_column.iloc[f_loop]) or pd.isna(reference_column.iloc[f_loop]):
-                print("skipping nan value at index: ", f_loop, "\n")
+                #print("skipping nan value at index: ", f_loop, "\n")
                 f_loop += 1
                 index += 1
                 continue
 
             current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
-            print(f"current_diff: {current_diff}, initial_diff: {difference} at index: {f_loop}\n")
+            #print(f"current_diff: {current_diff}, initial_diff: {difference} at index: {f_loop}\n")
             if current_diff != difference:
                 return np.nan
             # Increment index.
