@@ -227,9 +227,9 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent',
                                                    'increased_nan_percent'])
 
-    for year in common_years:
-    # year = 2021
-    # if True:
+    # for year in common_years:
+    year = 2023
+    if True:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)

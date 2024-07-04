@@ -251,8 +251,12 @@ class TransformData:
                     break
             # End inner while.
 
+            if index >= size:
+                index = size - 1
+                is_end[0] = True
+
             execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
-                                 f"Corrected temporal shift from indices {start_index} : {index}\n")
+                                 f"Corrected temporal shift from indices {start_index} : {index - 1}\n")
             execution_writes += f"{corrected_df.iloc[start_index:index]}\n\n"
 
             summary_row = pd.DataFrame({
