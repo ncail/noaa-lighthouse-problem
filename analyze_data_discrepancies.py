@@ -224,7 +224,8 @@ def main(args):
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
     all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
-                                                   'initial_nan_percent', 'final_nan_percent'])
+                                                   'initial_nan_percent', 'final_nan_percent',
+                                                   'increased_nan_percent'])
 
     for year in common_years:
     # year = 2021
@@ -281,7 +282,8 @@ def main(args):
                 'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
                 'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
                 'initial_nan_percent': [initial_nan_percentage],
-                'final_nan_percent': [final_nan_percentage]
+                'final_nan_percent': [final_nan_percentage],
+                'increased_nan_percent': [final_nan_percentage - initial_nan_percentage]
             })
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row], ignore_index=True)
 

@@ -327,22 +327,14 @@ class TransformData:
             ref_value = reference_column.iloc[index]
             difference = round(ref_value - offset_value, 4)
 
-            #print(f"getting difference: {difference} at index: {index}\n"
-            #      f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
-
             if pd.isna(difference):
                 index += 1
             else:
-                #print(f"EXITING get difference while with difference: {difference} "
-                #      f"at index: {index}\n"
-                #      f"    ref_value = {ref_value}, offset_value = {offset_value}\n")
                 break
 
         f_loop = index
         # for loop in range(index, index + duration):
         while f_loop < (index + duration):
-            #print(f"in verifying offset loop.\n"
-            #      f"     index: {f_loop}, index+duration: {index + duration}\n")
             if f_loop + 1 >= size:
                 end_reached[0] = True
                 return np.nan
@@ -351,13 +343,11 @@ class TransformData:
             # some values are missing due to sensor failure or whatever.
             # This prevents invalidating an offset that is consistent otherwise.
             if pd.isna(offset_column.iloc[f_loop]) or pd.isna(reference_column.iloc[f_loop]):
-                #print("skipping nan value at index: ", f_loop, "\n")
                 f_loop += 1
                 index += 1
                 continue
 
             current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
-            #print(f"current_diff: {current_diff}, initial_diff: {difference} at index: {f_loop}\n")
             if current_diff != difference:
                 return np.nan
             # Increment index.
