@@ -35,7 +35,7 @@
   "temporal_shift_correction": {
     "number_of_intervals": 10,
     "replace_with_nans": true,
-    "enable_write": false
+    "enable_write": true
   }
 }
 

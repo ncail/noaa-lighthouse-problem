@@ -230,9 +230,7 @@ class TransformData:
             # If there is no consistent vertical offset, try again for next temporal shift value.
             if pd.isna(vert_offset):
                 shift_val_index += 1
-                # continue
-            else:
-                shift_val_index = 0
+                continue
 
             # If an offset is found, record df_copy values into corrected_df while the vertical
             # offset is valid. Record the index where the offset stops.
@@ -268,6 +266,8 @@ class TransformData:
                 'vertical_offset': [vert_offset]
             })
             summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+
+            shift_val_index = 0
         # End outer while.
 
         # Write report to file.
