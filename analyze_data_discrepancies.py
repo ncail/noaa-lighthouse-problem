@@ -228,8 +228,9 @@ def main(args):
                                                    'increased_nan_percent'])
 
     # for year in common_years:
-    year = 2023
+    year = 2021
     if True:
+        print("start year", year, "\n")
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
@@ -333,6 +334,8 @@ def main(args):
             MetricsCalculator.write_stats(stats_df, write_path, filename, year)
             MetricsCalculator.write_metrics_to_file(metrics_list, write_path, filename)
             MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, filename)
+
+        print("end year", year, "\n")
     # End for.
 
     # Write summary file.
