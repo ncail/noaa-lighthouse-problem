@@ -1,0 +1,38 @@
+Comparison Table for year 1999:
+                     total points  percent
+total agreements            83126  94.8927
+value disagreements             0   0.0000
+total disagreements          4474   5.1073
+missing (primary)            1399   1.5970
+missing (reference)          4631   5.2865
+
+Number of offsets (non-NaN) with duration >= 1 day: 13
+Number of gaps with duration >= 1 day             : 2
+Duration of longest gap                           : 19 days 07:06:00
+Start/end date(s) of <19 days 07:06:00> gap       : ([Timestamp('1999-03-10 10:54:00')], [Timestamp('1999-03-29 18:00:00')])
+Maximum duration of an offset                     : 78 days 12:48:00
+Offset value(s) with <78 days 12:48:00> duration  : [0.0]
+Number of offsets with absolute value >= 0.05     : 0
+Maximum/minimum offset value                      : 0.0 / 0.0
+Start/end date(s) of offset with value <0.0>      : [Timestamp('1999-01-01 00:00:00'), Timestamp('1999-01-24 10:30:00'), Timestamp('1999-02-22 20:06:00'), Timestamp('1999-03-29 18:00:00'), Timestamp('1999-03-30 21:54:00'), Timestamp('1999-05-24 21:54:00'), Timestamp('1999-06-08 15:36:00'), Timestamp('1999-07-08 15:54:00'), Timestamp('1999-07-10 17:54:00'), Timestamp('1999-08-26 07:30:00'), Timestamp('1999-08-27 17:54:00'), Timestamp('1999-10-10 23:18:00'), Timestamp('1999-10-11 23:12:00'), Timestamp('1999-12-29 12:06:00'), Timestamp('1999-12-29 12:18:00'), Timestamp('1999-12-29 12:30:00'), Timestamp('1999-12-29 12:42:00'), Timestamp('1999-12-29 12:54:00')] / [Timestamp('1999-01-24 09:30:00'), Timestamp('1999-02-22 19:06:00'), Timestamp('1999-03-10 10:54:00'), Timestamp('1999-03-30 20:30:00'), Timestamp('1999-05-24 14:54:00'), Timestamp('1999-06-08 14:24:00'), Timestamp('1999-07-08 14:54:00'), Timestamp('1999-07-09 16:54:00'), Timestamp('1999-08-25 13:30:00'), Timestamp('1999-08-27 13:54:00'), Timestamp('1999-10-10 22:18:00'), Timestamp('1999-10-11 22:12:00'), Timestamp('1999-12-29 12:00:00'), Timestamp('1999-12-29 12:12:00'), Timestamp('1999-12-29 12:24:00'), Timestamp('1999-12-29 12:36:00'), Timestamp('1999-12-29 12:48:00'), Timestamp('1999-12-31 23:54:00')]
+Start/end date(s) of offset with value <0.0>      : [Timestamp('1999-01-01 00:00:00'), Timestamp('1999-01-24 10:30:00'), Timestamp('1999-02-22 20:06:00'), Timestamp('1999-03-29 18:00:00'), Timestamp('1999-03-30 21:54:00'), Timestamp('1999-05-24 21:54:00'), Timestamp('1999-06-08 15:36:00'), Timestamp('1999-07-08 15:54:00'), Timestamp('1999-07-10 17:54:00'), Timestamp('1999-08-26 07:30:00'), Timestamp('1999-08-27 17:54:00'), Timestamp('1999-10-10 23:18:00'), Timestamp('1999-10-11 23:12:00'), Timestamp('1999-12-29 12:06:00'), Timestamp('1999-12-29 12:18:00'), Timestamp('1999-12-29 12:30:00'), Timestamp('1999-12-29 12:42:00'), Timestamp('1999-12-29 12:54:00')] / [Timestamp('1999-01-24 09:30:00'), Timestamp('1999-02-22 19:06:00'), Timestamp('1999-03-10 10:54:00'), Timestamp('1999-03-30 20:30:00'), Timestamp('1999-05-24 14:54:00'), Timestamp('1999-06-08 14:24:00'), Timestamp('1999-07-08 14:54:00'), Timestamp('1999-07-09 16:54:00'), Timestamp('1999-08-25 13:30:00'), Timestamp('1999-08-27 13:54:00'), Timestamp('1999-10-10 22:18:00'), Timestamp('1999-10-11 22:12:00'), Timestamp('1999-12-29 12:00:00'), Timestamp('1999-12-29 12:12:00'), Timestamp('1999-12-29 12:24:00'), Timestamp('1999-12-29 12:36:00'), Timestamp('1999-12-29 12:48:00'), Timestamp('1999-12-31 23:54:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+0.0     | 23 days 09:30:00     | 1999-01-01 00:00:00  | 1999-01-24 09:30:00
+        | 29 days 08:36:00     | 1999-01-24 10:30:00  | 1999-02-22 19:06:00
+        | 15 days 14:48:00     | 1999-02-22 20:06:00  | 1999-03-10 10:54:00
+        | 1 days 02:30:00      | 1999-03-29 18:00:00  | 1999-03-30 20:30:00
+        | 54 days 17:00:00     | 1999-03-30 21:54:00  | 1999-05-24 14:54:00
+        | 14 days 16:30:00     | 1999-05-24 21:54:00  | 1999-06-08 14:24:00
+        | 29 days 23:18:00     | 1999-06-08 15:36:00  | 1999-07-08 14:54:00
+        | 1 days 01:00:00      | 1999-07-08 15:54:00  | 1999-07-09 16:54:00
+        | 45 days 19:36:00     | 1999-07-10 17:54:00  | 1999-08-25 13:30:00
+        | 1 days 06:24:00      | 1999-08-26 07:30:00  | 1999-08-27 13:54:00
+        | 44 days 04:24:00     | 1999-08-27 17:54:00  | 1999-10-10 22:18:00
+        | 78 days 12:48:00     | 1999-10-11 23:12:00  | 1999-12-29 12:00:00
+        | 2 days 11:00:00      | 1999-12-29 12:54:00  | 1999-12-31 23:54:00
+
+
+
