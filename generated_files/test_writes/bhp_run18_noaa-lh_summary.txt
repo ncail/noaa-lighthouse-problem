@@ -1,0 +1,75 @@
+Configurations: {
+    "primary_data_column_names": {
+        "datetime": "",
+        "water_level": ""
+    },
+    "reference_data_column_names": {
+        "datetime": "",
+        "water_level": ""
+    },
+    "filter_offsets_by_duration": {
+        "threshold": "1 day",
+        "type": "min",
+        "is_strict": false
+    },
+    "filter_offsets_by_value": {
+        "threshold": 0.05,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false
+    },
+    "filter_gaps_by_duration": {
+        "threshold": "1 day",
+        "type": "min",
+        "is_strict": false
+    },
+    "vertical_offset_correction": {
+        "number_of_intervals": 240
+    },
+    "temporal_shift_correction": {
+        "number_of_intervals": 10,
+        "replace_with_nans": true,
+        "enable_write": false
+    }
+}
+
+% agree: Percentage of values that agree between datasets.
+% values disagree: Percentage of values that disagree (excluding NaNs).
+% total disagree: Percentage of data that disagrees (including NaNs).
+% missing: Percentage of the primary data that is missing (NaN).
+# long offsets: The number of offsets that meet the duration threshold.
+# long gaps: The number of gaps that meet the duration threshold.
+unique long offsets: List of unique offset values that meet the duration threshold.
+# large discrepancies: The number of discrepancies that meet the value threshold.
+minimum value: The minimum discrepancy value.
+maximum value: The maximum discrepancy value.
+
+Year | % agree | % missing | # large discrepancies | % values disagree | minimum value | maximum value | # long gaps | % total disagree | unique long offsets | # long offsets
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1996 | 98.2901 | 1.6621    | 14                    | 0.0478            | -0.236        | 1.595         | 1           | 1.7099           | [0.0]               | 11            
+1997 | 99.2055 | 0.6507    | 19                    | 0.1438            | -0.2          | 0.1           | 0           | 0.7945           | [0.0]               | 12            
+1998 | 99.9441 | 0.0205    | 3                     | 0.0354            | -0.2          | 0.126         | 0           | 0.0559           | [0.0]               | 8             
+1999 | 94.9429 | 1.2568    | 84                    | 0.29              | -0.588        | 1.14          | 2           | 5.0571           | [0.0]               | 13            
+2000 | 99.8645 | 0.0808    | 20                    | 0.0546            | -0.209        | 0.323         | 0           | 0.1355           | [0.0]               | 6             
+2001 | 99.2397 | 0.0788    | 343                   | 0.6815            | -0.453        | 0.048         | 0           | 0.7603           | [0.0]               | 18            
+2002 | 99.4463 | 0.1632    | 63                    | 0.3904            | -0.698        | 0.819         | 0           | 0.5537           | [0.0]               | 14            
+2003 | 92.0765 | 0.0559    | 2                     | 7.8676            | -0.274        | 0.055         | 0           | 7.9235           | [0.0, -0.011]       | 12            
+2004 | 96.1202 | 2.3657    | 158                   | 1.5141            | -0.223        | 0.105         | 2           | 3.8798           | [0.0]               | 37            
+2005 | 99.6005 | 0.016     | 44                    | 0.3836            | -0.276        | 0.64          | 0           | 0.3995           | [0.0]               | 29            
+2006 | 97.8094 | 0.4361    | 316                   | 1.7546            | -0.151        | 1.024         | 1           | 2.1906           | [0.0]               | 64            
+2007 | 77.0993 | 1.0217    | 339                   | 21.879            | -0.189        | 1.203         | 1           | 22.9007          | [0.0]               | 34            
+2008 | 4.5344  | 0.2334    | 1416                  | 95.2322           | -0.277        | 0.343         | 0           | 95.4656          | [0.0]               | 2             
+2009 | 3.4361  | 0.0685    | 1254                  | 96.4954           | -0.151        | 0.167         | 0           | 96.5639          | []                  | 0             
+2010 | 3.121   | 0.137     | 1697                  | 96.742            | -1.061        | 1.241         | 0           | 96.879           | []                  | 0             
+2011 | 3.6484  | 0.3014    | 613                   | 96.0502           | -0.26         | 0.119         | 0           | 96.3516          | []                  | 0             
+2012 | 2.9531  | 0.2994    | 1465                  | 96.7475           | -0.489        | 0.235         | 0           | 97.0469          | []                  | 0             
+2013 | 2.6404  | 1.2534    | 1206                  | 96.1062           | -0.242        | 0.214         | 2           | 97.3596          | []                  | 0             
+2014 | 2.6701  | 0.1952    | 1073                  | 97.1347           | -0.21         | 0.212         | 0           | 97.3299          | []                  | 0             
+2015 | 2.6336  | 2.0799    | 1649                  | 95.2865           | -0.205        | 0.196         | 2           | 97.3664          | []                  | 0             
+2016 | 2.5342  | 2.9463    | 1795                  | 94.5196           | -0.398        | 0.282         | 1           | 97.4658          | []                  | 0             
+2017 | 2.6096  | 4.3071    | 2467                  | 93.0833           | -0.312        | 1.33          | 4           | 97.3904          | []                  | 0             
+2018 | 2.6256  | 5.7306    | 906                   | 91.6438           | -0.139        | 0.142         | 2           | 97.3744          | []                  | 0             
+2019 | 2.5468  | 5.0742    | 1124                  | 92.379            | -0.216        | 0.212         | 1           | 97.4532          | []                  | 0             
+2020 | 1.9729  | 25.2835   | 1483                  | 72.7436           | -0.23         | 0.205         | 2           | 98.0271          | []                  | 0             
+2021 | 0.0     | 100.0     | 0                     | 0.0               | nan           | nan           | 1           | 100.0            | []                  | 0             
+2022 | 71.5916 | 100.0     | 0                     | 0.0               | nan           | nan           | 0           | 28.4084          | []                  | 0             
