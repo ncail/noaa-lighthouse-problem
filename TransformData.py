@@ -176,7 +176,7 @@ class TransformData:
             
             # Handle uncorrectable segment.
             if shift_val_index > 6 or is_end[0]:
-                start_index -= last_successful_shift
+                # start_index -= last_successful_shift
 
                 df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
 
@@ -196,6 +196,7 @@ class TransformData:
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
+            index -= try_shift
 
             # Temporally shift the dataframe.
             df_copy = self._apply_temporal_shift(df_copy, merged_df, primary_col_name, try_shift)
