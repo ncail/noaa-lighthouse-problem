@@ -183,8 +183,8 @@ class TransformData:
 
                 execution_writes, summary_df = \
                     self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
-                                                              try_shift, vert_offset, summary_df,
-                                                              original_df=merged_df, uncorrected=True)
+                                                              try_shift, vert_offset, merged_df,
+                                                              summary_df=summary_df, uncorrected=True)
 
             # If end of dataframe was reached with no identifiable offset, break after filling
             # and documenting last segment.
@@ -222,9 +222,8 @@ class TransformData:
             df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
             
             execution_writes, summary_df = \
-                self._update_execution_writes_and_summary(execution_writes, corrected_df,
-                                                          start_index, index, try_shift,
-                                                          vert_offset, merged_df, summary_df)
+                self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
+                                                          try_shift, vert_offset, merged_df, summary_df=summary_df)
 
             index += 1
         # End while.
@@ -357,7 +356,7 @@ class TransformData:
         if not uncorrected:
             execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
-            execution_writes += f"Original dataframe holds:\n"
+            execution_writes += f"\nOriginal dataframe holds:\n"
             execution_writes += f"{original_df.iloc[start_index:index + 1]}\n\n"
             execution_writes += f"Corrected dataframe holds:\n"
             execution_writes += f"{corrected_df.iloc[start_index:index + 1]}\n\n"
