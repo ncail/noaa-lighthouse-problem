@@ -228,7 +228,7 @@ def main(args):
                                                    'increased_nan_percent'])
 
     # for year in common_years:
-    year = 2021
+    year = 2012
     if True:
         print("start year", year, "\n")
 

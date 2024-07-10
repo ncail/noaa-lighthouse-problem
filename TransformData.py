@@ -225,7 +225,7 @@ class TransformData:
                 self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
                                                           try_shift, vert_offset, merged_df, summary_df=summary_df)
 
-            index += 1
+            # index += 1
         # End while.
 
         # Write report to file.
