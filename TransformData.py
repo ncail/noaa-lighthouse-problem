@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import json
 import datetime
-from collections import namedtuple
 
 
 class TransformData:
@@ -154,19 +153,14 @@ class TransformData:
         size = len(merged_df)
 
         # Set write path if generating temporal correction reports is enabled.
-        if enable_write is True:
-            if not write_path:
-                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                write_path = f"generated_files/correction_reports/temporal_correction_report_{timestamp}.txt"
+        write_path = self._initialize_write_path(enable_write, write_path)
 
-        # Initialize report string. And define dataframe to store metrics about the
-        # offset correction.
+        # Initialize report string.
         execution_writes = ""
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
-        df_copy = merged_df.copy()
-        corrected_df = merged_df.copy()
+        df_copy, corrected_df = self._initialize_dataframes(merged_df)
 
         temporal_shifts = [0, -1, -2, -3, 1, 2, 3]  # A temporal shift of 0 or -1 is most likely.
         shift_val_index = 0
@@ -174,54 +168,43 @@ class TransformData:
         # While indices of dataframe are valid, correct temporal shifts if possible.
         is_end = [False]
         start_index = index
+        last_successful_shift = 0
         while index < size:
 
             if not is_end[0]:
                 start_index = index
-
+            
+            # Handle uncorrectable segment.
             if shift_val_index > 6 or is_end[0]:
-                df_copy[primary_col_name] = merged_df[primary_col_name].copy()
-                shift_val_index = 0
+                start_index -= last_successful_shift
 
-                if not is_end[0]:
-                    if start_index + offset_criteria >= size:
-                        index = size - 1
-                    else:
-                        index = start_index + offset_criteria
+                df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
 
-                if insert_nans:
-                    corrected_df.loc[start_index:index, primary_col_name] = np.nan
-                else:
-                    corrected_df.loc[start_index:index, primary_col_name] = \
-                        df_copy.loc[start_index:index, primary_col_name].copy()
+                corrected_df, index = self._handle_uncorrectable_segment(corrected_df, start_index,
+                                                                         primary_col_name, df_copy,
+                                                                         offset_criteria, size, insert_nans)
 
-                execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
-                                     f"{merged_df.iloc[start_index:index+1]}\n\n")
-                execution_writes += (f"Corrected dataframe holds:\n"
-                                     f"{corrected_df.iloc[start_index:index+1]}\n\n")
-                summary_row = pd.DataFrame({
-                    'start_index': [start_index],
-                    'end_index': [index if index < size else index - 1],
-                    'temporal_shift': [np.nan],
-                    'vertical_offset': [np.nan]
-                })
-                summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+                execution_writes, summary_df = \
+                    self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
+                                                              try_shift, vert_offset, summary_df,
+                                                              original_df=merged_df, uncorrected=True)
 
-                if is_end[0]:
-                    break
-            # End uncorrectable case.
+            # If end of dataframe was reached with no identifiable offset, break after filling
+            # and documenting last segment.
+            if is_end[0]:
+                break
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
 
             # Temporally shift the dataframe.
-            df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
+            df_copy = self._apply_temporal_shift(df_copy, merged_df, primary_col_name, try_shift)
 
             # Get the vertical offset. Note that identify_offset does not let missing
             # values contribute to the detection of an offset, but does include them in the
             # duration count.
-            vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name],
-                                               index, size, duration=offset_criteria, end_reached=is_end)
+            vert_offset = self.identify_offset(df_copy[primary_col_name], df_copy[ref_col_name], index, size,
+                                               duration=offset_criteria, end_reached=is_end)[0]
 
             if pd.isna(vert_offset) and is_end[0]:
                 index = size - 1
@@ -235,40 +218,19 @@ class TransformData:
             # If an offset is found, record df_copy values into corrected_df while the vertical
             # offset is valid. Record the index where the offset stops.
             # When offset stops, undo the shift.
-            while index < size:
-                if pd.isna(df_copy[primary_col_name].iloc[index]):
-                    corrected_df.loc[index, primary_col_name] = np.nan
-                    index += 1
-                elif pd.isna(df_copy[ref_col_name].iloc[index]):
-                    corrected_df.loc[index, primary_col_name] = df_copy[primary_col_name].iloc[index]
-                    index += 1
-                elif (round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) ==
-                        round(df_copy[ref_col_name].iloc[index], 4)):
-                    corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
-                    index += 1
-                else:
-                    df_copy[primary_col_name] = merged_df[primary_col_name].copy()
-                    break
-            # End inner while.
+            corrected_df, index = self._record_corrected_values(df_copy, corrected_df,
+                                                                primary_col_name, ref_col_name,
+                                                                vert_offset, index, size)
 
-            if index >= size:
-                index = size - 1
-                is_end[0] = True
-
-            execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
-                                 f"Corrected temporal shift from indices {start_index} : {index - 1}\n")
-            execution_writes += f"{corrected_df.iloc[start_index:index]}\n\n"
-
-            summary_row = pd.DataFrame({
-                'start_index': [start_index],
-                'end_index': [index if index < size else index - 1],
-                'temporal_shift': [try_shift],
-                'vertical_offset': [vert_offset]
-            })
-            summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
-
-            shift_val_index = 0
-        # End outer while.
+            last_successful_shift = try_shift
+            
+            df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
+            
+            execution_writes, summary_df = \
+                self._update_execution_writes_and_summary(execution_writes, corrected_df,
+                                                          start_index, index, try_shift,
+                                                          vert_offset, summary_df)
+        # End while.
 
         # Write report to file.
         self._report_correction(execution_writes, write_path)
@@ -276,6 +238,144 @@ class TransformData:
         # Return temporally corrected dataframe.
         return corrected_df
     # End temporal_deshifter.
+    
+    def _handle_uncorrectable_segment(self, corrected_df, start_index, primary_col_name, df_copy,
+                                      offset_criteria, size, insert_nans=True):
+        # Case I: determine if a run of nans begins.
+        # If so, return index where run ends if <= stopping index,
+        # else return stopping index.
+        case_one_index, is_nan_run = self._check_nan_runs(df_copy[primary_col_name], start_index,
+                                                          offset_criteria, size)
+
+        # Case II: determine if a flat line begins.
+        # If so, return index where flat line ends.
+        case_two_index, is_flat_line = self._check_flat_line(df_copy[primary_col_name], start_index,
+                                                             offset_criteria, size)
+
+        # Case III: likely that there is some intermediate problem like a duplicate value,
+        # or the previous segment was also Case III so an offset exists but is interrupted
+        # by something within the length of offset_criteria.
+        # Return index + offset criteria as the stopping index.
+        case_three_index = start_index + offset_criteria
+
+        if is_nan_run:
+            end_fill_index = case_one_index
+        elif is_flat_line:
+            end_fill_index = case_two_index
+        else:
+            end_fill_index = case_three_index
+
+        if insert_nans:
+            corrected_df.loc[start_index:end_fill_index, primary_col_name] = np.nan
+        else:
+            corrected_df.loc[start_index:end_fill_index, primary_col_name] = \
+                df_copy.loc[start_index:end_fill_index, primary_col_name].copy()
+
+        return corrected_df, end_fill_index + 1
+    # End uncorrectable case.
+
+    def _check_nan_runs(self, series, starting_index, offset_criteria, size):
+        index = starting_index
+        nan_run_found = False
+        valid_value_count = 0
+        while index + offset_criteria < size:
+            if valid_value_count >= offset_criteria:
+                break
+            if pd.isna(series[index]):
+                if not nan_run_found:
+                    if series.loc[index:index + offset_criteria].isna().all():
+                        nan_run_found = True
+            elif nan_run_found:
+                break
+            else:
+                valid_value_count += 1
+            index += 1
+        # End while.
+
+        return index, nan_run_found
+    # End _check_nan_runs.
+
+    def _check_flat_line(self, series, starting_index, offset_criteria, size):
+        index = starting_index
+        valid_value_count = 0
+        flat_line_found = False
+        while index + 1 < size:
+            current_val = series[index]
+            next_val = series[index + 1]
+            if valid_value_count >= offset_criteria and not flat_line_found:
+                break
+            if pd.isna(current_val):
+                index += 1
+                continue
+            if current_val == next_val:
+                if not flat_line_found:
+                    if len(series.loc[index:index + offset_criteria].unique()) == 1:
+                        flat_line_found = True
+            elif flat_line_found:
+                break
+            else:
+                valid_value_count += 1
+            index += 1
+        # End while.
+
+        return index, flat_line_found
+    # End _check_flat_line.
+
+    def _initialize_write_path(self, enable_write, write_path):
+        if enable_write and not write_path:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            write_path = f"generated_files/correction_reports/temporal_correction_report_{timestamp}.txt"
+        return write_path
+    
+    def _initialize_dataframes(self, merged_df):
+        return merged_df.copy(), merged_df.copy()
+    
+    def _reset_shift(self, df_copy, merged_df, primary_col_name):
+        df_copy[primary_col_name] = merged_df[primary_col_name].copy()
+        shift_val_index = 0
+        return df_copy, shift_val_index
+    
+    def _apply_temporal_shift(self, df_copy, merged_df, primary_col_name, try_shift):
+        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
+        return df_copy
+    
+    def _record_corrected_values(self, df_copy, corrected_df, primary_col_name, ref_col_name,
+                                 vert_offset, index, size):
+        while index < size:
+            if pd.isna(df_copy[primary_col_name].iloc[index]):
+                corrected_df.loc[index, primary_col_name] = np.nan
+            elif pd.isna(df_copy[ref_col_name].iloc[index]):
+                corrected_df.loc[index, primary_col_name] = df_copy[primary_col_name].iloc[index]
+            elif round(df_copy[primary_col_name].iloc[index] + vert_offset, 4) == round(
+                    df_copy[ref_col_name].iloc[index], 4):
+                corrected_df.loc[index, primary_col_name] = df_copy.loc[index, primary_col_name]
+            else:
+                break
+            index += 1
+        return corrected_df, index
+    
+    def _update_execution_writes_and_summary(self, execution_writes, corrected_df, start_index, index,
+                                             try_shift, vert_offset, summary_df=[], original_df=None,
+                                             uncorrected=False):
+        if not uncorrected:
+            execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
+                                 f"Corrected temporal shift from indices {start_index} : {index}\n")
+            execution_writes += f"{corrected_df.iloc[start_index:index + 1]}\n\n"
+        else:
+            execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
+                                 f"{original_df.iloc[start_index:index]}\n\n")
+            execution_writes += (f"Corrected dataframe holds:\n"
+                                 f"{corrected_df.iloc[start_index:index]}\n\n")
+        
+        summary_row = pd.DataFrame({
+            'start_index': [start_index],
+            'end_index': [index if index < len(corrected_df) else index - 1],
+            'temporal_shift': [try_shift if not uncorrected else np.nan],
+            'vertical_offset': [vert_offset]
+        })
+        summary_df[0] = pd.concat([summary_df[0], summary_row], ignore_index=True)
+        
+        return execution_writes, summary_df
 
     def process_offsets(self, offset_column, reference_column, size, index=0, criteria=10, offset_arr=None):
         if criteria is None:
@@ -322,7 +422,7 @@ class TransformData:
             duration = self.config['vertical_offset_correction']['number_of_intervals']
 
         if index >= size:
-            return np.nan
+            return np.nan, index
 
         end_reached[0] = False
 
@@ -341,7 +441,7 @@ class TransformData:
         while f_loop < (index + duration):
             if f_loop + 1 >= size:
                 end_reached[0] = True
-                return np.nan
+                return np.nan, f_loop
 
             # Skips over NaNs. Considers that the offset remains valid even if
             # some values are missing due to sensor failure or whatever.
@@ -353,11 +453,11 @@ class TransformData:
 
             current_diff = round(reference_column.iloc[f_loop + 1] - offset_column.iloc[f_loop + 1], 4)
             if current_diff != difference:
-                return np.nan
+                return np.nan, f_loop
             # Increment index.
             f_loop += 1
         # End while.
-        return difference
+        return difference, f_loop
     # End identify_offset.
 
     # ******************************************************************************
@@ -382,7 +482,3 @@ class TransformData:
 
         with open(write_path, 'a') as file:
             file.write(f"{msg}")
-
-
-
-
