@@ -168,7 +168,6 @@ class TransformData:
         # While indices of dataframe are valid, correct temporal shifts if possible.
         is_end = [False]
         start_index = index
-        last_successful_shift = 0
         while index < size:
 
             if not is_end[0]:
@@ -176,8 +175,6 @@ class TransformData:
             
             # Handle uncorrectable segment.
             if shift_val_index > 6 or is_end[0]:
-                # start_index -= last_successful_shift
-
                 df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
 
                 corrected_df, index = self._handle_uncorrectable_segment(corrected_df, start_index,
@@ -196,7 +193,6 @@ class TransformData:
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
-            index -= try_shift
 
             # Temporally shift the dataframe.
             df_copy = self._apply_temporal_shift(df_copy, merged_df, primary_col_name, try_shift)
@@ -222,15 +218,15 @@ class TransformData:
             corrected_df, index = self._record_corrected_values(df_copy, corrected_df,
                                                                 primary_col_name, ref_col_name,
                                                                 vert_offset, index, size)
-
-            last_successful_shift = try_shift
             
             df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
             
             execution_writes, summary_df = \
                 self._update_execution_writes_and_summary(execution_writes, corrected_df,
                                                           start_index, index, try_shift,
-                                                          vert_offset, summary_df)
+                                                          vert_offset, merged_df, summary_df)
+
+            index += 1
         # End while.
 
         # Write report to file.
@@ -356,11 +352,14 @@ class TransformData:
         return corrected_df, index
     
     def _update_execution_writes_and_summary(self, execution_writes, corrected_df, start_index, index,
-                                             try_shift, vert_offset, summary_df=[], original_df=None,
+                                             try_shift, vert_offset, original_df, summary_df=[],
                                              uncorrected=False):
         if not uncorrected:
             execution_writes += (f"\nVertical offset found: {vert_offset} using temporal shift {try_shift}.\n"
                                  f"Corrected temporal shift from indices {start_index} : {index}\n")
+            execution_writes += f"Original dataframe holds:\n"
+            execution_writes += f"{original_df.iloc[start_index:index + 1]}\n\n"
+            execution_writes += f"Corrected dataframe holds:\n"
             execution_writes += f"{corrected_df.iloc[start_index:index + 1]}\n\n"
         else:
             execution_writes += (f"SEGMENT COULD NOT BE CORRECTED:\n"
