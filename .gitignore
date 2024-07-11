@@ -3,4 +3,3 @@ bfg-1.14.0.jar
 .idea/
 __pycache__/
 generated_files/correction_reports/
-generated_files/correction_reports/tests/

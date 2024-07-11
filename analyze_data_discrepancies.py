@@ -12,13 +12,14 @@ import sys
 import datetime
 import glob
 import pandas as pd
-import numpy as np
 import json
 
 
 # parse_arguments will get command line arguments needed for program execution.
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Parse arguments from user.")
+    parser.add_argument('--config', type=str,
+                        help='Path to configuration file', default='config.json')
     parser.add_argument('--filename', type=str,
                         help='Name of the file to write to', default=None)
     parser.add_argument('--refdir', type=str,
@@ -64,13 +65,24 @@ def get_data_paths(user_args, flag=[False]):
 # End get_directories.
 
 
+# load_configs loads the configuration file as a json.
+def load_configs(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            user_config = json.load(file)
+    except FileNotFoundError:
+        print(f"Error: Config file '{file_path}' not found.")
+    return user_config
+# End load_configs.
+
+
 # ***************************************************************************
 # *************************** PROGRAM START *********************************
 # ***************************************************************************
 def main(args):
 
     # Store loaded configs.
-    config = MetricsCalculator.load_configs('config.json')
+    config = load_configs(args.config)
 
     # Save flag to determine whether discrepancy analysis will be done on
     # raw or corrected data, and to do a detailed report.
@@ -227,9 +239,9 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent',
                                                    'increased_nan_percent'])
 
-    # for year in common_years:
-    year = 2012
-    if True:
+    for year in common_years:
+    # year = 2012
+    # if True:
         print("start year", year, "\n")
 
         # Instantiate an objects to get metrics and process offsets. Set configs.

@@ -1,41 +1,53 @@
 {
   "primary_data_column_names": {
-    "datetime": "",
-    "water_level": ""
+      "datetime": "",
+      "water_level": ""
   },
 
   "reference_data_column_names": {
-    "datetime": "",
-    "water_level": ""
+      "datetime": "",
+      "water_level": ""
   },
 
   "filter_offsets_by_duration": {
-    "threshold": "1 day",
-    "type": "min",
-    "is_strict": false
+      "threshold": "1 day",
+      "type": "min",
+      "is_strict": false
   },
 
   "filter_offsets_by_value": {
-    "threshold": 0.05,
-    "use_abs": true,
-    "type": "min",
-    "is_strict": false
+      "threshold": 0.05,
+      "use_abs": true,
+      "type": "min",
+      "is_strict": false
   },
 
   "filter_gaps_by_duration": {
-    "threshold": "1 day",
-    "type": "min",
-    "is_strict": false
+      "threshold": "1 day",
+      "type": "min",
+      "is_strict": false
   },
 
   "vertical_offset_correction": {
-    "number_of_intervals": 240
+      "number_of_intervals": 240
   },
 
   "temporal_shift_correction": {
-    "number_of_intervals": 10,
-    "replace_with_nans": true,
-    "enable_write": true
+      "number_of_intervals": 10,
+      "replace_with_nans": true
+  },
+
+  "writing_reports": {
+      "all_years": {
+         "metrics_summary": false,
+         "detailed_metrics": false,
+         "temporal_corrections_summary": false,
+         "temporal_correction_processing": false
+      },
+      
+      "select_years": {
+         
+      }
   }
 }
 

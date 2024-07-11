@@ -16,8 +16,7 @@ class TransformData:
             },
             'temporal_shift_correction': {
                 'number_of_intervals': 10,
-                'replace_with_nans': True,
-                'enable_write': False
+                'replace_with_nans': True
             }
         }
 
@@ -108,7 +107,7 @@ class TransformData:
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
     def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, index=0, summary_df=None,
-                                 write_path="", **kwargs):
+                                 write_path="", enable_write=False, **kwargs):
         # Get column names.
         default_col_names = self.col_config
         names = {**default_col_names, **kwargs}
@@ -142,7 +141,6 @@ class TransformData:
         params = {**default_params, **kwargs}
         offset_criteria = params['number_of_intervals']
         insert_nans = params['replace_with_nans']
-        enable_write = params['enable_write']
 
         return self._temporal_deshifter(df, primary_col_name, reference_col_name, index, summary_df,
                                         offset_criteria, insert_nans, enable_write, write_path)
