@@ -742,7 +742,8 @@ class MetricsCalculator:
     @staticmethod
     def write_stats(stats_df, write_path, filename, year):
         with open(f'{write_path}/{filename}.txt', 'a') as file:
-            file.write(f"Comparison Table for year {year}:\n{stats_df.to_string(index=True)}\n\n")
+            file.write(f"Comparison Table for year {year}:\n"
+                       f"{stats_df.to_string(index=True)}\n\n")
     # End write_stats.
 
     @staticmethod

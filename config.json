@@ -1,53 +1,61 @@
 {
-  "primary_data_column_names": {
-      "datetime": "",
-      "water_level": ""
+   "data": {
+      "paths": {
+         "refdir": "",
+         "primarydir": ""
+      },
+
+      "primary_data_column_names": {
+         "datetime": "",
+         "water_level": ""
+      },
+   
+      "reference_data_column_names": {
+         "datetime": "",
+         "water_level": ""
+      }
   },
 
-  "reference_data_column_names": {
-      "datetime": "",
-      "water_level": ""
+  "analysis": {
+      "mode": "raw",
+      "years": []
   },
+
+   "output": {
+      "base_filename": "",
+      "path": "generated_files",
+      "execution_msgs": false,
+
+      "generate_reports_for_years": {
+         "metrics_summary": [],
+         "metrics_detailed": [],
+         "temporal_corrections_summary": [],
+         "temporal_correction_processing": []
+     }
+   },
 
   "filter_offsets_by_duration": {
-      "threshold": "1 day",
+      "threshold": "0 days",
       "type": "min",
       "is_strict": false
   },
 
   "filter_offsets_by_value": {
-      "threshold": 0.05,
+      "threshold": 0.0,
       "use_abs": true,
       "type": "min",
       "is_strict": false
   },
 
   "filter_gaps_by_duration": {
-      "threshold": "1 day",
+      "threshold": "0 days",
       "type": "min",
       "is_strict": false
-  },
-
-  "vertical_offset_correction": {
-      "number_of_intervals": 240
   },
 
   "temporal_shift_correction": {
       "number_of_intervals": 10,
       "replace_with_nans": true
-  },
-
-  "writing_reports": {
-      "all_years": {
-         "metrics_summary": false,
-         "detailed_metrics": false,
-         "temporal_corrections_summary": false,
-         "temporal_correction_processing": false
-      },
-      
-      "select_years": {
-         
-      }
   }
 }
 
