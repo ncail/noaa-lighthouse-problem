@@ -313,7 +313,8 @@ def main(args):
 
             # Determine if temporal processing report should be written for the current year.
             write_processing_report = True if year in temp_corr_proc_years else False
-            output_path = f"{write_path}/correction_reports/{filename}_temporal_correction_processing.txt"\
+            output_path = (f"{write_path}/correction_reports/{filename}_{year}"
+                           f"_temporal_correction_processing.txt")\
                 if write_processing_report else ""
 
             initial_nan_percentage = round((len(
