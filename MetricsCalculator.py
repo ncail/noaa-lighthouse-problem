@@ -673,7 +673,8 @@ class MetricsCalculator:
         return key_str_dict
     # End _get_metric_key_strings.
 
-    def _generate_duration_string(self, params):
+    @staticmethod
+    def _generate_duration_string(params):
         if 'type' in params:
             if params['type'] == 'min':
                 return f">{'' if params['is_strict'] else '='} {params['threshold']}"
@@ -682,7 +683,8 @@ class MetricsCalculator:
         return "[Type of threshold not specified]"
     # End _generate_duration_string.
 
-    def _generate_value_string(self, params):
+    @staticmethod
+    def _generate_value_string(params):
         result = ""
         if params.get('use_abs'):
             result += "absolute value "
@@ -698,7 +700,8 @@ class MetricsCalculator:
         return result
     # End _generate_value_string.
 
-    def _parse_timedelta(self, time_str):
+    @staticmethod
+    def _parse_timedelta(time_str):
         pattern = r'(\d+)\s*(week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds)'
         matches = re.findall(pattern, time_str.lower())
 
@@ -729,19 +732,18 @@ class MetricsCalculator:
     @staticmethod
     def load_configs(file_path: str) -> dict:
         try:
-            # Update config dictionary only if section exists.
             with open(file_path, 'r') as file:
                 user_config = json.load(file)
         except FileNotFoundError:
-            print(f"Error: Config file '{file_path}' not found. Using default "
-                  f"MetricsCalculator configuration.")
+            print(f"Error: Config file '{file_path}' not found.")
         return user_config
     # End load_configs.
 
     @staticmethod
     def write_stats(stats_df, write_path, filename, year):
         with open(f'{write_path}/{filename}.txt', 'a') as file:
-            file.write(f"Comparison Table for year {year}:\n{stats_df.to_string(index=True)}\n\n")
+            file.write(f"Comparison Table for year {year}:\n"
+                       f"{stats_df.to_string(index=True)}\n\n")
     # End write_stats.
 
     @staticmethod

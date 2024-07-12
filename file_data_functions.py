@@ -9,53 +9,7 @@ import json
 pd.set_option('future.no_silent_downcasting', True)
 
 
-# Default configuration dictionary.
-config = {
-    'primary_data_column_names': {
-        'datetime': '',
-        'water_level': ''
-    },
-    'reference_data_column_names': {
-        'datetime': '',
-        'water_level': ''
-    },
-    'filter_offsets_by_duration': {
-        'threshold': '0 days',
-        'type': 'min',
-        'is_strict': False
-    },
-    'filter_offsets_by_value': {
-        'threshold': 0.0,
-        'use_abs': True,
-        'type': 'min',
-        'is_strict': False
-    },
-    'filter_gaps_by_duration': {
-        'threshold': '0 days',
-        'type': 'min',
-        'is_strict': False
-    },
-    'offset_correction_parameters': {
-        'number_of_intervals': 0
-    }
-}
-
-
 """ ******************* Function implementation below ******************* """
-
-
-def load_configs(file_path):
-    global config
-
-    try:
-        with open(file_path, 'r') as file:
-            user_config = json.load(file)
-            for section, settings in user_config.items():
-                if section in config:
-                    config[section].update(settings)
-    except FileNotFoundError:
-        print(f"Error: Config file '{file_path}' not found. Using default configuration.")
-# End load_configs.
 
 
 def read_file_to_df(file, index_limit=None, flag=[False], error=[""]):
@@ -99,7 +53,7 @@ def end_file_index(filename):
                 trailing_lines += 1
     # Close file.
 
-    valid_data_lines = line_count - trailing_lines - 1 # -1 for last new line.
+    valid_data_lines = line_count - trailing_lines - 1  # -1 for last new line.
 
     return valid_data_lines
 # End end_file_index().
