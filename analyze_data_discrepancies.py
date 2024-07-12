@@ -33,7 +33,7 @@ def parse_arguments():
                         help="Opt out of writing execution messages to results text file")
     parser.set_defaults(include_msgs=True)
     parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
-                        default='raw', help='Type of analysis')
+                        help='Type of analysis')
     return parser.parse_args()
 
 
@@ -73,10 +73,8 @@ def get_output_path(user_args, configs_path):
 def get_write_msgs(user_args, configs_msgs):
     if user_args.include_msgs:
         return user_args.include_msgs
-    elif configs_msgs:
-        return configs_msgs
     else:
-        return user_args.include_msgs
+        return configs_msgs
 
 
 def load_configs(file_path):

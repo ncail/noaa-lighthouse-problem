@@ -184,10 +184,13 @@ class TransformData:
                                                               try_shift, vert_offset, merged_df,
                                                               summary_df=summary_df, uncorrected=True)
 
-            # If end of dataframe was reached with no identifiable offset, break after filling
-            # and documenting last segment.
-            if is_end[0]:
-                break
+                # If end of dataframe was reached with no identifiable offset, break after filling
+                # and documenting last segment.
+                if is_end[0]:
+                    break
+
+                continue
+            # End handle uncorrectable segment.
 
             # Current shift value.
             try_shift = temporal_shifts[shift_val_index]
