@@ -253,7 +253,7 @@ class TransformData:
         # or the previous segment was also Case III so an offset exists but is interrupted
         # by something within the length of offset_criteria.
         # Return index + offset criteria as the stopping index.
-        case_three_index = start_index + offset_criteria
+        case_three_index = start_index + offset_criteria - 1
 
         if is_nan_run:
             end_fill_index = case_one_index
