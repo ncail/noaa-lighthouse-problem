@@ -37,14 +37,16 @@
   "filter_offsets_by_duration": {
       "threshold": "0 days",
       "type": "min",
-      "is_strict": false
+      "is_strict": false,
+      "nonzero": false
   },
 
   "filter_offsets_by_value": {
       "threshold": 0.0,
       "use_abs": true,
       "type": "min",
-      "is_strict": false
+      "is_strict": false,
+      "nonzero": false
   },
 
   "filter_gaps_by_duration": {

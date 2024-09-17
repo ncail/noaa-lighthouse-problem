@@ -421,18 +421,18 @@ class MetricsCalculator:
         return start_dates, end_dates
     # End get_offset_dates.
 
-    def generate_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None):
+    def generate_long_offsets_info(self, df: pd.DataFrame = None, duration_column_name: str = None, nonzero=False):
 
         # Filter for offsets (runs) by duration.
         long_offsets_df = self.filter_offsets_by_duration(df, duration_column_name)
 
         # Get dictionary of info about the unique offsets in long_offsets_df.
-        long_offsets_dict = self.generate_unique_offsets_info(long_offsets_df)
+        long_offsets_dict = self.generate_unique_offsets_info(long_offsets_df, nonzero)
 
         return long_offsets_dict
     # End calc_long_offsets_dict.
 
-    def generate_unique_offsets_info(self, df: pd.DataFrame = None):
+    def generate_unique_offsets_info(self, df: pd.DataFrame = None, nonzero=False):
         if df is not None:
             self._validate_dataframe(df)
         elif self.run_data_df is not None:
@@ -451,6 +451,10 @@ class MetricsCalculator:
             # Skip NaNs.
             if pd.isna(offset):
                 continue
+
+            if nonzero:
+                if offset == 0.0:
+                    continue
 
             # Add offset (key) and corresponding info from get_run_data df structure
             # to dictionary.
@@ -475,8 +479,9 @@ class MetricsCalculator:
         threshold = self._parse_timedelta(params['threshold'])
         type = params['type']
         is_strict = params['is_strict']
+        nonzero = params['nonzero']
 
-        return self.filter_by_duration(df, duration_column_name, threshold, type, is_strict)
+        return self.filter_by_duration(df, duration_column_name, threshold, type, is_strict, nonzero)
     # End filter_offsets_by_duration.
 
     def filter_gaps_by_duration(self, df: pd.DataFrame = None, duration_column_name: str = None,
@@ -504,13 +509,14 @@ class MetricsCalculator:
         type = params['type']
         use_abs = params['use_abs']
         is_strict = params['is_strict']
+        nonzero = params['nonzero']
 
-        return self.filter_by_value(df, offset_column_name, threshold, type, use_abs, is_strict)
+        return self.filter_by_value(df, offset_column_name, threshold, type, use_abs, is_strict, nonzero)
     # End filter_offsets_by_value.
 
-    @staticmethod
-    def filter_by_duration(dataframe: pd.DataFrame, duration_column_name: str, threshold=timedelta(0),
-                           type='min', is_strict=False) -> pd.DataFrame:
+    #@staticmethod
+    def filter_by_duration(self, dataframe: pd.DataFrame, duration_column_name: str, threshold=timedelta(0),
+                           type='min', is_strict=False, nonzero=False) -> pd.DataFrame:
         filtered_df = dataframe.copy()
 
         series = filtered_df[duration_column_name]
@@ -530,12 +536,17 @@ class MetricsCalculator:
 
         filtered_df = filtered_df[filter_series]
 
+        # Drop 0.0 offsets.
+        if nonzero:
+            filtered_df[self.col_config['offset_column']] = (
+                filtered_df)[filtered_df[self.col_config['offset_column']] != 0.0]
+
         return filtered_df
     # End filter_by_duration.
 
-    @staticmethod
-    def filter_by_value(dataframe: pd.DataFrame, offset_column_name: str, threshold=0.0, type='min',
-                        use_abs=True, is_strict=False) -> pd.DataFrame:
+    #@staticmethod
+    def filter_by_value(self, dataframe: pd.DataFrame, offset_column_name: str, threshold=0.0, type='min',
+                        use_abs=True, is_strict=False, nonzero=False) -> pd.DataFrame:
         # Copy dataframe.
         filtered_df = dataframe.copy()
 
@@ -557,6 +568,10 @@ class MetricsCalculator:
             filter_series = pd.Series([True] * len(dataframe))  # Default case: no filtering
 
         filtered_df = filtered_df[filter_series]
+
+        # Drop 0.0 offsets.
+        if nonzero:
+            filtered_df[offset_column_name] = filtered_df[filtered_df[offset_column_name] != 0.0]
 
         return filtered_df
     # End filter_by_value.
