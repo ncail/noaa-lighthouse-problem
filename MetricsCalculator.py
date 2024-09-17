@@ -538,8 +538,7 @@ class MetricsCalculator:
 
         # Drop 0.0 offsets.
         if nonzero:
-            filtered_df[self.col_config['offset_column']] = (
-                filtered_df)[filtered_df[self.col_config['offset_column']] != 0.0]
+            filtered_df = filtered_df[filtered_df[self.col_config['offset_column']] != 0.0]
 
         return filtered_df
     # End filter_by_duration.
@@ -571,7 +570,7 @@ class MetricsCalculator:
 
         # Drop 0.0 offsets.
         if nonzero:
-            filtered_df[offset_column_name] = filtered_df[filtered_df[offset_column_name] != 0.0]
+            filtered_df = filtered_df[filtered_df[offset_column_name] != 0.0]
 
         return filtered_df
     # End filter_by_value.
