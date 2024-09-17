@@ -388,7 +388,7 @@ def main(args):
                            f"_temporal_correction_processing.txt")
             with open(f'{output_path}', 'w') as file:
                 file.write(temporal_processing_string)
-            
+
             corrector.clear_temporal_processing_string()
 
     # End for. (All years processed).

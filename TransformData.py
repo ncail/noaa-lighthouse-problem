@@ -204,7 +204,7 @@ class TransformData:
                 else:
                     func_index = index
 
-                self.document_shifted_intervals(start_index, index, try_shift, vert_offset, merged_df,
+                self.document_shifted_intervals(start_index, func_index, try_shift, vert_offset, merged_df,
                                                 ref_dt_col_name)
 
                 self.append_summary_df(start_index, func_index, try_shift, vert_offset, merged_df, ref_dt_col_name,
@@ -256,7 +256,7 @@ class TransformData:
             else:
                 func_index = index
 
-            self.document_shifted_intervals(start_index, index, try_shift, vert_offset, merged_df, ref_dt_col_name)
+            self.document_shifted_intervals(start_index, func_index, try_shift, vert_offset, merged_df, ref_dt_col_name)
 
             self.append_summary_df(start_index, func_index, try_shift,
                                    vert_offset, merged_df, ref_dt_col_name)
