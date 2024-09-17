@@ -272,6 +272,10 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent',
                                                    'increased_nan_percent'])
 
+    # Get shift_summary_df for multi-year concatenation.
+    xformDataObj = TransformData()
+    shifts_summary_df = xformDataObj.get_shifts_summary_df()
+
     for year in common_years:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
@@ -330,7 +334,9 @@ def main(args):
                 corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
             # shifts_summary_df = shifts_summary_df[0]
-            shifts_summary_df = corrector.get_shifts_summary_df()
+            current_year_summary_df = corrector.get_shifts_summary_df()[0]
+            shifts_summary_df[0] = pd.concat([shifts_summary_df[0], current_year_summary_df],
+                                             axis=0, ignore_index=True)
 
             # Add to all-years summary dataframe.
             if year in temp_corr_summary_years:
@@ -394,6 +400,11 @@ def main(args):
             MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
             MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
     # End for.
+
+    shifts_summary_df = shifts_summary_df[0]
+    max_duration_index = shifts_summary_df['duration'].idxmax()
+    max_duration_row = shifts_summary_df.loc[max_duration_index]
+    print(f"\nmax_duration_row: {max_duration_row}\n")
 
     # Write summary file.
     if metrics_summary_years:
