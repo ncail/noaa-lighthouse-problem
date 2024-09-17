@@ -178,11 +178,11 @@ class TransformData:
                 corrected_df, index = self._handle_uncorrectable_segment(corrected_df, start_index,
                                                                          primary_col_name, df_copy,
                                                                          offset_criteria, size, insert_nans)
-
-                execution_writes, summary_df = \
-                    self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
-                                                              try_shift, vert_offset, merged_df,
-                                                              summary_df=summary_df, uncorrected=True)
+                if enable_write:
+                    execution_writes, summary_df = \
+                        self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
+                                                                  try_shift, vert_offset, merged_df,
+                                                                  summary_df=summary_df, uncorrected=True)
 
                 # If end of dataframe was reached with no identifiable offset, break after filling
                 # and documenting last segment.
@@ -221,10 +221,12 @@ class TransformData:
                                                                 vert_offset, index, size)
             
             df_copy, shift_val_index = self._reset_shift(df_copy, merged_df, primary_col_name)
-            
-            execution_writes, summary_df = \
-                self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
-                                                          try_shift, vert_offset, merged_df, summary_df=summary_df)
+
+            if enable_write:
+                execution_writes, summary_df = \
+                    self._update_execution_writes_and_summary(execution_writes, corrected_df, start_index, index,
+                                                              try_shift, vert_offset, merged_df,
+                                                              summary_df=summary_df)
 
             # index += 1
         # End while.
@@ -260,6 +262,8 @@ class TransformData:
         elif is_flat_line:
             end_fill_index = case_two_index
         else:
+            if case_three_index >= size:
+                case_three_index = size - 1
             end_fill_index = case_three_index
 
         if insert_nans:
