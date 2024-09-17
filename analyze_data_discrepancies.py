@@ -272,10 +272,6 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent',
                                                    'increased_nan_percent'])
 
-    # Get shift_summary_df for multi-year concatenation.
-    xformDataObj = TransformData()
-    shifts_summary_df = xformDataObj.get_shifts_summary_df()
-
     for year in common_years:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
@@ -310,15 +306,6 @@ def main(args):
         # If doing analysis on corrected data, correct data here.
         if do_correction:
 
-            # Initialize dataframe pointer to hold info about temporal offsets, and assign temporal offset stats.
-            # shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
-
-            # Determine if temporal processing report should be written for the current year.
-            write_processing_report = True if year in temp_corr_proc_years else False
-            output_path = (f"{write_path}/correction_reports/{filename}_{year}"
-                           f"_temporal_correction_processing.txt")\
-                if write_processing_report else ""
-
             initial_nan_percentage = round((len(
                 merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
@@ -326,20 +313,14 @@ def main(args):
             corrected_df = corrector.temporal_shift_corrector(corrected_df,
                                                               primary_data_column_name=primary_pwl_col_name,
                                                               reference_data_column_name=ref_pwl_col_name,
-                                                              datetime_column_name=ref_dt_col_name,
-                                                              enable_write=write_processing_report,
-                                                              write_path=output_path)
+                                                              datetime_column_name=ref_dt_col_name)
 
             final_nan_percentage = round((len(
                 corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
-            # shifts_summary_df = shifts_summary_df[0]
-            current_year_summary_df = corrector.get_shifts_summary_df()[0]
-            shifts_summary_df[0] = pd.concat([shifts_summary_df[0], current_year_summary_df],
-                                             axis=0, ignore_index=True)
-
             # Add to all-years summary dataframe.
             if year in temp_corr_summary_years:
+                shifts_summary_df = corrector.get_shifts_summary_df()[0]
                 processed_year_row = pd.DataFrame({
                     'year': [year],
                     'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
@@ -353,7 +334,7 @@ def main(args):
 
             # Update merged_df.
             merged_df = corrected_df.copy()
-        # End temporal correction.
+        # End temporal correction for current year.
 
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
@@ -369,7 +350,7 @@ def main(args):
 
         # Calculate metrics.
         metrics = calculator.calculate_metrics()
-        
+
         # Set metrics.
         calculator.set_metrics(metrics)
 
@@ -399,13 +380,18 @@ def main(args):
             MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
             MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
             MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
-    # End for.
 
-    shifts_summary_df = shifts_summary_df[0]
-    shifts_summary_df = shifts_summary_df[shifts_summary_df['vertical_offset'] != 0]
-    max_duration_index = shifts_summary_df['duration'].idxmax()
-    max_duration_row = shifts_summary_df.loc[max_duration_index]
-    print(f"\nmax_duration_row: {max_duration_row}\n")
+        # Write temporal processing report.
+        if year in temp_corr_proc_years:
+            temporal_processing_string = corrector.get_temporal_processing_string()
+            output_path = (f"{write_path}/correction_reports/{filename}_{year}"
+                           f"_temporal_correction_processing.txt")
+            with open(f'{output_path}', 'w') as file:
+                file.write(temporal_processing_string)
+            
+            corrector.clear_temporal_processing_string()
+
+    # End for. (All years processed).
 
     # Write summary file.
     if metrics_summary_years:

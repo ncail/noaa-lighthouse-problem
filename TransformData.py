@@ -49,6 +49,8 @@ class TransformData:
         self.shifts_summary_df = [pd.DataFrame(columns=['start_date', 'end_date', 'duration',
                                                'temporal_shift', 'vertical_offset'])]
 
+        self.temporal_processing_string = ""
+
     # ******************************************************************************
     # ******************************** SETTERS *************************************
     # ******************************************************************************
@@ -113,6 +115,12 @@ class TransformData:
     def get_shifts_summary_df(self):
         return self.shifts_summary_df.copy()
 
+    def get_time_shift_table(self):
+        return self.time_shift_table.copy()
+
+    def get_temporal_processing_string(self):
+        return self.temporal_processing_string
+
     @staticmethod
     def get_temporal_processing_summary_dataframe():
         return pd.DataFrame(columns=['start_index', 'end_index', 'temporal_shift', 'vertical_offset']).copy()
@@ -120,8 +128,11 @@ class TransformData:
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
     # ******************************************************************************
+    def clear_temporal_processing_string(self):
+        self.temporal_processing_string = ""
+
     def temporal_shift_corrector(self, df=None, primary_col=None, reference_col=None, datetime_col=None, index=0,
-                                 write_path="", enable_write=False, **kwargs):
+                                 **kwargs):
         # Get column names.
         default_col_names = self.col_config
         names = {**default_col_names, **kwargs}
@@ -159,18 +170,12 @@ class TransformData:
         insert_nans = params['replace_with_nans']
 
         return self._temporal_deshifter(df, primary_col_name, reference_col_name, ref_dt_col_name, index,
-                                        offset_criteria, insert_nans, enable_write, write_path)
+                                        offset_criteria, insert_nans)
     # End temporal_shift_corrector.
 
     def _temporal_deshifter(self, merged_df, primary_col_name, ref_col_name, ref_dt_col_name, index=0,
-                            offset_criteria=10, insert_nans=True, enable_write=False, write_path=""):
+                            offset_criteria=10, insert_nans=True):
         size = len(merged_df)
-
-        # Set write path if generating temporal correction reports is enabled.
-        write_path = self._initialize_write_path(enable_write, write_path)
-
-        # Initialize report string.
-        execution_writes = ""
 
         # Initialize dataframes. df_copy will be shifted to find offsets.
         # corrected_df will hold the temporally corrected values. No vertical offset correction is done.
@@ -199,16 +204,14 @@ class TransformData:
                 else:
                     func_index = index
 
-                if enable_write:
-                    execution_writes = \
-                        self.document_shifted_intervals(execution_writes, start_index, index,
-                                                        try_shift, vert_offset, merged_df, ref_dt_col_name)
+                self.document_shifted_intervals(start_index, index, try_shift, vert_offset, merged_df,
+                                                ref_dt_col_name)
 
                 self.append_summary_df(start_index, func_index, try_shift, vert_offset, merged_df, ref_dt_col_name,
                                        uncorrected=True)
-                self.time_shift_table = self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
-                                                                 merged_df, ref_dt_col_name,
-                                                                 primary_col_name, ref_col_name, uncorrected=True)
+                self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
+                                         merged_df, ref_dt_col_name,
+                                         primary_col_name, ref_col_name, uncorrected=True)
 
                 # If end of dataframe was reached with no identifiable offset, break after filling
                 # and documenting last segment.
@@ -253,22 +256,15 @@ class TransformData:
             else:
                 func_index = index
 
-            if enable_write:
-                execution_writes = \
-                    self.document_shifted_intervals(execution_writes, start_index, index,
-                                                    try_shift, vert_offset, merged_df, ref_dt_col_name)
+            self.document_shifted_intervals(start_index, index, try_shift, vert_offset, merged_df, ref_dt_col_name)
 
             self.append_summary_df(start_index, func_index, try_shift,
                                    vert_offset, merged_df, ref_dt_col_name)
-            self.time_shift_table = self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
-                                                             merged_df, ref_dt_col_name,
-                                                             primary_col_name, ref_col_name)
+            self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
+                                     merged_df, ref_dt_col_name, primary_col_name, ref_col_name)
 
             # index += 1
         # End while.
-
-        # Write report to file.
-        self._report_correction(execution_writes, write_path)
 
         # Return temporally corrected dataframe.
         return corrected_df
@@ -391,26 +387,24 @@ class TransformData:
             index += 1
         return corrected_df, index
 
-    def document_shifted_intervals(self, execution_writes, start_index, index,
-                                   try_shift, vert_offset, original_df, ref_dt_col_name,
+    def document_shifted_intervals(self, start_index, index, try_shift, vert_offset, original_df, ref_dt_col_name,
                                    uncorrected=False):
         if not uncorrected:
         #if try_shift == -1:
-            execution_writes += (f"Vertical Offset: {vert_offset}\nTemporal Shift: {try_shift}\n"
-                                 f"Indices: [{start_index} : {index}]\n"
-                                 f"Datetime Range: [{original_df[ref_dt_col_name].iloc[start_index]} : "
-                                 f"{original_df[ref_dt_col_name].iloc[index]}]\n")
-            if try_shift == -1:
-                execution_writes += f"{original_df.iloc[start_index:index + 1].to_string()}\n\n"
-            else:
-                execution_writes += f"{original_df.iloc[start_index:index + 1]}\n\n"
+            self.temporal_processing_string += (f"Vertical Offset: {vert_offset}\nTemporal Shift: {try_shift}\n"
+                                                f"Indices: [{start_index} : {index}]\n"
+                                                f"Datetime Range: [{original_df[ref_dt_col_name].iloc[start_index]} : "
+                                                f"{original_df[ref_dt_col_name].iloc[index]}]\n")
+            # if try_shift == -1:
+            #     self.temporal_processing_string += f"{original_df.iloc[start_index:index + 1].to_string()}\n\n"
+            # else:
+            #     self.temporal_processing_string += f"{original_df.iloc[start_index:index + 1]}\n\n"
+            self.temporal_processing_string += f"{original_df.iloc[start_index:index + 1].to_string()}\n\n"
 
         else:
-            execution_writes += (f"Temporal Shift: COULD NOT BE DETERMINED.\n"
-                                 f"For indices [{start_index} : {index}]\n"
-                                 f"{original_df.iloc[start_index:index + 1]}\n\n")
-
-        return execution_writes
+            self.temporal_processing_string += (f"Temporal Shift: COULD NOT BE DETERMINED.\n"
+                                                f"For indices [{start_index} : {index}]\n"
+                                                f"{original_df.iloc[start_index:index + 1]}\n\n")
 
     def append_shifts_table(self, start_index, index, try_shift, vert_offset, original_df, ref_dt_col_name,
                             primary_wl_col_name, ref_wl_col_name, uncorrected=False):
@@ -427,7 +421,6 @@ class TransformData:
             self.time_shift_table['reference_water_level'].append(original_df[ref_wl_col_name].iloc[func_index])
 
             func_index += 1
-        return self.time_shift_table.copy()
 
     def append_summary_df(self, start_index, index, try_shift, vert_offset,
                           original_df, ref_dt_col_name, uncorrected=False):
