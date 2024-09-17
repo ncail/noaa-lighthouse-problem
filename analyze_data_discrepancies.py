@@ -402,6 +402,7 @@ def main(args):
     # End for.
 
     shifts_summary_df = shifts_summary_df[0]
+    shifts_summary_df = shifts_summary_df[shifts_summary_df['vertical_offset'] != 0]
     max_duration_index = shifts_summary_df['duration'].idxmax()
     max_duration_row = shifts_summary_df.loc[max_duration_index]
     print(f"\nmax_duration_row: {max_duration_row}\n")
