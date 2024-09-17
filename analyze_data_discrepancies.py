@@ -307,7 +307,7 @@ def main(args):
         if do_correction:
 
             # Initialize dataframe pointer to hold info about temporal offsets, and assign temporal offset stats.
-            shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
+            # shifts_summary_df = [TransformData.get_temporal_processing_summary_dataframe()]
 
             # Determine if temporal processing report should be written for the current year.
             write_processing_report = True if year in temp_corr_proc_years else False
@@ -319,16 +319,18 @@ def main(args):
                 merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
             corrected_df = merged_df.copy()
-            corrected_df = corrector.temporal_shift_corrector(corrected_df, summary_df=shifts_summary_df,
+            corrected_df = corrector.temporal_shift_corrector(corrected_df,
                                                               primary_data_column_name=primary_pwl_col_name,
                                                               reference_data_column_name=ref_pwl_col_name,
+                                                              datetime_column_name=ref_dt_col_name,
                                                               enable_write=write_processing_report,
                                                               write_path=output_path)
 
             final_nan_percentage = round((len(
                 corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
-            shifts_summary_df = shifts_summary_df[0]
+            # shifts_summary_df = shifts_summary_df[0]
+            shifts_summary_df = corrector.get_shifts_summary_df()
 
             # Add to all-years summary dataframe.
             if year in temp_corr_summary_years:
