@@ -29,9 +29,9 @@ def parse_arguments():
                         help='Path to write results text file(s) in', default='generated_files')
     parser.add_argument('--years', type=int, nargs='+',
                         help='Years to include in the analysis')
-    parser.add_argument('--no-msgs', dest='include_msgs', action='store_false',
+    parser.add_argument('--include-msgs', dest='include_msgs', action='store_true',
                         help="Opt out of writing execution messages to results text file")
-    parser.set_defaults(include_msgs=True)
+    parser.set_defaults(include_msgs=False)
     parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
                         help='Type of analysis')
     return parser.parse_args()
