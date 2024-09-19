@@ -1,0 +1,55 @@
+Comparison Table for year 1999:
+                     total points  percent
+total agreements            61960  70.7306
+value disagreements         25232  28.8037
+total disagreements         25640  29.2694
+missing (primary)             408   0.4658
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= 1 hour: 2
+Number of gaps with duration >= 1 day              : 0
+Duration of longest gap                            : 0 days 15:00:00
+Start/end date(s) of <0 days 15:00:00> gap         : ([Timestamp('1999-09-13 18:00:00')], [Timestamp('1999-09-14 09:00:00')])
+Maximum duration of an offset                      : 71 days 01:00:00
+Offset value(s) with <71 days 01:00:00> duration   : [-0.008]
+Number of offsets with absolute value >= 0.001     : 2
+Maximum/minimum offset value                       : 0.0 / -0.008
+Start/end date(s) of offset with value <0.0>       : [Timestamp('1999-01-01 00:00:00'), Timestamp('1999-01-23 01:54:00'), Timestamp('1999-03-02 00:54:00'), Timestamp('1999-03-06 01:54:00'), Timestamp('1999-04-12 01:54:00'), Timestamp('1999-04-20 11:00:00'), Timestamp('1999-05-03 16:54:00'), Timestamp('1999-05-15 23:42:00'), Timestamp('1999-07-09 01:54:00'), Timestamp('1999-07-09 04:54:00'), Timestamp('1999-07-20 21:54:00'), Timestamp('1999-07-21 09:06:00'), Timestamp('1999-07-23 04:54:00'), Timestamp('1999-09-02 16:36:00'), Timestamp('1999-09-03 15:42:00'), Timestamp('1999-09-05 01:36:00'), Timestamp('1999-09-05 22:18:00'), Timestamp('1999-09-06 21:00:00'), Timestamp('1999-09-09 16:24:00'), Timestamp('1999-09-14 09:00:00'), Timestamp('1999-09-16 01:06:00')] / [Timestamp('1999-01-23 00:54:00'), Timestamp('1999-03-01 23:54:00'), Timestamp('1999-03-05 22:54:00'), Timestamp('1999-04-12 00:54:00'), Timestamp('1999-04-20 10:00:00'), Timestamp('1999-05-03 12:54:00'), Timestamp('1999-05-15 22:42:00'), Timestamp('1999-07-09 00:54:00'), Timestamp('1999-07-09 03:54:00'), Timestamp('1999-07-20 20:54:00'), Timestamp('1999-07-21 08:06:00'), Timestamp('1999-07-23 03:54:00'), Timestamp('1999-09-02 15:54:00'), Timestamp('1999-09-03 14:36:00'), Timestamp('1999-09-05 00:36:00'), Timestamp('1999-09-05 20:18:00'), Timestamp('1999-09-06 20:00:00'), Timestamp('1999-09-09 15:24:00'), Timestamp('1999-09-13 18:00:00'), Timestamp('1999-09-16 00:06:00'), Timestamp('1999-09-17 19:42:00')]
+Start/end date(s) of offset with value <-0.008>    : [Timestamp('1999-09-17 19:42:00'), Timestamp('1999-10-21 22:54:00')] / [Timestamp('1999-10-21 21:54:00'), Timestamp('1999-12-31 23:54:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+-0.008  | 34 days 02:12:00     | 1999-09-17 19:42:00  | 1999-10-21 21:54:00
+        | 71 days 01:00:00     | 1999-10-21 22:54:00  | 1999-12-31 23:54:00
+
+
+
+Comparison Table for year 2000:
+                     total points  percent
+total agreements            83184  94.6995
+value disagreements          4494   5.1161
+total disagreements          4656   5.3005
+missing (primary)             162   0.1844
+missing (reference)             0   0.0000
+
+Number of offsets (non-NaN) with duration >= 1 hour: 3
+Number of gaps with duration >= 1 day              : 0
+Duration of longest gap                            : 0 days 06:36:00
+Start/end date(s) of <0 days 06:36:00> gap         : ([Timestamp('2000-06-10 22:54:00')], [Timestamp('2000-06-11 05:30:00')])
+Maximum duration of an offset                      : 139 days 22:24:00
+Offset value(s) with <139 days 22:24:00> duration  : [0.0]
+Number of offsets with absolute value >= 0.001     : 3
+Maximum/minimum offset value                       : 0.0 / -0.008
+Start/end date(s) of offset with value <0.0>       : [Timestamp('2000-01-19 17:54:00'), Timestamp('2000-01-19 22:12:00'), Timestamp('2000-06-07 20:42:00'), Timestamp('2000-06-11 05:30:00'), Timestamp('2000-10-03 18:54:00'), Timestamp('2000-10-04 18:24:00'), Timestamp('2000-10-04 21:54:00'), Timestamp('2000-12-13 05:06:00'), Timestamp('2000-12-13 11:00:00')] / [Timestamp('2000-01-19 21:12:00'), Timestamp('2000-06-07 20:36:00'), Timestamp('2000-06-10 22:54:00'), Timestamp('2000-10-03 16:30:00'), Timestamp('2000-10-04 15:54:00'), Timestamp('2000-10-04 20:54:00'), Timestamp('2000-12-13 04:06:00'), Timestamp('2000-12-13 10:00:00'), Timestamp('2000-12-31 23:54:00')]
+Start/end date(s) of offset with value <-0.008>    : [Timestamp('2000-01-01 00:00:00'), Timestamp('2000-01-18 19:54:00'), Timestamp('2000-01-19 16:30:00')] / [Timestamp('2000-01-18 19:30:00'), Timestamp('2000-01-19 16:18:00'), Timestamp('2000-01-19 17:54:00')]
+
+Information about the offsets meeting duration threshold criteria:
+Offset  | Duration             | Start Date           | End Date
+---------------------------------------------------------------------------
+-0.008  | 17 days 19:30:00     | 2000-01-01 00:00:00  | 2000-01-18 19:30:00
+        | 0 days 20:24:00      | 2000-01-18 19:54:00  | 2000-01-19 16:18:00
+        | 0 days 01:24:00      | 2000-01-19 16:30:00  | 2000-01-19 17:54:00
+
+
+
