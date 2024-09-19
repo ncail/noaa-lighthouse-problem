@@ -51,6 +51,8 @@ class TransformData:
 
         self.temporal_processing_string = ""
 
+        self.document_corrected_data_entries = False
+
     # ******************************************************************************
     # ******************************** SETTERS *************************************
     # ******************************************************************************
@@ -90,6 +92,9 @@ class TransformData:
                 if key in self.col_config:
                     self.col_config[key] = name
     # End set_column_names.
+
+    def set_document_corrected_time_shift_series_data(self, document_corrected_data_entries=False):
+        self.document_corrected_data_entries = document_corrected_data_entries
 
     # ******************************************************************************
     # ******************************** GETTERS *************************************
@@ -260,8 +265,13 @@ class TransformData:
 
             self.append_summary_df(start_index, func_index, try_shift,
                                    vert_offset, merged_df, ref_dt_col_name)
-            self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
-                                     merged_df, ref_dt_col_name, primary_col_name, ref_col_name)
+            
+            if self.document_corrected_data_entries:
+                self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
+                                         corrected_df, ref_dt_col_name, primary_col_name, ref_col_name)
+            else:
+                self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
+                                         merged_df, ref_dt_col_name, primary_col_name, ref_col_name)
 
             # index += 1
         # End while.
@@ -406,7 +416,7 @@ class TransformData:
                                                 f"For indices [{start_index} : {index}]\n"
                                                 f"{original_df.iloc[start_index:index + 1]}\n\n")
 
-    def append_shifts_table(self, start_index, index, try_shift, vert_offset, original_df, ref_dt_col_name,
+    def append_shifts_table(self, start_index, index, try_shift, vert_offset, df, ref_dt_col_name,
                             primary_wl_col_name, ref_wl_col_name, uncorrected=False):
         if uncorrected:
             try_shift = 'N/A'
@@ -414,15 +424,22 @@ class TransformData:
 
         func_index = start_index
         while func_index <= index:
+
+            vert_offset_current = vert_offset
+
             if uncorrected:
-                vert_offset = (original_df[ref_wl_col_name].iloc[func_index] -
-                               original_df[primary_wl_col_name].iloc[func_index])
+                vert_offset_current = (df[ref_wl_col_name].iloc[func_index] -
+                                       df[primary_wl_col_name].iloc[func_index])
+
+            if pd.isna(df[ref_wl_col_name].iloc[func_index]) or \
+                    pd.isna(df[primary_wl_col_name].iloc[func_index]):
+                vert_offset_current = 'N/A'
 
             self.time_shift_table['temporal_shift'].append(try_shift)
-            self.time_shift_table['datum_shift'].append(vert_offset)
-            self.time_shift_table['date_time'].append(original_df[ref_dt_col_name].iloc[func_index])
-            self.time_shift_table['primary_water_level'].append(str(original_df[primary_wl_col_name].iloc[func_index]))
-            self.time_shift_table['reference_water_level'].append(original_df[ref_wl_col_name].iloc[func_index])
+            self.time_shift_table['datum_shift'].append(vert_offset_current)
+            self.time_shift_table['date_time'].append(df[ref_dt_col_name].iloc[func_index])
+            self.time_shift_table['primary_water_level'].append(str(df[primary_wl_col_name].iloc[func_index]))
+            self.time_shift_table['reference_water_level'].append(df[ref_wl_col_name].iloc[func_index])
 
             func_index += 1
 
