@@ -265,7 +265,7 @@ class TransformData:
 
             self.append_summary_df(start_index, func_index, try_shift,
                                    vert_offset, merged_df, ref_dt_col_name)
-            
+
             if self.document_corrected_data_entries:
                 self.append_shifts_table(start_index, func_index, try_shift, vert_offset,
                                          corrected_df, ref_dt_col_name, primary_col_name, ref_col_name)
@@ -428,8 +428,8 @@ class TransformData:
             vert_offset_current = vert_offset
 
             if uncorrected:
-                vert_offset_current = (df[ref_wl_col_name].iloc[func_index] -
-                                       df[primary_wl_col_name].iloc[func_index])
+                vert_offset_current = round(df[ref_wl_col_name].iloc[func_index] -
+                                            df[primary_wl_col_name].iloc[func_index], 3)
 
             if pd.isna(df[ref_wl_col_name].iloc[func_index]) or \
                     pd.isna(df[primary_wl_col_name].iloc[func_index]):
