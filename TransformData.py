@@ -414,8 +414,9 @@ class TransformData:
 
         func_index = start_index
         while func_index <= index:
-            vert_offset = (original_df[ref_wl_col_name].iloc[func_index] -
-                           original_df[primary_wl_col_name].iloc[func_index])
+            if uncorrected:
+                vert_offset = (original_df[ref_wl_col_name].iloc[func_index] -
+                               original_df[primary_wl_col_name].iloc[func_index])
 
             self.time_shift_table['temporal_shift'].append(try_shift)
             self.time_shift_table['datum_shift'].append(vert_offset)
