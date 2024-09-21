@@ -423,7 +423,7 @@ class TransformData:
             # vert_offset = 'N/A'
 
         func_index = start_index
-        while func_index <= index:
+        while func_index < index:
 
             vert_offset_current = vert_offset
 
