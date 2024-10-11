@@ -18,7 +18,7 @@
 
   "analysis": {
       "mode": "raw",
-      "years": []
+      "years": ["all_years"]
   },
 
    "output": {

@@ -183,7 +183,7 @@ def main(args):
             error_summary.append(msg)
     # End for.
 
-    # Use da.config to get the necessary columns for assigning column names.
+    # Use config to get the necessary columns for assigning column names.
     primary_data_cols = config['data']['primary_data_column_names']
     ref_data_cols = config['data']['reference_data_column_names']
 
@@ -253,8 +253,8 @@ def main(args):
         else config_report_years['metrics_detailed']
     temp_corr_summary_years = common_years if config_report_years['temporal_corrections_summary'] == ['all_years'] \
         else config_report_years['temporal_corrections_summary']
-    temp_corr_proc_years = common_years if config_report_years['temporal_correction_processing'] == ['all_years'] \
-        else config_report_years['temporal_correction_processing']
+    annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
+        else config_report_years['annotated_raw_data']
 
     # Record which years have no data for analysis.
     header = ["Analysis could not be done for year(s): \n"]
@@ -272,11 +272,18 @@ def main(args):
                                                    'initial_nan_percent', 'final_nan_percent',
                                                    'increased_nan_percent'])
 
+    # Initialize series data dictionary. This will be concat-ed for every year in for loop.
+    getXformDataDict = TransformData()
+    series_data_concat_dict = getXformDataDict.get_time_shift_table()
+
     for year in common_years:
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
         corrector = TransformData(user_config=config)
+
+        # Set documenting the corrected data entries to False so the raw data is reflected.
+        corrector.set_document_corrected_time_shift_series_data(False)
 
         # Assign dataframes from dictionaries.
         primary_df = primary_dfs_dict[year]
@@ -332,6 +339,14 @@ def main(args):
                 all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
                                                    ignore_index=True)
 
+            # Contains all the raw series data, concats each year in common years,
+            # with the time and datum shifts listed.
+            if year in annotated_raw_data_years:
+                series_data_annotated_current_year = corrector.get_time_shift_table()
+                series_data_concat_dict = \
+                    {key: series_data_concat_dict[key] +
+                        series_data_annotated_current_year[key] for key in series_data_concat_dict}
+
             # Update merged_df.
             merged_df = corrected_df.copy()
         # End temporal correction for current year.
@@ -382,16 +397,24 @@ def main(args):
             MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
 
         # Write temporal processing report.
-        if year in temp_corr_proc_years:
-            temporal_processing_string = corrector.get_temporal_processing_string()
-            output_path = (f"{write_path}/correction_reports/{filename}_{year}"
-                           f"_temporal_correction_processing.txt")
-            with open(f'{output_path}', 'w') as file:
-                file.write(temporal_processing_string)
-
-            corrector.clear_temporal_processing_string()
+        # if year in annotated_raw_data_years:
+        #     temporal_processing_string = corrector.get_temporal_processing_string()
+        #     output_path = (f"{write_path}/correction_reports/{filename}_{year}"
+        #                    f"_temporal_correction_processing.txt")
+        #     with open(f'{output_path}', 'w') as file:
+        #         file.write(temporal_processing_string)
+#
+        #     corrector.clear_temporal_processing_string()
 
     # End for. (All years processed).
+
+    if annotated_raw_data_years:
+        # Get table of annotated series data.
+        series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
+
+        # Write time shift table to CSV.
+        series_data_annotated_df.to_csv(f"{write_path}/{filename}_"
+                                        f"annotated_raw_data.csv", index=False)
 
     # Write summary file.
     if metrics_summary_years:
