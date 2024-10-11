@@ -310,46 +310,43 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        # If doing analysis on corrected data, correct data here.
+        initial_nan_percentage = round((len(
+            merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+
+        corrected_df = merged_df.copy()
+        corrected_df = corrector.temporal_shift_corrector(corrected_df,
+                                                          primary_data_column_name=primary_pwl_col_name,
+                                                          reference_data_column_name=ref_pwl_col_name,
+                                                          datetime_column_name=ref_dt_col_name)
+
+        final_nan_percentage = round((len(
+            corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+        
+        # Add to all-years summary dataframe.
+        if year in temp_corr_summary_years:
+            shifts_summary_df = corrector.get_shifts_summary_df()[0]
+            processed_year_row = pd.DataFrame({
+                'year': [year],
+                'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
+                'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
+                'initial_nan_percent': [initial_nan_percentage],
+                'final_nan_percent': [final_nan_percentage],
+                'increased_nan_percent': [final_nan_percentage - initial_nan_percentage]
+            })
+            all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
+                                               ignore_index=True)
+
+        # Contains all the raw series data, concats each year in common years,
+        # with the time and datum shifts listed.
+        if year in annotated_raw_data_years:
+            series_data_annotated_current_year = corrector.get_time_shift_table()
+            series_data_concat_dict = \
+                {key: series_data_concat_dict[key] +
+                    series_data_annotated_current_year[key] for key in series_data_concat_dict}
+
+        # If doing analysis on corrected data, update merged_df with corrected_df.
         if do_correction:
-
-            initial_nan_percentage = round((len(
-                merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
-
-            corrected_df = merged_df.copy()
-            corrected_df = corrector.temporal_shift_corrector(corrected_df,
-                                                              primary_data_column_name=primary_pwl_col_name,
-                                                              reference_data_column_name=ref_pwl_col_name,
-                                                              datetime_column_name=ref_dt_col_name)
-
-            final_nan_percentage = round((len(
-                corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
-
-            # Add to all-years summary dataframe.
-            if year in temp_corr_summary_years:
-                shifts_summary_df = corrector.get_shifts_summary_df()[0]
-                processed_year_row = pd.DataFrame({
-                    'year': [year],
-                    'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
-                    'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
-                    'initial_nan_percent': [initial_nan_percentage],
-                    'final_nan_percent': [final_nan_percentage],
-                    'increased_nan_percent': [final_nan_percentage - initial_nan_percentage]
-                })
-                all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
-                                                   ignore_index=True)
-
-            # Contains all the raw series data, concats each year in common years,
-            # with the time and datum shifts listed.
-            if year in annotated_raw_data_years:
-                series_data_annotated_current_year = corrector.get_time_shift_table()
-                series_data_concat_dict = \
-                    {key: series_data_concat_dict[key] +
-                        series_data_annotated_current_year[key] for key in series_data_concat_dict}
-
-            # Update merged_df.
             merged_df = corrected_df.copy()
-        # End temporal correction for current year.
 
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
