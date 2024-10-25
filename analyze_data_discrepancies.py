@@ -13,6 +13,7 @@ import datetime
 import glob
 import pandas as pd
 import json
+import logging
 
 
 def parse_arguments():
@@ -20,7 +21,7 @@ def parse_arguments():
     parser.add_argument('--config', type=str,
                         help='Path to configuration file', default='config.json')
     parser.add_argument('--filename', type=str,
-                        help='Name of the file to write to', default=None)
+                        help='Name of the file to write results to', default=None)
     parser.add_argument('--refdir', type=str,
                         help='Path to directory of reference data', default=None)
     parser.add_argument('--primarydir', type=str,
@@ -29,9 +30,9 @@ def parse_arguments():
                         help='Path to write results text file(s) in', default='generated_files')
     parser.add_argument('--years', type=int, nargs='+',
                         help='Years to include in the analysis')
-    parser.add_argument('--include-msgs', dest='include_msgs', action='store_true',
+    parser.add_argument('--logging-off', dest='logging', action='store_false',
                         help="Opt out of writing execution messages to results text file")
-    parser.set_defaults(include_msgs=False)
+    parser.set_defaults(logging=True)
     parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
                         help='Type of analysis')
     return parser.parse_args()
@@ -70,13 +71,6 @@ def get_output_path(user_args, configs_path):
         return user_args.output
 
 
-def get_write_msgs(user_args, configs_msgs):
-    if user_args.include_msgs:
-        return user_args.include_msgs
-    else:
-        return configs_msgs
-
-
 def load_configs(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -94,7 +88,7 @@ def main(args):
     # Store loaded configs.
     config = load_configs(args.config)
 
-    # Get all program configurations. Config can be overridden by command line
+    # Get all program configurations. Some configurations can be overridden by command line
     # arguments.
 
     # Get data paths.
@@ -108,8 +102,14 @@ def main(args):
     filename = get_filename(args, config_filename)
     config_path = config['output']['path']
     write_path = get_output_path(args, config_path)
-    config_msgs = config['output']['execution_msgs']
-    write_msgs = get_write_msgs(args, config_msgs)
+
+    # Get logging configs.
+    if config['logging']['enabled']:
+        logging.basicConfig(
+            filename=config['logging']['file'],
+            level=config['logging']['level'],
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
 
     # Get mode of analysis.
     analysis = args.mode if args.mode else config['analysis']['mode']
@@ -299,8 +299,20 @@ def main(args):
 
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
         # will result in the addition of a NaN in the other.
-        merged_df = pd.merge(primary_df, ref_df, how='outer', left_on=primary_dt_col_name,
-                             right_on=ref_dt_col_name, suffixes=('_primary', '_reference'))
+        # merged_df = pd.merge(primary_df, ref_df, how='outer', left_on=primary_dt_col_name,
+        #                      right_on=ref_dt_col_name, suffixes=('_primary', '_reference'))
+
+        # Set datetime column as index and use join() to reduce time complexity of merging to O(n).
+        # (Note if index was not sorted, then pandas would perform a sort, resulting in O(nlogn) time complexity.)
+        # Set the datetime columns as the index.
+        primary_df.set_index(primary_dt_col_name, inplace=True)
+        ref_df.set_index(ref_dt_col_name, inplace=True)
+
+        # Perform an outer join, specifying suffixes.
+        merged_df = primary_df.join(ref_df, how='outer', lsuffix='_primary', rsuffix='_reference')
+
+        # Reset the index to get datetime column back as a regular column.
+        merged_df.reset_index(inplace=True)
 
         # Reassign column names.
         primary_pwl_col_name = merged_df.columns[1]
@@ -321,7 +333,7 @@ def main(args):
 
         final_nan_percentage = round((len(
             corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
-        
+
         # Add to all-years summary dataframe.
         if year in temp_corr_summary_years:
             shifts_summary_df = corrector.get_shifts_summary_df()[0]
@@ -340,6 +352,7 @@ def main(args):
         # with the time and datum shifts listed.
         if year in annotated_raw_data_years:
             series_data_annotated_current_year = corrector.get_time_shift_table()
+            #
             series_data_concat_dict = \
                 {key: series_data_concat_dict[key] +
                     series_data_annotated_current_year[key] for key in series_data_concat_dict}

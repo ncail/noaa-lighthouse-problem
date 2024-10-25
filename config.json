@@ -24,14 +24,19 @@
    "output": {
       "base_filename": "",
       "path": "generated_files",
-      "execution_msgs": false,
 
       "generate_reports_for_years": {
          "metrics_summary": [],
          "metrics_detailed": [],
          "temporal_corrections_summary": [],
-         "temporal_correction_processing": []
+         "annotated_series_data": []
      }
+   },
+
+   "logging": {
+      "enabled": true,
+      "level": "INFO",
+      "file": "app.log" 
    },
 
   "filter_offsets_by_duration": {
