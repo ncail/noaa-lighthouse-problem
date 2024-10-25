@@ -137,14 +137,14 @@ def main(args):
         sys.exit()
 
     # Prompt user for the start and end year of their data.
-    if write_msgs:
-        prompt = "Enter the starting year <yyyy> of your data: "
-        start_year = fp.get_year_from_user(prompt)
-        prompt = "Enter the last year <yyyy> of your data: "
-        end_year = fp.get_year_from_user(prompt)
-
-        # Get range of years.
-        year_range = range(start_year, end_year + 1)
+    # if write_msgs:
+    #     prompt = "Enter the starting year <yyyy> of your data: "
+    #     start_year = fp.get_year_from_user(prompt)
+    #     prompt = "Enter the last year <yyyy> of your data: "
+    #     end_year = fp.get_year_from_user(prompt)
+#
+    #     # Get range of years.
+    #     year_range = range(start_year, end_year + 1)
 
     # Initialize a summary of error messages to be written to the results file.
     error_summary = ["Messages about the program execution are below: \n"]
@@ -257,13 +257,13 @@ def main(args):
         else config_report_years['annotated_raw_data']
 
     # Record which years have no data for analysis.
-    header = ["Analysis could not be done for year(s): \n"]
-    bad_years = []
-    if write_msgs:  # Skip if user has opted out of program messages.
-        for year in year_range:
-            if year not in common_years:
-                bad_years.append(year)
-        # End for.
+    # header = ["Analysis could not be done for year(s): \n"]
+    # bad_years = []
+    # if write_msgs:  # Skip if user has opted out of program messages.
+    #     for year in year_range:
+    #         if year not in common_years:
+    #             bad_years.append(year)
+    #     # End for.
 
     # Process the dataframes of common years to get statistics.
     # Initialize summary and temporal offsets summary dataframe.
@@ -444,15 +444,15 @@ def main(args):
                                         f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write error_summary and header to the text file if include_msgs is True.
-    if write_msgs:
-        bad_years.sort()
-        header.extend([str(y) + " " for y in bad_years])
-        results_title = ["***************************************************************************\n"
-                         "******************************* RESULTS ***********************************\n"
-                         "***************************************************************************\n\n"]
-        text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-        with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
-            file.write(''.join(text_list))
+    # if write_msgs:
+    #     bad_years.sort()
+    #     header.extend([str(y) + " " for y in bad_years])
+    #     results_title = ["***************************************************************************\n"
+    #                      "******************************* RESULTS ***********************************\n"
+    #                      "***************************************************************************\n\n"]
+    #     text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
+    #     with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
+    #         file.write(''.join(text_list))
 
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:
