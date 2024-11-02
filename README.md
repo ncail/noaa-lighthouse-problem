@@ -26,6 +26,42 @@
 
 ## Introduction
 
+```mermaid
+flowchart LR
+
+    Start[start] --> Config[load <br> config]
+    Config --> Files[load <br> files]
+    Files --> FileDecision{files <br> good?}
+
+    %% File decision.
+    FileDecision --> |no|Exit[exit]
+    FileDecision --> |yes|DataFrames[data <br> frames]
+
+    DataFrames --> SplitData[split <br> data]
+    SplitData --> Preprocess[preprocess <br> data]
+    Preprocess --> ExtractYrs[extract <br> years]
+
+    %% Main program loop.
+    ExtractYrs --> |loop over <br> years|MergeData[merge <br> datasets]
+    
+    subgraph yearly analysis
+        MergeData --> AnalysisType{analysis <br> type?}
+
+        %% Analysis type decision.
+        AnalysisType --> |corrected|TemporalCorr[temporal <br> correction]
+        AnalysisType --> |raw|Report[generate <br> report]
+
+        TemporalCorr --> Report
+
+        Report --> EndLoop{more <br> years?}
+
+        EndLoop --> |yes|MergeData
+    end
+
+    EndLoop --> |no|Summary[summary <br> report]
+    Summary --> End[end]
+```
+
 **noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from NOAA and Lighthouse. These discrepancies include vertical and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs to ensure the quality of water level data from Lighthouse stations not shared by NOAA.
 
 The main program, `analyze_data_discrepancies.py`, uses functions implemented in `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv). It calculates their statistical differences and directly compares the datasets using discrepancy analysis.
