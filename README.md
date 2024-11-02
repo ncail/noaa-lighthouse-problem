@@ -1,23 +1,26 @@
 # Table of Contents
 
 1. [Introduction](#introduction)
-2. [Running the Program](#running-the-program)
-    - [Command Line Arguments](#command-line-arguments)
-3. [Output](#output)
-4. [Requirements](#requirements)
-5. [Installation](#installation)
-6. [Usage Example](#usage-example)
-7. [Configuration](#configuration)
-    - [Overview](#overview)
-    - [File Location](#file-location)
-    - [Configuration Sections](#configuration-sections)
-    - [Configuration Values](#configuration-values)
-    - [Default Values](#default-values)
-    - [Example Configuration](#example-configuration)
-8. [Technical Details and Limitations](#technical-details-and-limitations)
-    - [Data Requirements](#data-requirements)
-    - [Dependencies](#dependencies)
-9. [Downloading Data](#downloading-data)
+2. [Diagrams](#diagrams)
+   - [Program processing loop]()
+   - [Temporal correction algorithm]()
+3. [Running the Program](#running-the-program)
+   - [Command Line Arguments](#command-line-arguments)
+4. [Output](#output)
+5. [Requirements](#requirements)
+6. [Installation](#installation)
+7. [Usage Example](#usage-example)
+8. [Configuration](#configuration)
+   - [Overview](#overview)
+   - [File Location](#file-location)
+   - [Configuration Sections](#configuration-sections)
+   - [Configuration Values](#configuration-values)
+   - [Default Values](#default-values)
+   - [Example Configuration](#example-configuration)
+9. [Technical Details and Limitations](#technical-details-and-limitations)
+   - [Data Requirements](#data-requirements)
+   - [Dependencies](#dependencies)
+10. [Downloading Data](#downloading-data)
     - [NOAA Data](#noaa-data)
     - [Lighthouse Data](#lighthouse-data)
 
@@ -31,6 +34,90 @@ These processes are intended to be a starting point for diagnosing any underlyin
 
 **Note:** Not all Lighthouse stations are also NOAA stations. Additionally, Lighthouse stations are only located in coastal Texas, whereas NOAA stations are distributed across the United States. Ensure that you select comparable stations when running the analysis.
 
+## Diagrams
+
+### Program processing loop
+```mermaid
+flowchart LR
+
+    Start[start] --> Config[load <br> config]
+    Config --> Files[load <br> files]
+    Files --> FileDecision{files <br> good?}
+
+    %% File decision.
+    FileDecision --> |no|Exit[exit]
+    FileDecision --> |yes|DataFrames[data <br> frames]
+
+    DataFrames --> SplitData[split <br> data]
+    SplitData --> Preprocess[preprocess <br> data]
+    Preprocess --> ExtractYrs[extract <br> years]
+
+    %% Main program loop.
+    ExtractYrs --> |loop over <br> years|MergeData[merge <br> datasets]
+    
+    subgraph yearly analysis
+        MergeData --> AnalysisType{analysis <br> type?}
+
+        %% Analysis type decision.
+        AnalysisType --> |corrected|TemporalCorr[temporal <br> correction]
+        AnalysisType --> |raw|Report[generate <br> report]
+
+        TemporalCorr --> Report
+
+        Report --> EndLoop{more <br> years?}
+
+        EndLoop --> |yes|MergeData
+    end
+
+    EndLoop --> |no|Summary[summary <br> report]
+    Summary --> End[end]
+```
+
+### Temporal correction algorithm
+```mermaid
+flowchart LR
+
+    Start[start] --> Validate{valid <br> structure?}
+
+    %% Valid structure decision.
+    Validate --> |yes|SetConfig[set <br> configs]
+    Validate --> |no|Exit[exit]
+
+    %% Enter loop.
+    SetConfig --> |loop over <br> indices|TryShift[try shift]
+
+    subgraph correct data
+        
+        TryShift --> GetDS[get valid <br> datum shift]
+        GetDS --> IsFound{found?}
+
+        %% Datum shift found decision.
+        IsFound --> |yes|StoreCorr[store <br> correction]
+        IsFound --> |no|TryNext{all shifts <br> tried?}
+
+        %% Try next temporal shift decision.
+        TryNext --> |yes|HandleSegment[handle <br> segment]
+        TryNext --> |no|TryShift
+
+        StoreCorr --> |next <br> index|IsValid{datum shift <br> still valid?}
+
+        %% Datum shift still valid/continue storing corrections decision.
+        IsValid --> |yes|StoreCorr
+        IsValid --> |no|DocSegment[document <br> segment]
+
+        HandleSegment --> DocSegment
+        DocSegment --> NextIndex[index after <br> segment]
+
+        NextIndex --> DataEnd{end of <br> data?}
+
+        %% Exit loop decision.
+        DataEnd --> |no|TryShift
+    end
+
+    DataEnd --> |yes|End[end]
+```
+  
+
 ## Running the program
 
 Running the main program, `analyze_data_discrepancies.py`, will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory, or a directory specified by the user. 
@@ -39,35 +126,39 @@ The `data` directory included in the repository has example CSV files that the p
 
 ### Command line arguments
 
-- To specify the name of the file to be written to, use command line argument
+```shell
+--config config.json
+```
+- Specifies the file used to entirely configure the program. If this argument isn't used, the program will use default configuration values. Using `config.json` to configure the program provides the most versatility and control. However, some values from the configuration file are available to be overridden by command line arguments, listed below.
+
 ```shell
 --filename myFileName
 ```
+- Specifies the base file name of output files. The provided file name will be appended with the type of report being generated.
 
-If not specified, the program will write to a text file with a file name generated based on the current timestamp.<br><br>
-
-- To specify the path that the results file should be created in, use command line argument
 ```shell
---writepath path/to/results/folder
+--primarydir path/to/Lighthouse/data/files --refdir path/to/NOAA/data/files
 ```
+- Specifies the path to the primary and reference data sources. The program will read all CSV files in these directories and then proceed with a yearly comparison analysis of the data. 
 
-If not specified, the program will write the file in the `generated_files` directory by default.<br><br>
-
-- The reference data (NOAA) path and primary data (Lighthouse) path are provided by the user. To specify these paths, use command line arguments
 ```shell
---refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files
+--years 
 ```
-
-These paths should be to water level CSV files for a specific tide gauge station. Ideally, the station and year range chosen for both NOAA and Lighthouse should be the same. However, the program can compare any two stations but will not write results if it cannot find data files for common years. Refer to the files inside the `data` directory as an example.<br><br>
-
-- By default, the program will write messages about the execution of the program at the top of the results text file. To aid in creating these messages, the program will ask the user to input the start and end year of their data. This is an optional feature the user can opt out of using command line argument
-```shell
---no-msgs
-``` 
 
 ## Output
 
-The program generates a text file in the `generated_files` directory or directory specified by the user, containing the annual statistics and metrics of the compared datasets. The output filename is either user-specified or generated based on the current timestamp. Some example results are available to view in `generated_files`. The user may configure the metrics by customizing field values in the `config.json` file.
+The program can generate four different types of reports based on the data analysis:
+
+- **Metrics Summary**
+   - Contains a table of metrics and statitsics per year of the data, and lists the parameters of the configuration file used.
+   - Text file with file name `[base file name]_metrics_summary.txt`.
+
+- **Metrics Detailed**
+   - Contains a comparison table between the primary and reference data and details about the metrics such as the start/end dates of the minimum/maximum offsets and offsets meeting the configured duration threshold.
+   - Text file with filename `[base_file_name]_metrics_detailed.txt`
+
+- **Temporal Corrections Summary**
+   - Contains a table listing the unique temporal shifts and datum shifts found per year of data
 
 ## Requirements
 
@@ -94,18 +185,21 @@ cd path/to/noaa-lighthouse-problem
 ```
 2. Run the program:
 ```shell
-python analyze_data_discrepancies.py --refdir path/to/NOAA/files --primarydir path/to/Lighthouse/files --filename results
+python analyze_data_discrepancies.py --config config.json
 ```
 
 ## Configuration
 
 ### Overview
 
-The `config.json` file is used to configure various parameters that define the metrics extracted from the discrepancy analysis of the datasets, and how corrections should be done on the primary data to resolve discrepancies (in development).
+`config.json` is used to configure:
+- Paths to the data, and for output files.
+- Mode of data analysis.
+- 
 
 ### File location
 
-Place the `config.json` file in the root directory of your project.
+Place `config.json` in the root directory of your project.
 
 ### Configuration sections
 
@@ -164,33 +258,66 @@ Default values are used if a parameter is not specified in `config.json`:
 ### Example configuration
 ```elixir
 {
-    "primary_data_column_names": {
-        "datetime": "#date+time",
-        "water_level": "014-pwl"
-    },
-    "reference_data_column_names": {
-        "datetime": "Date Time",
-        "water_level": "Water Level "
-    },
-    "filter_offsets_by_duration": {
-        "threshold": "1 day",
-        "type": "min",
-        "is_strict": false
-    },
-    "filter_offsets_by_value": {
-        "threshold": 0.05,
-        "use_abs": true,
-        "type": "min",
-        "is_strict": false
-    },
-    "filter_gaps_by_duration": {
-        "threshold": "1 day",
-        "type": "min",
-        "is_strict": false
-    },
-    "offset_correction_parameters": {
-        "number_of_intervals": 240
-    }
+   "data": {
+      "paths": {
+         "refdir": "data/NOAA/rockport",
+         "primarydir": "data/lighthouse/Rockport"
+      },
+
+      "primary_data_column_names": {
+         "datetime": "",
+         "water_level": ""
+      },
+   
+      "reference_data_column_names": {
+         "datetime": "",
+         "water_level": ""
+      }
+  },
+
+  "analysis": {
+      "mode": "corrected",
+      "years": [1999, 2000]
+  },
+
+   "output": {
+      "base_filename": "Rockport_1999_2000",
+      "path": "generated_files",
+      "execution_msgs": false,
+
+      "generate_reports_for_years": {
+         "metrics_summary": [],
+         "metrics_detailed": [1999, 2000],
+         "temporal_corrections_summary": [],
+         "temporal_correction_processing": []
+     }
+   },
+
+  "filter_offsets_by_duration": {
+      "threshold": "1 hour",
+      "type": "min",
+      "is_strict": false,
+      "nonzero": true
+  },
+
+  "filter_offsets_by_value": {
+      "threshold": 0.001,
+      "use_abs": true,
+      "type": "min",
+      "is_strict": false,
+      "nonzero": true
+  },
+
+  "filter_gaps_by_duration": {
+      "threshold": "1 day",
+      "type": "min",
+      "is_strict": false
+  },
+
+  "temporal_shift_correction": {
+      "number_of_intervals": 10,
+      "replace_with_nans": true
+  }
 }
 ```
 
