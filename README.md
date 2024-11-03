@@ -38,39 +38,91 @@ These processes are intended to be a starting point for diagnosing any underlyin
 
 ### Program processing loop
 ```mermaid
+%%{
+    init: {
+            'theme':'base',
+            'themeVariables': {
+            'primaryColor':'#fff',
+            'secondaryColor':'#445',
+            'tertiaryColor':'#445',
+            'primaryTextColor': '#000',
+            'primaryBorderColor': '#36f'
+            }   
+          }
+}%%
+
+
 flowchart LR
 
-    Start[start] --> Config[load <br> config]
-    Config --> Files[load <br> files]
-    Files --> FileDecision{files <br> good?}
+    classDef decisions fill:#afa, stroke:#171;
+    classDef outsideLoop fill:#69d; 
+    classDef exit fill:#e77, stroke:#922;
+    classDef insideLoop fill:#fad, stroke:#c8a
 
-    %% File decision.
-    FileDecision --> |no|Exit[exit]
-    FileDecision --> |yes|DataFrames[data <br> frames]
+    Start:::exit
+    Exit:::exit
+    End:::exit
 
-    DataFrames --> SplitData[split <br> data]
-    SplitData --> Preprocess[preprocess <br> data]
-    Preprocess --> ExtractYrs[extract <br> years]
+    FileDecision:::decisions
+    AnalysisType:::decisions
+    EndLoop:::decisions
 
-    %% Main program loop.
-    ExtractYrs --> |loop over <br> years|MergeData[merge <br> datasets]
+    Config:::outsideLoop
+    Files:::outsideLoop
+    DataFrames:::outsideLoop
+    SplitData:::outsideLoop
+    Preprocess:::outsideLoop
+    ExtractYrs:::outsideLoop
+    Summary:::outsideLoop
+
+    MergeData:::insideLoop
+    Report:::insideLoop
+    TemporalCorr:::insideLoop
+
+    linkStyle default color:white
+
+    subgraph main
+
+        direction LR
     
-    subgraph yearly analysis
-        MergeData --> AnalysisType{analysis <br> type?}
+        subgraph setup
+            Start[start] --> Config[load <br> config]
+            Config --> Files[load <br> files]
+            Files --> FileDecision{files <br> good?}
 
-        %% Analysis type decision.
-        AnalysisType --> |corrected|TemporalCorr[temporal <br> correction]
-        AnalysisType --> |raw|Report[generate <br> report]
+            %% File decision.
+            FileDecision --> |no|Exit[exit]
+            FileDecision --> |yes|DataFrames[data <br> frames]
 
-        TemporalCorr --> Report
+            DataFrames --> SplitData[split <br> data]
+            SplitData --> Preprocess[preprocess <br> data]
+            Preprocess --> ExtractYrs[extract <br> years]
+        end
 
-        Report --> EndLoop{more <br> years?}
+            %% Main program loop.
+            ExtractYrs --> |loop over <br> years|MergeData[merge <br> datasets]
 
-        EndLoop --> |yes|MergeData
+        subgraph yearly analysis
+
+            direction RL
+
+            MergeData --> AnalysisType{analysis <br> type?}
+
+            %% Analysis type decision.
+            AnalysisType --> |corrected|TemporalCorr[temporal <br> correction]
+            AnalysisType --> |raw|Report[generate <br> report]
+
+            TemporalCorr --> Report
+
+            Report --> EndLoop{more <br> years?}
+
+            EndLoop --> |yes|MergeData
+        end
+
+        EndLoop --> |no|Summary[summary <br> report]
+        Summary --> End[end]
+    
     end
-
-    EndLoop --> |no|Summary[summary <br> report]
-    Summary --> End[end]
 ```
 
 ### Temporal correction algorithm
@@ -89,10 +141,10 @@ flowchart LR
 }%%
 
 
-flowchart LR
+flowchart RL
 
     classDef decisions fill:#afa, stroke:#171;
-    classDef outsideLoop fill:#58c; 
+    classDef outsideLoop fill:#69d; 
     classDef exit fill:#e77, stroke:#922;
     classDef insideLoop fill:#fad, stroke:#c8a
 
@@ -117,47 +169,54 @@ flowchart LR
 
     linkStyle default color:white
 
-    Start[start] --> Validate{valid <br> structure?}
+    subgraph algorithm
+        direction TB
 
-    %% Valid structure decision.
-    Validate --> |yes|SetConfig[set <br> configs]
-    
-    Validate --> |no|Exit[exit]
+        subgraph initialize
 
-    %% Enter loop.
-    SetConfig --> |loop over <br> indices|TryShift[try shift]
+            Start[start] --> Validate{valid <br> structure?}
 
-    subgraph correct data
-        
-        TryShift --> GetDS[get valid <br> datum shift]
-        GetDS --> IsFound{found?}
+            %% Valid structure decision.
+            Validate --> |yes|SetConfig[set <br> configs]
+            
+            Validate --> |no|Exit[exit]
+        end
 
-        %% Datum shift found decision.
-        IsFound --> |yes|StoreCorr[store <br> correction]
-        IsFound --> |no|TryNext{all shifts <br> tried?}
+        %% Enter loop.
+        SetConfig --> |loop over <br> indices|TryShift[try shift]
 
-        %% Try next temporal shift decision.
-        TryNext --> |yes|HandleSegment[handle <br> segment]
-        TryNext --> |no|TryShift
+        subgraph correct data
+            
+            TryShift --> GetDS[get valid <br> datum shift]
+            GetDS --> IsFound{found?}
 
-        StoreCorr --> |next <br> index|IsValid{datum shift <br> still valid?}
+            %% Datum shift found decision.
+            IsFound --> |yes|StoreCorr[store <br> correction]
+            IsFound --> |no|TryNext{all shifts <br> tried?}
 
-        %% Datum shift still valid/continue storing corrections decision.
-        IsValid --> |yes|StoreCorr
-        IsValid --> |no|DocSegment[document <br> segment]
+            %% Try next temporal shift decision.
+            TryNext --> |yes|HandleSegment[handle <br> segment]
+            TryNext --> |no|TryShift
 
-        HandleSegment --> DocSegment
-        DocSegment --> NextIndex[index after <br> segment]
+            StoreCorr --> |next <br> index|IsValid{datum shift <br> still valid?}
 
-        NextIndex --> DataEnd{end of <br> data?}
+            %% Datum shift still valid/continue storing corrections decision.
+            IsValid --> |yes|StoreCorr
+            IsValid --> |no|DocSegment[document <br> segment]
 
-        %% Exit loop decision.
-        DataEnd --> |no|TryShift
+            HandleSegment --> DocSegment
+            DocSegment --> NextIndex[index after <br> segment]
+
+            NextIndex --> DataEnd{end of <br> data?}
+
+            %% Exit loop decision.
+            DataEnd --> |no|TryShift
+
+        end
+
+        DataEnd --> |yes|End[end]
 
     end
-
-    DataEnd --> |yes|End[end]
-    End:::exit
 ```
   
 
