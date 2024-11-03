@@ -136,19 +136,6 @@ def main(args):
         print("Failed to match files to ref filename pattern. Exiting program.")
         sys.exit()
 
-    # Prompt user for the start and end year of their data.
-    # if write_msgs:
-    #     prompt = "Enter the starting year <yyyy> of your data: "
-    #     start_year = fp.get_year_from_user(prompt)
-    #     prompt = "Enter the last year <yyyy> of your data: "
-    #     end_year = fp.get_year_from_user(prompt)
-#
-    #     # Get range of years.
-    #     year_range = range(start_year, end_year + 1)
-
-    # Initialize a summary of error messages to be written to the results file.
-    error_summary = ["Messages about the program execution are below: \n"]
-
     # Initialize a flag pointer to check if da.read_file() is successful.
     flag_ptr = [False]
 
@@ -163,10 +150,6 @@ def main(args):
         if flag_ptr[0]:
             split_df = fp.split_by_year(df, df.columns[0])
             primary_df_arr.extend(split_df)
-        else:
-            msg = f"failed to read file: {primary_file}\n"
-            print(msg)
-            error_summary.append(msg)
     # End for.
 
     # Send ref data into dataframes. The files are already split by year.
@@ -177,62 +160,40 @@ def main(args):
 
         if flag_ptr[0] is True:
             ref_df_arr.append(df)
-        else:
-            msg = f"failed to read file: {ref_file}\n"
-            print(msg)
-            error_summary.append(msg)
     # End for.
 
     # Use config to get the necessary columns for assigning column names.
-    primary_data_cols = config['data']['primary_data_column_names']
-    ref_data_cols = config['data']['reference_data_column_names']
+    # primary_data_cols = config['data']['primary_data_column_names']
+    # ref_data_cols = config['data']['reference_data_column_names']
 
     # Assign column names. If not configured, assume their positions in the dataframe,
     # and that all dfs in the array have same column names.
-    primary_dt_col_name = primary_df_arr[0].columns[0] if not primary_data_cols['datetime'] \
-        else primary_data_cols['datetime']
-    primary_pwl_col_name = primary_df_arr[0].columns[1] if not primary_data_cols['water_level'] \
-        else primary_data_cols['water_level']
-    ref_dt_col_name = ref_df_arr[0].columns[0] if not ref_data_cols['datetime'] \
-        else ref_data_cols['datetime']
-    ref_pwl_col_name = ref_df_arr[0].columns[1] if not ref_data_cols['water_level'] \
-        else ref_data_cols['water_level']
+    # primary_dt_col_name = primary_df_arr[0].columns[0] if not primary_data_cols['datetime'] \
+    #     else primary_data_cols['datetime']
+    # primary_pwl_col_name = primary_df_arr[0].columns[1] if not primary_data_cols['water_level'] \
+    #     else primary_data_cols['water_level']
+    # dt_col_name = ref_df_arr[0].columns[0] if not ref_data_cols['datetime'] \
+    #     else ref_data_cols['datetime']
+    # ref_pwl_col_name = ref_df_arr[0].columns[1] if not ref_data_cols['water_level'] \
+    #     else ref_data_cols['water_level']
+    primary_dt_col_pos = 0
+    primary_pwl_col_pos = 1
+    ref_dt_col_pos = 0
+    ref_pwl_col_pos = 1
 
-    # Clean primary dataframes. Print error messages.
+    # Clean primary dataframes.
     for primary_df in primary_df_arr:
-
-        # Initialize error message.
-        error_msg = [""]
-
-        fp.clean_dataframe(primary_df, primary_dt_col_name, primary_pwl_col_name, error=error_msg)
-        year = primary_df[primary_dt_col_name].dt.year
-
-        if not all(e == "" for e in error_msg):
-            msg = (f"clean_dataframe returned message for primary file - year {year[0]}. "
-                   f"error message: {error_msg}\n")
-            print(msg)
-            error_summary.append(msg)
+        fp.clean_dataframe(primary_df, primary_dt_col_pos, primary_pwl_col_pos)
     # End for.
 
-    # Clean ref dataframes. Print error messages.
+    # Clean ref dataframes.
     for ref_df in ref_df_arr:
-
-        # Initialize error message.
-        error_msg = [""]
-
-        fp.clean_dataframe(ref_df, ref_dt_col_name, ref_pwl_col_name, error=error_msg)
-        year = ref_df[ref_dt_col_name].dt.year
-
-        if not all(e == "" for e in error_msg):
-            msg = (f"clean_dataframe returned message for ref file - year {year[0]}. "
-                   f"error message: {error_msg}\n")
-            print(msg)
-            error_summary.append(msg)
+        fp.clean_dataframe(ref_df, ref_dt_col_pos, ref_pwl_col_pos)
     # End for.
 
     # Make sure only common years are compared in the analysis.
-    primary_dfs_dict = fp.get_df_dictionary(primary_df_arr, primary_dt_col_name)
-    ref_dfs_dict = fp.get_df_dictionary(ref_df_arr, ref_dt_col_name)
+    primary_dfs_dict = fp.get_df_dictionary(primary_df_arr, primary_dt_col_pos)
+    ref_dfs_dict = fp.get_df_dictionary(ref_df_arr, ref_dt_col_pos)
     common_years = set(primary_dfs_dict.keys()) & set(ref_dfs_dict.keys())
 
     # Modify common_years to only include years from configurations.
@@ -256,15 +217,6 @@ def main(args):
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
         else config_report_years['annotated_raw_data']
 
-    # Record which years have no data for analysis.
-    # header = ["Analysis could not be done for year(s): \n"]
-    # bad_years = []
-    # if write_msgs:  # Skip if user has opted out of program messages.
-    #     for year in year_range:
-    #         if year not in common_years:
-    #             bad_years.append(year)
-    #     # End for.
-
     # Process the dataframes of common years to get statistics.
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
@@ -275,6 +227,8 @@ def main(args):
     # Initialize series data dictionary. This will be concat-ed for every year in for loop.
     getXformDataDict = TransformData()
     series_data_concat_dict = getXformDataDict.get_time_shift_table()
+
+    # ********************************** Start processing loop **********************************
 
     for year in common_years:
 
@@ -290,11 +244,13 @@ def main(args):
         ref_df = ref_dfs_dict[year]
 
         # Drop unrelated columns.
+        primary_col_names = primary_df.columns[0], primary_df.columns[1]
+        ref_col_names = ref_df.columns[0], ref_df.columns[1]
         for col in primary_df.columns:
-            if col not in (primary_dt_col_name, primary_pwl_col_name):
+            if col not in primary_col_names:
                 primary_df.drop(columns=col, inplace=True)
         for col in ref_df.columns:
-            if col not in (ref_dt_col_name, ref_pwl_col_name):
+            if col not in ref_col_names:
                 ref_df.drop(columns=col, inplace=True)
 
         # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
@@ -305,8 +261,8 @@ def main(args):
         # Set datetime column as index and use join() to reduce time complexity of merging to O(n).
         # (Note if index was not sorted, then pandas would perform a sort, resulting in O(nlogn) time complexity.)
         # Set the datetime columns as the index.
-        primary_df.set_index(primary_dt_col_name, inplace=True)
-        ref_df.set_index(ref_dt_col_name, inplace=True)
+        primary_df.set_index(primary_dt_col_pos, inplace=True)
+        ref_df.set_index(ref_dt_col_pos, inplace=True)
 
         # Perform an outer join, specifying suffixes.
         merged_df = primary_df.join(ref_df, how='outer', lsuffix='_primary', rsuffix='_reference')
@@ -315,24 +271,24 @@ def main(args):
         merged_df.reset_index(inplace=True)
 
         # Reassign column names.
-        primary_pwl_col_name = merged_df.columns[1]
-        ref_dt_col_name = merged_df.columns[2]
-        ref_pwl_col_name = merged_df.columns[3]
+        primary_pwl_col_pos = merged_df.columns[1]
+        ref_dt_col_pos = merged_df.columns[0]
+        ref_pwl_col_pos = merged_df.columns[2]
 
         # Get size of merged dataframe.
         size = len(merged_df)
 
         initial_nan_percentage = round((len(
-            merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+            merged_df[merged_df[primary_pwl_col_pos].isna()]) / size) * 100, 4)
 
         corrected_df = merged_df.copy()
         corrected_df = corrector.temporal_shift_corrector(corrected_df,
-                                                          primary_data_column_name=primary_pwl_col_name,
-                                                          reference_data_column_name=ref_pwl_col_name,
-                                                          datetime_column_name=ref_dt_col_name)
+                                                          primary_data_column_name=primary_pwl_col_pos,
+                                                          reference_data_column_name=ref_pwl_col_pos,
+                                                          datetime_column_name=ref_dt_col_pos)
 
         final_nan_percentage = round((len(
-            corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+            corrected_df[corrected_df[primary_pwl_col_pos].isna()]) / size) * 100, 4)
 
         # Add to all-years summary dataframe.
         if year in temp_corr_summary_years:
@@ -362,13 +318,13 @@ def main(args):
             merged_df = corrected_df.copy()
 
         # Get comparison table.
-        stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
-                                                          merged_df[ref_pwl_col_name], size)
+        stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_pos],
+                                                          merged_df[ref_pwl_col_pos], size)
 
         # Get offset runs dataframe.
-        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
-                                                  merged_df[ref_pwl_col_name],
-                                                  merged_df[ref_dt_col_name], size)
+        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_pos],
+                                                  merged_df[ref_pwl_col_pos],
+                                                  merged_df[ref_dt_col_pos], size)
 
         # Set the dataframe.
         calculator.set_runs_dataframe(run_data_df)
@@ -402,9 +358,14 @@ def main(args):
 
         # Write detailed metrics report.
         if year in metrics_detailed_years:
-            MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
-            MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
-            MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
+            # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
+            # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
+            offsets_df = pd.DataFrame(offsets_dict)
+            offsets_df.to_csv(f"{write_path}/{filename}_"
+                              f"datum_shift_info.csv", index=False)
+            # MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
+
+    # ********************************** End processing loop **********************************
 
     if annotated_raw_data_years:
         # Get table of annotated series data.
@@ -415,21 +376,27 @@ def main(args):
                                         f"annotated_raw_data.csv", index=False)
 
     # Write summary file.
+
     if metrics_summary_years:
-        with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
-            file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
-            file.write(f"% agree: Percentage of values that agree between datasets.\n"
-                       f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
-                       f"% total disagree: Percentage of data that disagrees (including NaNs).\n" 
-                       f"% missing: Percentage of the primary data that is missing (NaN).\n"
-                       f"# long offsets: The number of offsets that meet the duration threshold.\n"
-                       f"# long gaps: The number of gaps that meet the duration threshold.\n"
-                       f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
-                       f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
-                       f"minimum value: The minimum discrepancy value.\n"
-                       f"maximum value: The maximum discrepancy value.\n\n")
-        fp.write_table_from_nested_dict(summary, 'Year',
-                                        f'{write_path}/{filename}_metrics_summary.txt')
+        metrics_summary_years_df = pd.DataFrame(metrics_summary_years)
+        metrics_summary_years_df.to_csv(f"{write_path}/{filename}_"
+                                        f"metrics_summary.csv", index=False)
+
+    # if metrics_summary_years:
+    #     with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
+    #         file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
+    #         file.write(f"% agree: Percentage of values that agree between datasets.\n"
+    #                    f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
+    #                    f"% total disagree: Percentage of data that disagrees (including NaNs).\n"
+    #                    f"% missing: Percentage of the primary data that is missing (NaN).\n"
+    #                    f"# long offsets: The number of offsets that meet the duration threshold.\n"
+    #                    f"# long gaps: The number of gaps that meet the duration threshold.\n"
+    #                    f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
+    #                    f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
+    #                    f"minimum value: The minimum discrepancy value.\n"
+    #                    f"maximum value: The maximum discrepancy value.\n\n")
+    #     fp.write_table_from_nested_dict(summary, 'Year',
+    #                                     f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:

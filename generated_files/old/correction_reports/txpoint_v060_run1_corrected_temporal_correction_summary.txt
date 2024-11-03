@@ -1,0 +1,4 @@
+   year temporal_offsets                                       vertical_offsets  initial_nan_percent  final_nan_percent  increased_nan_percent
+0  2013         [0, nan]  [-3.059, nan, -3.076, -3.077, -3.069, -3.061, -3.062]               1.1187            19.1073                17.9886
+1  2014         [0, nan]                                          [-3.062, nan]               0.5708             9.6655                 9.0947
+2  2015         [0, nan]                                          [-3.062, nan]              89.3253            89.6130                 0.2877

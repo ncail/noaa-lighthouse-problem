@@ -27,11 +27,11 @@
 
 ## Introduction
 
-**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from these. Discrepancies include vertical and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs to ensure the quality of water level data from Lighthouse stations not shared by NOAA.
+**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from these. Discrepancies include datum shifts and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs so we can ensure the quality of data from Lighthouse stations *not* shared by NOAA.
 
-The main program, `analyze_data.py`, uses class implementation from `MetricsCalculator.py` and `TransformData.py` to compare annual water level data between NOAA and Lighthouse. It can be configured to report on temporal offsets and datum shifts.
+The main program, `analyze_data.py`, uses class implementation from `MetricsCalculator.py` and `TransformData.py` to run a yearly comparison analysis on the water level data between NOAA and Lighthouse.
 
-These processes are intended to be a starting point for diagnosing any underlying issues that prevent Lighthouse from meeting the standards of NOAA.
+These processes are intended to be a starting point for diagnosing underlying issues that prevent Lighthouse from meeting the standards of NOAA.
 
 **Note:** Not all Lighthouse stations are also NOAA stations. Additionally, Lighthouse stations are only located in coastal Texas, whereas NOAA stations are distributed across the United States. Ensure that you select comparable stations when running the analysis.
 
@@ -478,7 +478,7 @@ Default values are used if a parameter is not specified in `config.json`:
 ### Data requirements
 
 - **Data format**: Since the purpose of the program is to analyze the discrepancies between time series water level datasets, the data processed by the program should contain water level measurements with the corresponding timestamps over some time period. The data files must be in CSV format which will provide the data in columns.
-- **Column order**: If the names of the necessary columns (datetime and water level) are left as default in `config.json`, the program will assume that the datetime and water level columns are the first and second columns in the data files, respectively.
+- **Data columns**: The program will assume that the datetime and water level columns are the first and second columns in the data files, respectively. It will also assume that the first entry in the columns are the column names, and not data points.
 
 ### Dependencies
 

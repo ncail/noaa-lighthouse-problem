@@ -61,7 +61,7 @@
   },
 
   "temporal_shift_correction": {
-      "number_of_intervals": 10,
+      "number_of_intervals": 0,
       "replace_with_nans": true
   }
 }
