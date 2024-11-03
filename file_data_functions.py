@@ -129,12 +129,12 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
 # End clean_dataframe.
 
 
-def get_df_dictionary(df_list, dt_col_name):
+def get_df_dictionary(df_list, dt_col_pos):
 
     dfs_dict = {}
     for df in df_list:
 
-        year = df[dt_col_name].dt.year
+        year = df.iloc[:, dt_col_pos].dt.year
 
         if not pd.isna(year[0]):
             dfs_dict[int(year[0])] = df

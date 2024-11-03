@@ -183,12 +183,12 @@ def main(args):
 
     # Clean primary dataframes.
     for primary_df in primary_df_arr:
-        fp.clean_dataframe(primary_df, primary_dt_col_pos, primary_pwl_col_pos)
+        fp.clean_dataframe(primary_df, primary_df.columns[primary_dt_col_pos], primary_df.columns[primary_pwl_col_pos])
     # End for.
 
     # Clean ref dataframes.
     for ref_df in ref_df_arr:
-        fp.clean_dataframe(ref_df, ref_dt_col_pos, ref_pwl_col_pos)
+        fp.clean_dataframe(ref_df, ref_df.columns[ref_dt_col_pos], ref_df.columns[ref_pwl_col_pos])
     # End for.
 
     # Make sure only common years are compared in the analysis.
@@ -261,34 +261,34 @@ def main(args):
         # Set datetime column as index and use join() to reduce time complexity of merging to O(n).
         # (Note if index was not sorted, then pandas would perform a sort, resulting in O(nlogn) time complexity.)
         # Set the datetime columns as the index.
-        primary_df.set_index(primary_dt_col_pos, inplace=True)
-        ref_df.set_index(ref_dt_col_pos, inplace=True)
+        primary_df.set_index(primary_col_names[0], inplace=True)
+        ref_df.set_index(ref_col_names[0], inplace=True)
 
         # Perform an outer join, specifying suffixes.
-        merged_df = primary_df.join(ref_df, how='outer', lsuffix='_primary', rsuffix='_reference')
+        merged_df = ref_df.join(primary_df, how='outer', lsuffix='_primary', rsuffix='_reference')
 
         # Reset the index to get datetime column back as a regular column.
         merged_df.reset_index(inplace=True)
 
-        # Reassign column names.
-        primary_pwl_col_pos = merged_df.columns[1]
-        ref_dt_col_pos = merged_df.columns[0]
-        ref_pwl_col_pos = merged_df.columns[2]
+        # Reassign columns.
+        ref_dt_col_name = merged_df.columns[0]
+        ref_pwl_col_name = merged_df.columns[1]
+        primary_pwl_col_name = merged_df.columns[2]
 
         # Get size of merged dataframe.
         size = len(merged_df)
 
         initial_nan_percentage = round((len(
-            merged_df[merged_df[primary_pwl_col_pos].isna()]) / size) * 100, 4)
+            merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
         corrected_df = merged_df.copy()
         corrected_df = corrector.temporal_shift_corrector(corrected_df,
-                                                          primary_data_column_name=primary_pwl_col_pos,
-                                                          reference_data_column_name=ref_pwl_col_pos,
-                                                          datetime_column_name=ref_dt_col_pos)
+                                                          primary_data_column_name=primary_pwl_col_name,
+                                                          reference_data_column_name=ref_pwl_col_name,
+                                                          datetime_column_name=ref_dt_col_name)
 
         final_nan_percentage = round((len(
-            corrected_df[corrected_df[primary_pwl_col_pos].isna()]) / size) * 100, 4)
+            corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
         # Add to all-years summary dataframe.
         if year in temp_corr_summary_years:
@@ -339,7 +339,7 @@ def main(args):
         metrics_list = calculator.format_metrics()
 
         # Get table of long offsets.
-        offsets_dict = calculator.generate_long_offsets_info()
+        offsets_df = calculator.generate_long_offsets_info()
 
         # Append year info to metrics summary.
         if year in metrics_summary_years:
@@ -350,7 +350,7 @@ def main(args):
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
                 "# long offsets": metrics['long_offsets_count'],
                 "# long gaps": metrics['long_gaps_count'],
-                "unique long offsets": list(offsets_dict.keys()),
+                "unique long offsets": list(offsets_df['offset'].unique()),
                 "# large discrepancies": metrics['large_offsets_count'],
                 "minimum value": metrics['min_max_offsets'][1],
                 "maximum value": metrics['min_max_offsets'][0]
@@ -360,7 +360,6 @@ def main(args):
         if year in metrics_detailed_years:
             # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
             # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
-            offsets_df = pd.DataFrame(offsets_dict)
             offsets_df.to_csv(f"{write_path}/{filename}_"
                               f"datum_shift_info.csv", index=False)
             # MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")

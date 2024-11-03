@@ -426,48 +426,8 @@ class MetricsCalculator:
         # Filter for offsets (runs) by duration.
         long_offsets_df = self.filter_offsets_by_duration(df, duration_column_name)
 
-        # Get dictionary of info about the unique offsets in long_offsets_df.
-        long_offsets_dict = self.generate_unique_offsets_info(long_offsets_df, nonzero)
-
-        return long_offsets_dict
-    # End calc_long_offsets_dict.
-
-    def generate_unique_offsets_info(self, df: pd.DataFrame = None, nonzero=False):
-        if df is not None:
-            self._validate_dataframe(df)
-        elif self.run_data_df is not None:
-            df = self.run_data_df
-        else:
-            raise ValueError("No valid DataFrame provided, and no pre-set DataFrame found.")
-
-        # Get the unique offset values from long offsets.
-        unique_offsets = df[self.col_config['offset_column']].unique()
-
-        # Get all the durations, start dates, and end dates that correspond
-        # to each offset value. Organize into a dictionary.
-        unique_offsets_dict = {}
-        for offset in unique_offsets:
-
-            # Skip NaNs.
-            if pd.isna(offset):
-                continue
-
-            if nonzero:
-                if offset == 0.0:
-                    continue
-
-            # Add offset (key) and corresponding info from get_run_data df structure
-            # to dictionary.
-            offset_data = df[df[self.col_config['offset_column']] == offset]
-            unique_offsets_dict[offset] = {
-                'duration': offset_data[self.col_config['duration_column']].tolist(),
-                'start_date': offset_data[self.col_config['start_date_column']].tolist(),
-                'end_date': offset_data[self.col_config['end_date_column']].tolist()
-            }
-        # End for.
-
-        return unique_offsets_dict
-    # End calc_unique_offsets_dict.
+        return long_offsets_df
+    # End generate_long_offsets_info.
 
     def filter_offsets_by_duration(self, df: pd.DataFrame = None, duration_column_name: str = None,
                                    **kwargs) -> pd.DataFrame:
