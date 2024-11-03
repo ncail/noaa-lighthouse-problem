@@ -4,26 +4,26 @@
 2. [Diagrams](#diagrams)
    - [Program processing loop](#program-processing-loop)
    - [Temporal correction algorithm](#temporal-correction-algorithm)
-3. [Running the Program](#running-the-program)
+3. [Running the program](#running-the-program)
    - [Overview](#overview)
-   - [Command Line Arguments](#command-line-arguments)
+   - [Command line arguments](#command-line-arguments)
 4. [Output](#output)
 5. [Requirements](#requirements)
 6. [Installation](#installation)
-7. [Usage Example](#usage-example)
+7. [Usage example](#usage-example)
 8. [Configuration](#configuration)
    - [Overview](#overview-1)
-   - [File Location](#file-location)
-   - [Configuration Sections](#configuration-sections)
-   - [Configuration Values](#configuration-values)
-   - [Default Values](#default-values)
-   - [Example Configuration](#example-configuration)
-9. [Technical Details and Limitations](#technical-details-and-limitations)
-   - [Data Requirements](#data-requirements)
+   - [File location](#file-location)
+   - [Configuration sections](#configuration-sections)
+   - [Configuration values](#configuration-values)
+   - [Default values](#default-values)
+   - [Example configuration](#example-configuration)
+9. [Technical details and limitations](#technical-details-and-limitations)
+   - [Data requirements](#data-requirements)
    - [Dependencies](#dependencies)
-10. [Downloading Data](#downloading-data)
-    - [NOAA Data](#noaa-data)
-    - [Lighthouse Data](#lighthouse-data)
+10. [Downloading data](#downloading-data)
+    - [NOAA data](#noaa-data)
+    - [Lighthouse data](#lighthouse-data)
 
 ## Introduction
 
@@ -273,7 +273,7 @@ Importantly, the program offers two modes, or types of analysis: *raw* and *corr
 The program can generate four different types of reports based on the data analysis, listed below. All output files are written to `generated_files` unless specified otherwise in `config.json` (see [Configuration](#configuration)) or by command line argument (see [Running the program](#running-the-program)).
 
 - **Metrics summary**
-   - Contains a table of metrics and statitsics per year of the data, and lists the configuration options used.
+   - Contains a table of metrics and statistics per year of the data, and lists the configuration options used.
    - Text file with file name `[base_filename]_metrics_summary.txt`.
 
 - **Metrics detailed**
@@ -287,7 +287,7 @@ The program can generate four different types of reports based on the data analy
 - **Annotated raw data**
     - A complete table of the raw primary and reference series data, annotated with the corresponding datum shift and temporal shift for each data point.
     - CSV file with filename `[base_filename]_annotated_raw_data.csv`.
-    
+
 ## Requirements
 
 Python 3.x<br>
@@ -350,12 +350,15 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
   - `years`: Stores a list of the desired years to run the analysis for. 
 
 - **Output**
-  - 
+  - `base_filename`: This is the name that will be appended by the generated report type when creating the report output files.
+  - `path`: Path to the desired output file location.
+  - `generate_reports_for_years`: Each item in this section is a report type (see [Output](#output)). Enter the years you want each report type to be generated.
 
 - **Filter offsets by duration parameters**
     - `threshold`: The duration required for a datum shift to persist for it to be quantified in the results file. 
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
+    - `nonzero`: Toggles whether to exclude records of zero-valued datum shifts from quantified datum shifts meeting the duration threshold. 
 
 - **Filter gaps by duration parameters**
     - `threshold`: The duration required for a gap (missing values) to persist for it to be quantified in the results file (the total missing values are also provided in the results). 
@@ -367,31 +370,41 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
     - `use_abs`: Specifies to use the absolute values of datum shifts to determine if they meet the threshold criteria.
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
-    - `nonzero`: Toggles whether to exclude records of zero datum shift in reports.
+    - `nonzero`: Toggles whether to exclude records of zero-valued datum shift from quantified datum shifts meeting the value threshold.
 
-- **Offset correction parameters**
+- **Temporal shift correction**
     - `number_of_intervals`: The number of intervals required for a datum shift to persist for a temporal shift to be identified. This is used by the temporal correction algorithm. Although this is a kind of duration, it is unrelated to the filter by duration processes.
+    - `replace_with_nans`: For data that does not have a temporal shift resolvable by the temporal correction algorithm, toggle whether to replace with NaNs. The proceeding datum shift analysis will treat NaNs as gaps in the primary data. This is preferred if you want to regard data with an undetermined time shift as invalid.
 
 ### Configuration values
 
+- `refdir`: Examples include: "data/NOAA/station14"
+- `primarydir`: Examples include: "data/Lighthouse/station14"
 - `datetime`: Examples include: "Date Time", "myDateTimeColumn"
 - `water_level`: Examples include: "Water Level", "myWaterLevelColumn"
+- `mode`: Must be "raw" or "corrected"
+- `years`: Examples include: "all_years", [2001, 2002, 2007, 2008]
+  - *These values are also examples for the fields in `generate_reports_for_years`*
 - `threshold` (duration): Examples include:  "1 week", "2 days, 12 hours", "30 minutes"
 - `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0
 - `type`: Must be either "min" or "max"
-- `use_abs`: Must be `true` or `false`
 - `is_strict`: Must be `true` or `false`
+- `nonzero`: Must be `true` or `false`
+- `use_abs`: Must be `true` or `false`
 
 ### Default values
 
 Default values are used if a parameter is not specified in `config.json`:
 
-- `primary_data_column_names`: `datetime` = "", `water_level` = ""
-- `reference_data_column_names`: `datetime` = "", `water_level` = ""
-- `filter_offsets_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`
-- `filter_gaps_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`
-- `filter_offsets_by_value`: `threshold` = 0.0, `type` = "min", `use_abs` = `true`, `is_strict` = `false`
-- `offset_correction_parameters`: `number_of_intervals` = 0
+- `data`: `paths`: `refdir`= "", `primarydir`= ""
+- `data`: `primary_data_column_names`,`reference_data_column_names`: `datetime` = "", `water_level` = ""
+- `analysis`: `mode`= "raw", `years`= ["all_years"]
+- `output`: `base_filename`= "", `path`= "generated_files"
+- `generate_reports_for_years`: `metrics_summary`= [], `metrics_detailed`= [], `temporal_shifts_summary`= [], `annotated_raw_data`= [] 
+- `filter_offsets_by_duration`: `threshold`= "0 days", `type`= "min", `is_strict`= `false`, `nonzero`= `false`
+- `filter_gaps_by_duration`: `threshold`= "0 days", `type`= "min", `is_strict`= `false`
+- `filter_offsets_by_value`: `threshold`= 0.0, `type`= "min", `use_abs`= `true`, `is_strict`= `false`, `nonzero`= `false`
+- `temporal_shift_correction`: `number_of_intervals`= 0, `replace_with_nans`: `true`
 
 **Note**: For data column names that are left as default values, the program will assume the positions of the datetime and/or water level columns as the first and second column, respectively, in the CSV files. Check the data files to verify the order of the columns, or copy the names of the columns into `config.json`.
 
@@ -423,13 +436,12 @@ Default values are used if a parameter is not specified in `config.json`:
    "output": {
       "base_filename": "Rockport_1999_2000",
       "path": "generated_files",
-      "execution_msgs": false,
 
       "generate_reports_for_years": {
          "metrics_summary": [],
          "metrics_detailed": [1999, 2000],
-         "temporal_corrections_summary": [],
-         "temporal_correction_processing": []
+         "temporal_shifts_summary": [],
+         "annotated_raw_data": []
      }
    },
 
@@ -470,7 +482,7 @@ Default values are used if a parameter is not specified in `config.json`:
 
 ### Dependencies
 
-- **Libraries**: The program cleans the data by replacing corrupt or missing values with null values using the `numpy` library so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioning of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
+- **Libraries**: The program cleans and converts the data to `pandas` standards so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioning of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
 
 ## Downloading data
 
