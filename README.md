@@ -75,12 +75,53 @@ flowchart LR
 
 ### Temporal correction algorithm
 ```mermaid
+%%{
+    init: {
+            'theme':'base',
+            'themeVariables': {
+            'primaryColor':'#fff',
+            'secondaryColor':'#445',
+            'tertiaryColor':'#445',
+            'primaryTextColor': '#000',
+            'primaryBorderColor': '#36f'
+            }   
+          }
+}%%
+
+
 flowchart LR
+
+    classDef decisions fill:#afa, stroke:#171;
+    classDef outsideLoop fill:#58c; 
+    classDef exit fill:#e77, stroke:#922;
+    classDef insideLoop fill:#fad, stroke:#c8a
+
+    SetConfig:::outsideLoop
+
+    Validate:::decisions
+    IsFound:::decisions
+    IsValid:::decisions
+    TryNext:::decisions
+    DataEnd:::decisions
+
+    Exit:::exit
+    End:::exit
+    Start:::exit
+
+    TryShift:::insideLoop
+    GetDS:::insideLoop
+    StoreCorr:::insideLoop
+    HandleSegment:::insideLoop
+    DocSegment:::insideLoop
+    NextIndex:::insideLoop
+
+    linkStyle default color:white
 
     Start[start] --> Validate{valid <br> structure?}
 
     %% Valid structure decision.
     Validate --> |yes|SetConfig[set <br> configs]
+    
     Validate --> |no|Exit[exit]
 
     %% Enter loop.
@@ -112,9 +153,11 @@ flowchart LR
 
         %% Exit loop decision.
         DataEnd --> |no|TryShift
+
     end
 
     DataEnd --> |yes|End[end]
+    End:::exit
 ```
   
 
