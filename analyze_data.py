@@ -318,13 +318,13 @@ def main(args):
             merged_df = corrected_df.copy()
 
         # Get comparison table.
-        stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_pos],
-                                                          merged_df[ref_pwl_col_pos], size)
+        stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
+                                                          merged_df[ref_pwl_col_name], size)
 
         # Get offset runs dataframe.
-        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_pos],
-                                                  merged_df[ref_pwl_col_pos],
-                                                  merged_df[ref_dt_col_pos], size)
+        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
+                                                  merged_df[ref_pwl_col_name],
+                                                  merged_df[ref_dt_col_name], size)
 
         # Set the dataframe.
         calculator.set_runs_dataframe(run_data_df)
