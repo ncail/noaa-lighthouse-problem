@@ -2,16 +2,17 @@
 
 1. [Introduction](#introduction)
 2. [Diagrams](#diagrams)
-   - [Program processing loop]()
-   - [Temporal correction algorithm]()
+   - [Program processing loop](#program-processing-loop)
+   - [Temporal correction algorithm](#temporal-correction-algorithm)
 3. [Running the Program](#running-the-program)
+   - [Overview](#overview)
    - [Command Line Arguments](#command-line-arguments)
 4. [Output](#output)
 5. [Requirements](#requirements)
 6. [Installation](#installation)
 7. [Usage Example](#usage-example)
 8. [Configuration](#configuration)
-   - [Overview](#overview)
+   - [Overview](#overview-1)
    - [File Location](#file-location)
    - [Configuration Sections](#configuration-sections)
    - [Configuration Values](#configuration-values)
@@ -26,9 +27,9 @@
 
 ## Introduction
 
-**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from NOAA and Lighthouse. These discrepancies include vertical and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs to ensure the quality of water level data from Lighthouse stations not shared by NOAA.
+**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from these. Discrepancies include vertical and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs to ensure the quality of water level data from Lighthouse stations not shared by NOAA.
 
-The main program, `analyze_data_discrepancies.py`, uses functions implemented in `file_data_functions.py` to process annual water level data from both NOAA and Lighthouse (downloaded as .csv). It calculates their statistical differences and directly compares the datasets using discrepancy analysis.
+The main program, `analyze_data.py`, uses class implementation from `MetricsCalculator.py` and `TransformData.py` to compare annual water level data between NOAA and Lighthouse. It can be configured to report on temporal offsets and datum shifts.
 
 These processes are intended to be a starting point for diagnosing any underlying issues that prevent Lighthouse from meeting the standards of NOAA.
 
@@ -218,50 +219,71 @@ flowchart RL
 
     end
 ```
-  
 
 ## Running the program
 
-Running the main program, `analyze_data_discrepancies.py`, will write statistics and metrics about the compared datasets for a tide gauge station to a text file in the `generated_files` directory, or a directory specified by the user. 
+### Overview
 
-The `data` directory included in the repository has example CSV files that the program can handle. The program can process all of the files in directories `data/lighthouse/[station]` and `data/NOAA/[station]` at once by reading in all the files and sorting the data into years for year-by-year comparison. 
+Running the main program, `analyze_data.py`, will generate text file and CSV reports for the comparison analysis done on the reference (NOAA) and primary (Lighthouse) data from two respective specified directories.
+
+The `data` directory included in the repository has example CSV files that the program can handle. The program will process all of the files in the specified directories at once (e.g. `data/lighthouse/[station]` and `data/NOAA/[station]`) and then sort the data into years for yearly comparison. 
+
+Importantly, the program offers two modes, or types of analysis: *raw* and *corrected*. Raw mode will run the analysis on the provided data. Corrected mode will first perform a temporal correction (with configurable parameters) to align the primary data with the reference data, and proceed with the comparison analysis on the corrected data. In either mode, the program can still report on the existing, or fixed, temporal shifts.
 
 ### Command line arguments
 
 ```shell
---config config.json
+--config myConfig.json
 ```
-- Specifies the file used to entirely configure the program. If this argument isn't used, the program will use default configuration values. Using `config.json` to configure the program provides the most versatility and control. However, some values from the configuration file are available to be overridden by command line arguments, listed below.
+- Specifies the file used to entirely configure the program. By default, the program will load `config.json`. See [Configuration](#configuration) to learn how to fill the fields in `config.json` to have the most control over the program execution. Some values from the configuration file are available to be overridden by command line arguments, listed below.
 
 ```shell
 --filename myFileName
 ```
-- Specifies the base file name of output files. The provided file name will be appended with the type of report being generated.
+- Specifies the base file name of output files. The provided file name will be appended with the name of the type of report being generated (detailed in [Output](#output)).
 
 ```shell
 --primarydir path/to/Lighthouse/data/files --refdir path/to/NOAA/data/files
 ```
-- Specifies the path to the primary and reference data sources. The program will read all CSV files in these directories and then proceed with a yearly comparison analysis of the data. 
+- Specifies the path to the primary (Lighthouse) and reference (NOAA) data sources. The program will read all CSV files in these directories and then proceed with a yearly comparison analysis of the data. 
 
 ```shell
---years 
+--years 2007 2008 2012 2021
 ```
+- Stores the years desired for comparison. Defaults to `all_years`. Although all CSV files will be read in from the primary and reference directories, only data with years matching this argument will be processed in the comparison analysis.
+
+```shell
+--output path/to/output/files
+```
+- Specifies the output files location. Defaults to the `generated_files` directory.
+
+```shell
+--logging-off
+```
+- Opts out of logging the program execution. Logging is on by default.
+
+```shell
+--mode corrected
+```
+- Configures the analysis type for options `raw` and `corrected`. Defaults to `raw`.
+
 
 ## Output
 
 The program can generate four different types of reports based on the data analysis:
 
-- **Metrics Summary**
+- **Metrics summary**
    - Contains a table of metrics and statitsics per year of the data, and lists the parameters of the configuration file used.
    - Text file with file name `[base file name]_metrics_summary.txt`.
 
-- **Metrics Detailed**
+- **Metrics detailed**
    - Contains a comparison table between the primary and reference data and details about the metrics such as the start/end dates of the minimum/maximum offsets and offsets meeting the configured duration threshold.
    - Text file with filename `[base_file_name]_metrics_detailed.txt`
 
-- **Temporal Corrections Summary**
+- **Temporal shifts summary**
    - Contains a table listing the unique temporal shifts and datum shifts found per year of data
 
+- **Annotated raw data**
 ## Requirements
 
 Python 3.x<br>
@@ -287,7 +309,7 @@ cd path/to/noaa-lighthouse-problem
 ```
 2. Run the program:
 ```shell
-python analyze_data_discrepancies.py --config config.json
+python analyze_data.py --config config.json
 ```
 
 ## Configuration
