@@ -170,7 +170,7 @@ flowchart RL
     linkStyle default color:white
 
     subgraph algorithm
-        direction TB
+        direction LR
 
         subgraph initialize
 
