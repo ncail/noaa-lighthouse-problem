@@ -31,7 +31,7 @@ def parse_arguments():
     parser.add_argument('--years', type=int, nargs='+',
                         help='Years to include in the analysis')
     parser.add_argument('--logging-off', dest='logging', action='store_false',
-                        help="Opt out of writing execution messages to results text file")
+                        help="Opt out of logging")
     parser.set_defaults(logging=True)
     parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
                         help='Type of analysis')
@@ -251,8 +251,8 @@ def main(args):
         else config_report_years['metrics_summary']
     metrics_detailed_years = common_years if config_report_years['metrics_detailed'] == ['all_years'] \
         else config_report_years['metrics_detailed']
-    temp_corr_summary_years = common_years if config_report_years['temporal_corrections_summary'] == ['all_years'] \
-        else config_report_years['temporal_corrections_summary']
+    temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
+        else config_report_years['temporal_shifts_summary']
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
         else config_report_years['annotated_raw_data']
 
@@ -406,18 +406,6 @@ def main(args):
             MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
             MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
 
-        # Write temporal processing report.
-        # if year in annotated_raw_data_years:
-        #     temporal_processing_string = corrector.get_temporal_processing_string()
-        #     output_path = (f"{write_path}/correction_reports/{filename}_{year}"
-        #                    f"_temporal_correction_processing.txt")
-        #     with open(f'{output_path}', 'w') as file:
-        #         file.write(temporal_processing_string)
-#
-        #     corrector.clear_temporal_processing_string()
-
-    # End for. (All years processed).
-
     if annotated_raw_data_years:
         # Get table of annotated series data.
         series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
@@ -443,22 +431,10 @@ def main(args):
         fp.write_table_from_nested_dict(summary, 'Year',
                                         f'{write_path}/{filename}_metrics_summary.txt')
 
-    # Write error_summary and header to the text file if include_msgs is True.
-    # if write_msgs:
-    #     bad_years.sort()
-    #     header.extend([str(y) + " " for y in bad_years])
-    #     results_title = ["***************************************************************************\n"
-    #                      "******************************* RESULTS ***********************************\n"
-    #                      "***************************************************************************\n\n"]
-    #     text_list = header + ["\n\n"] + error_summary + ["\n\n"] + results_title
-    #     with open(f'{write_path}/{filename}_execution_messages.txt', 'a') as file:
-    #         file.write(''.join(text_list))
-
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:
-        with open(f"{write_path}/correction_reports/{filename}"
-                  f"_temporal_correction_summary.txt", 'a') as file:
-            file.write(all_processed_years_df.to_string())
+        all_processed_years_df.to_csv(f"{write_path}/{filename}_"
+                                      f"temporal_shifts_summary.csv", index=False)
 # End main.
 
 
