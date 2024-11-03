@@ -270,20 +270,24 @@ Importantly, the program offers two modes, or types of analysis: *raw* and *corr
 
 ## Output
 
-The program can generate four different types of reports based on the data analysis:
+The program can generate four different types of reports based on the data analysis, listed below. All output files are written to `generated_files` unless specified otherwise in `config.json` (see [Configuration](#configuration)) or by command line argument (see [Running the program](#running-the-program)).
 
 - **Metrics summary**
-   - Contains a table of metrics and statitsics per year of the data, and lists the parameters of the configuration file used.
-   - Text file with file name `[base file name]_metrics_summary.txt`.
+   - Contains a table of metrics and statitsics per year of the data, and lists the configuration options used.
+   - Text file with file name `[base_filename]_metrics_summary.txt`.
 
 - **Metrics detailed**
-   - Contains a comparison table between the primary and reference data and details about the metrics such as the start/end dates of the minimum/maximum offsets and offsets meeting the configured duration threshold.
-   - Text file with filename `[base_file_name]_metrics_detailed.txt`
+   - Contains (for each year) statistics on the primary and reference data similarity, details about the metrics such as the start/end dates of the minimum/maximum offsets, and a list of the start dates/end dates/durations for datum shifts meeting the configured duration threshold.
+   - Text file with filename `[base_filename]_metrics_detailed.txt`.
 
 - **Temporal shifts summary**
-   - Contains a table listing the unique temporal shifts and datum shifts found per year of data
+   - Contains a table listing the unique temporal shifts and datum shifts found per year of data.
+   - CSV file with filename `[base_filename]_temporal_shifts_summary.csv`.
 
 - **Annotated raw data**
+    - A complete table of the raw primary and reference series data, annotated with the corresponding datum shift and temporal shift for each data point.
+    - CSV file with filename `[base_filename]_annotated_raw_data.csv`.
+    
 ## Requirements
 
 Python 3.x<br>
@@ -309,7 +313,7 @@ cd path/to/noaa-lighthouse-problem
 ```
 2. Run the program:
 ```shell
-python analyze_data.py --config config.json
+python analyze_data.py
 ```
 
 ## Configuration
@@ -317,26 +321,39 @@ python analyze_data.py --config config.json
 ### Overview
 
 `config.json` is used to configure:
-- Paths to the data, and for output files.
+- Paths to data and output directories
 - Mode of data analysis.
-- 
+- Desired years of analysis and reports to be generated
+- Data-filtering metrics such as duration and value of datum shifts
+- Temporal correction parameters
+- Logging options
 
 ### File location
 
-Place `config.json` in the root directory of your project.
+Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directory of your project.
 
 ### Configuration sections
 
-- **Primary data column names**
-    - `datetime`: Name of the datetime column in the primary data CSV files.
-    - `water_level`: Name of the water level column in the primary data CSV files.
+- **Data**
+  - Paths
+    - `refdir`: Path to reference (NOAA) data CSV files. 
+    - `primarydir`: Path to primary (Lighthouse) data CSV files.
+  - Primary data column names
+      - `datetime`: Name of the datetime column in the primary data CSV files.
+      - `water_level`: Name of the water level column in the primary data CSV files.
+  - Reference data column names
+      - `datetime`: Name of the datetime column in the reference data CSV files.
+      - `water_level`: Name of the water level column in the reference data CSV files.
 
-- **Reference data column names**
-    - `datetime`: Name of the datetime column in the reference data CSV files.
-    - `water_level`: Name of the water level column in the reference data CSV files.
+- **Analysis**
+  - `mode`: Selects the analysis type the program will run.
+  - `years`: Stores a list of the desired years to run the analysis for. 
+
+- **Output**
+  - 
 
 - **Filter offsets by duration parameters**
-    - `threshold`: The duration required for an offset to persist for it to be quantified in the results file. 
+    - `threshold`: The duration required for a datum shift to persist for it to be quantified in the results file. 
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
@@ -346,38 +363,37 @@ Place `config.json` in the root directory of your project.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
 
 - **Filter offsets by value parameters**
-    - `threshold`: The value of an offset required for it to be quantified in the results file.
-    - `use_abs`: Specifies to use the absolute values of offsets to determine if they meet the threshold criteria.
+    - `threshold`: The value of a datum shift required for it to be quantified in the results file.
+    - `use_abs`: Specifies to use the absolute values of datum shifts to determine if they meet the threshold criteria.
     - `type`: Specifies if the threshold is a minimum or maximum cutoff.
     - `is_strict`: Specifies if the threshold is exclusive (strict) or inclusive.
+    - `nonzero`: Toggles whether to exclude records of zero datum shift in reports.
 
 - **Offset correction parameters**
-    - `number_of_intervals`: The number of intervals required for a discrepancy to persist for it to be identified as an offset. This is used to determine temporal and vertical offset corrections, and is unrelated to the filter by duration processes.
+    - `number_of_intervals`: The number of intervals required for a datum shift to persist for a temporal shift to be identified. This is used by the temporal correction algorithm. Although this is a kind of duration, it is unrelated to the filter by duration processes.
 
 ### Configuration values
 
-- `datetime`: Examples include: "Date Time", "myDateTimeColumn".
-- `water_level`: Examples include: "Water Level", "myWaterLevelColumn".
-- `threshold` (duration): Examples include:  "1 week", "2 days, 12 hours", "30 minutes".
-- `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0.
-- `type`: Must be either "min" or "max".
-- `use_abs`: Must be `true` or `false`.
-- `is_strict`: Must be `true` or `false`.
+- `datetime`: Examples include: "Date Time", "myDateTimeColumn"
+- `water_level`: Examples include: "Water Level", "myWaterLevelColumn"
+- `threshold` (duration): Examples include:  "1 week", "2 days, 12 hours", "30 minutes"
+- `threshold` (numeric): Must be numeric. Examples include: 0.05, 10.0
+- `type`: Must be either "min" or "max"
+- `use_abs`: Must be `true` or `false`
+- `is_strict`: Must be `true` or `false`
 
 ### Default values
 
 Default values are used if a parameter is not specified in `config.json`:
 
-- `primary_data_column_names`: `datetime` = "", `water_level` = "".
-- `reference_data_column_names`: `datetime` = "", `water_level` = "".
-- `filter_offsets_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`.
-- `filter_gaps_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`.
-- `filter_offsets_by_value`: `threshold` = 0.0, `type` = "min", `use_abs` = `true`, `is_strict` = `false`.
-- `offset_correction_parameters`: `number_of_intervals` = 0.
+- `primary_data_column_names`: `datetime` = "", `water_level` = ""
+- `reference_data_column_names`: `datetime` = "", `water_level` = ""
+- `filter_offsets_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`
+- `filter_gaps_by_duration`: `threshold` = "0 days", `type` = "min", `is_strict` = `false`
+- `filter_offsets_by_value`: `threshold` = 0.0, `type` = "min", `use_abs` = `true`, `is_strict` = `false`
+- `offset_correction_parameters`: `number_of_intervals` = 0
 
-<br>
-
-**Note**: For data column names that are left as default values, the program will assume the positions of the datetime and/or water level columns as the first and second column in the CSV files, respectively. Check the data files to verify the order of the columns, or to copy the names of the columns into `config.json`.
+**Note**: For data column names that are left as default values, the program will assume the positions of the datetime and/or water level columns as the first and second column, respectively, in the CSV files. Check the data files to verify the order of the columns, or copy the names of the columns into `config.json`.
 
 ### Example configuration
 ```elixir
