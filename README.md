@@ -281,7 +281,7 @@ The program can generate four different types of reports based on the data analy
    - CSV file with filename `[base_filename]_[year]_datum_shift_info.csv`. This CSV report file is generated for each desired year.
 
 - **Temporal shifts summary**
-   - Contains a table listing the unique temporal shifts and datum shifts found per year of data.
+   - Contains a table listing the unique temporal shifts and datum shifts found per year of data. Also indicates the increased NaN percentage in the primary data: this informs the user how much of the data was replaced with NaNs during temporal correction.
    - CSV file with filename `[base_filename]_temporal_shifts_summary.csv`.
 
 - **Annotated raw data**
