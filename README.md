@@ -383,6 +383,8 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
 - `is_strict`: Must be `true` or `false`
 - `nonzero`: Must be `true` or `false`
 - `use_abs`: Must be `true` or `false`
+- `number_of_intervals`: Must be a positive integer
+- `replace_with_nans`: Must be `true` or `false`
 
 ### Default values
 
