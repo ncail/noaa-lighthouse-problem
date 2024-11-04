@@ -372,7 +372,8 @@ def main(args):
     # Write summary file.
     metrics_config = {
         "filter_offsets_by_duration": config["filter_offsets_by_duration"],
-        "filter_offsets_by_value": config["filter_offsets_by_value"]
+        "filter_offsets_by_value": config["filter_offsets_by_value"],
+        "temporal_shift_correction": config["temporal_shift_correction"]
     }
     if metrics_summary_years:
         with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:

@@ -285,7 +285,7 @@ The program can generate four different types of reports based on the data analy
    - CSV file with filename `[base_filename]_temporal_shifts_summary.csv`.
 
 - **Annotated raw data**
-    - A complete table of the raw primary and reference series data, annotated with the corresponding datum shift and temporal shift for each data point.
+    - A complete table of the raw primary and reference series data, for all years of data, annotated with the corresponding datum shift and temporal shift for each data point.
     - CSV file with filename `[base_filename]_annotated_raw_data.csv`.
 
 ## Requirements
@@ -322,7 +322,7 @@ python analyze_data.py
 
 `config.json` is used to configure:
 - Paths to data and output directories
-- Mode of data analysis.
+- Mode of data analysis
 - Desired years of analysis and reports to be generated
 - Data-filtering metrics such as duration and value of datum shifts
 - Temporal correction parameters
@@ -338,12 +338,6 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
   - Paths
     - `refdir`: Path to reference (NOAA) data CSV files. 
     - `primarydir`: Path to primary (Lighthouse) data CSV files.
-  - Primary data column names
-      - `datetime`: Name of the datetime column in the primary data CSV files.
-      - `water_level`: Name of the water level column in the primary data CSV files.
-  - Reference data column names
-      - `datetime`: Name of the datetime column in the reference data CSV files.
-      - `water_level`: Name of the water level column in the reference data CSV files.
 
 - **Analysis**
   - `mode`: Selects the analysis type the program will run.
@@ -380,8 +374,6 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
 
 - `refdir`: Examples include: "data/NOAA/station14"
 - `primarydir`: Examples include: "data/Lighthouse/station14"
-- `datetime`: Examples include: "Date Time", "myDateTimeColumn"
-- `water_level`: Examples include: "Water Level", "myWaterLevelColumn"
 - `mode`: Must be "raw" or "corrected"
 - `years`: Examples include: "all_years", [2001, 2002, 2007, 2008]
   - *These values are also examples for the fields in `generate_reports_for_years`*
@@ -397,7 +389,6 @@ Place `config.json` (or your own copy, e.g. `myConfig.json`) in the root directo
 Default values are used if a parameter is not specified in `config.json`:
 
 - `data`: `paths`: `refdir`= "", `primarydir`= ""
-- `data`: `primary_data_column_names`,`reference_data_column_names`: `datetime` = "", `water_level` = ""
 - `analysis`: `mode`= "raw", `years`= ["all_years"]
 - `output`: `base_filename`= "", `path`= "generated_files"
 - `generate_reports_for_years`: `metrics_summary`= [], `metrics_detailed`= [], `temporal_shifts_summary`= [], `annotated_raw_data`= [] 
@@ -415,18 +406,8 @@ Default values are used if a parameter is not specified in `config.json`:
       "paths": {
          "refdir": "data/NOAA/rockport",
          "primarydir": "data/lighthouse/Rockport"
-      },
-
-      "primary_data_column_names": {
-         "datetime": "",
-         "water_level": ""
-      },
-   
-      "reference_data_column_names": {
-         "datetime": "",
-         "water_level": ""
       }
-  },
+   },
 
   "analysis": {
       "mode": "corrected",
@@ -439,7 +420,7 @@ Default values are used if a parameter is not specified in `config.json`:
 
       "generate_reports_for_years": {
          "metrics_summary": [],
-         "metrics_detailed": [1999, 2000],
+         "datum_shift_info": [1999, 2000],
          "temporal_shifts_summary": [],
          "annotated_raw_data": []
      }
@@ -478,7 +459,7 @@ Default values are used if a parameter is not specified in `config.json`:
 ### Data requirements
 
 - **Data format**: Since the purpose of the program is to analyze the discrepancies between time series water level datasets, the data processed by the program should contain water level measurements with the corresponding timestamps over some time period. The data files must be in CSV format which will provide the data in columns.
-- **Data columns**: The program will assume that the datetime and water level columns are the first and second columns in the data files, respectively. It will also assume that the first entry in the columns are the column names, and not data points.
+- **Data columns**: The program will assume that the datetime and water level columns are the first and second columns in the data files, respectively. It will also assume that the first row in the data files is the header row.
 
 ### Dependencies
 
