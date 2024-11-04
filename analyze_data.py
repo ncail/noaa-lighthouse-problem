@@ -360,7 +360,7 @@ def main(args):
         if year in metrics_detailed_years:
             # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
             # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
-            offsets_df.to_csv(f"{write_path}/{filename}_"
+            offsets_df.to_csv(f"{write_path}/{filename}_{year}_"
                               f"datum_shift_info.csv", index=False)
             # MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
 
@@ -375,27 +375,21 @@ def main(args):
                                         f"annotated_raw_data.csv", index=False)
 
     # Write summary file.
-
     if metrics_summary_years:
-        metrics_summary_years_df = pd.DataFrame(metrics_summary_years)
-        metrics_summary_years_df.to_csv(f"{write_path}/{filename}_"
-                                        f"metrics_summary.csv", index=False)
-
-    # if metrics_summary_years:
-    #     with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
-    #         file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
-    #         file.write(f"% agree: Percentage of values that agree between datasets.\n"
-    #                    f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
-    #                    f"% total disagree: Percentage of data that disagrees (including NaNs).\n"
-    #                    f"% missing: Percentage of the primary data that is missing (NaN).\n"
-    #                    f"# long offsets: The number of offsets that meet the duration threshold.\n"
-    #                    f"# long gaps: The number of gaps that meet the duration threshold.\n"
-    #                    f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
-    #                    f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
-    #                    f"minimum value: The minimum discrepancy value.\n"
-    #                    f"maximum value: The maximum discrepancy value.\n\n")
-    #     fp.write_table_from_nested_dict(summary, 'Year',
-    #                                     f'{write_path}/{filename}_metrics_summary.txt')
+        with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
+            # file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
+            file.write(f"% agree: Percentage of values that agree between datasets.\n"
+                       f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
+                       f"% total disagree: Percentage of data that disagrees (including NaNs).\n"
+                       f"% missing: Percentage of the primary data that is missing (NaN).\n"
+                       f"# long offsets: The number of offsets that meet the duration threshold.\n"
+                       f"# long gaps: The number of gaps that meet the duration threshold.\n"
+                       f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
+                       f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
+                       f"minimum value: The minimum discrepancy value.\n"
+                       f"maximum value: The maximum discrepancy value.\n\n")
+        fp.write_table_from_nested_dict(summary, 'Year',
+                                        f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:
