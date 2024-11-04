@@ -27,7 +27,7 @@
 
       "generate_reports_for_years": {
          "metrics_summary": [],
-         "metrics_detailed": [],
+         "datum_shift_info": [],
          "temporal_shifts_summary": [],
          "annotated_raw_data": []
      }

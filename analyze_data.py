@@ -210,8 +210,8 @@ def main(args):
     config_report_years = config['output']['generate_reports_for_years']
     metrics_summary_years = common_years if config_report_years['metrics_summary'] == ['all_years'] \
         else config_report_years['metrics_summary']
-    metrics_detailed_years = common_years if config_report_years['metrics_detailed'] == ['all_years'] \
-        else config_report_years['metrics_detailed']
+    datum_shift_info_years = common_years if config_report_years['metrics_detailed'] == ['all_years'] \
+        else config_report_years['datum_shift_info']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
@@ -357,7 +357,7 @@ def main(args):
             }
 
         # Write detailed metrics report.
-        if year in metrics_detailed_years:
+        if year in datum_shift_info_years:
             # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
             # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
             offsets_df.to_csv(f"{write_path}/{filename}_{year}_"
