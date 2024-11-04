@@ -500,6 +500,9 @@ class MetricsCalculator:
         if nonzero:
             filtered_df = filtered_df[filtered_df[self.col_config['offset_column']] != 0.0]
 
+        # Drop nan offsets.
+        filtered_df = filtered_df[filtered_df[self.col_config['offset_column']].notna()]
+
         return filtered_df
     # End filter_by_duration.
 
