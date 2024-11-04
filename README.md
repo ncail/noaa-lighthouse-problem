@@ -415,7 +415,7 @@ Default values are used if a parameter is not specified in `config.json`:
   },
 
    "output": {
-      "base_filename": "Rockport_1999_2000",
+      "base_filename": "Rockport",
       "path": "generated_files",
 
       "generate_reports_for_years": {
@@ -463,7 +463,7 @@ Default values are used if a parameter is not specified in `config.json`:
 
 ### Dependencies
 
-- **Libraries**: The program cleans and converts the data to `pandas` standards so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioning of columns outlined above (in the default case that the necessary column names have not been configured in `config.json`).
+- **Libraries**: The program cleans and converts the data to `pandas` standards so that this does not have to be done by the user beforehand. Additionally, the program relies heavily on the `pandas` library to process the data as dataframes, with the assumed positioning of columns outlined above.
 
 ## Downloading data
 
