@@ -3,18 +3,8 @@
       "paths": {
          "refdir": "",
          "primarydir": ""
-      },
-
-      "primary_data_column_names": {
-         "datetime": "",
-         "water_level": ""
-      },
-   
-      "reference_data_column_names": {
-         "datetime": "",
-         "water_level": ""
       }
-  },
+   },
 
   "analysis": {
       "mode": "raw",

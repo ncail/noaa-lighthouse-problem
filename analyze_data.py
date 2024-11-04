@@ -162,20 +162,7 @@ def main(args):
             ref_df_arr.append(df)
     # End for.
 
-    # Use config to get the necessary columns for assigning column names.
-    # primary_data_cols = config['data']['primary_data_column_names']
-    # ref_data_cols = config['data']['reference_data_column_names']
-
-    # Assign column names. If not configured, assume their positions in the dataframe,
-    # and that all dfs in the array have same column names.
-    # primary_dt_col_name = primary_df_arr[0].columns[0] if not primary_data_cols['datetime'] \
-    #     else primary_data_cols['datetime']
-    # primary_pwl_col_name = primary_df_arr[0].columns[1] if not primary_data_cols['water_level'] \
-    #     else primary_data_cols['water_level']
-    # dt_col_name = ref_df_arr[0].columns[0] if not ref_data_cols['datetime'] \
-    #     else ref_data_cols['datetime']
-    # ref_pwl_col_name = ref_df_arr[0].columns[1] if not ref_data_cols['water_level'] \
-    #     else ref_data_cols['water_level']
+    # Assume position of datetime and water level columns.
     primary_dt_col_pos = 0
     primary_pwl_col_pos = 1
     ref_dt_col_pos = 0
@@ -210,7 +197,7 @@ def main(args):
     config_report_years = config['output']['generate_reports_for_years']
     metrics_summary_years = common_years if config_report_years['metrics_summary'] == ['all_years'] \
         else config_report_years['metrics_summary']
-    datum_shift_info_years = common_years if config_report_years['metrics_detailed'] == ['all_years'] \
+    datum_shift_info_years = common_years if config_report_years['datum_shift_info'] == ['all_years'] \
         else config_report_years['datum_shift_info']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
@@ -348,18 +335,19 @@ def main(args):
                 "% values disagree": stats_df.loc['value disagreements', 'percent'],
                 "% total disagree": stats_df.loc['total disagreements', 'percent'],
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
-                "# long offsets": metrics['long_offsets_count'],
-                "# long gaps": metrics['long_gaps_count'],
-                "unique long offsets": list(offsets_df['offset'].unique()),
-                "# large discrepancies": metrics['large_offsets_count'],
-                "minimum value": metrics['min_max_offsets'][1],
-                "maximum value": metrics['min_max_offsets'][0]
+                "# DSs (FBD)": metrics['long_offsets_count'],
+                "# gaps (FBD)": metrics['long_gaps_count'],
+                "DSs list (FBD)": list(offsets_df['offset'].unique()),
+                "# DSs (FBV)": metrics['large_offsets_count'],
+                "min DS": metrics['min_max_offsets'][1],
+                "max DS": metrics['min_max_offsets'][0]
             }
 
         # Write detailed metrics report.
         if year in datum_shift_info_years:
             # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
             # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
+            offsets_df.rename(columns={"offset": "datum shift"}, inplace=True)
             offsets_df.to_csv(f"{write_path}/{filename}_{year}_"
                               f"datum_shift_info.csv", index=False)
             # MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
@@ -370,24 +358,35 @@ def main(args):
         # Get table of annotated series data.
         series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
 
+        reorder_columns = ['date_time', 'primary_water_level', 'reference_water_level', 'datum_shift', 'temporal_shift']
+        series_data_annotated_df = series_data_annotated_df[reorder_columns]
+        series_data_annotated_df = (series_data_annotated_df.rename(columns={
+                                    'date_time': 'Date Time', 'primary_water_level': 'Primary Water Level',
+                                    'reference_water_level': 'Reference Water Level', 'datum_shift': 'Datum Shift',
+                                    'temporal_shift': 'Temporal Shift'}))
+
         # Write time shift table to CSV.
         series_data_annotated_df.to_csv(f"{write_path}/{filename}_"
                                         f"annotated_raw_data.csv", index=False)
 
     # Write summary file.
+    metrics_config = {
+        "filter_offsets_by_duration": config["filter_offsets_by_duration"],
+        "filter_offsets_by_value": config["filter_offsets_by_value"]
+    }
     if metrics_summary_years:
         with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
-            # file.write(f"Configurations: {json.dumps(config, indent=4)}\n\n")
+            file.write(f"Configurations: {json.dumps(metrics_config, indent=4)}\n\n")
             file.write(f"% agree: Percentage of values that agree between datasets.\n"
-                       f"% values disagree: Percentage of values that disagree (excluding NaNs).\n"
-                       f"% total disagree: Percentage of data that disagrees (including NaNs).\n"
+                       f"% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.\n"
+                       f"% total disagree: Percentage of data that disagrees (including NaNs) between datasets.\n"
                        f"% missing: Percentage of the primary data that is missing (NaN).\n"
-                       f"# long offsets: The number of offsets that meet the duration threshold.\n"
-                       f"# long gaps: The number of gaps that meet the duration threshold.\n"
-                       f"unique long offsets: List of unique offset values that meet the duration threshold.\n"
-                       f"# large discrepancies: The number of discrepancies that meet the value threshold.\n"
-                       f"minimum value: The minimum discrepancy value.\n"
-                       f"maximum value: The maximum discrepancy value.\n\n")
+                       f"# DSs (FBD): Number of datum shifts, filtered by duration.\n"
+                       f"# gaps (FBD): Number of gaps, filtered by duration.\n"
+                       f"DSs list (FBD): List of unique datum shift values, filtered by duration.\n"
+                       f"# DSs (FBV): Number of datum shifts, filtered by value.\n"
+                       f"min DS: Minimum datum shift value.\n"
+                       f"max DS: Maximum datum shift value.\n\n")
         fp.write_table_from_nested_dict(summary, 'Year',
                                         f'{write_path}/{filename}_metrics_summary.txt')
 

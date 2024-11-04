@@ -1,0 +1,15 @@
+% agree: Percentage of values that agree between datasets.
+% values disagree: Percentage of values that disagree (excluding NaNs).
+% total disagree: Percentage of data that disagrees (including NaNs).
+% missing: Percentage of the primary data that is missing (NaN).
+# long offsets: The number of offsets that meet the duration threshold.
+# long gaps: The number of gaps that meet the duration threshold.
+unique long offsets: List of unique offset values that meet the duration threshold.
+# large discrepancies: The number of discrepancies that meet the value threshold.
+minimum value: The minimum discrepancy value.
+maximum value: The maximum discrepancy value.
+
+Year | # large discrepancies | # long gaps | # long offsets | % agree | % missing | % total disagree | % values disagree | maximum value | minimum value | unique long offsets                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2015 | 531                   | 0           | 22             | 82.6473 | 0.7078    | 17.3527          | 16.645            | 0.052         | -0.038        | [0.003, 0.004]                     
+2023 | 2324                  | 0           | 12             | 50.8653 | 2.3938    | 49.1347          | 46.7409           | 4.34          | -7.684        | [0.01, 0.002, -0.008, 0.021, 0.001]

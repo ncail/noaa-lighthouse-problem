@@ -276,9 +276,9 @@ The program can generate four different types of reports based on the data analy
    - Contains a table of metrics and statistics per year of the data, and lists the configuration options used.
    - Text file with file name `[base_filename]_metrics_summary.txt`.
 
-- **Metrics detailed**
-   - Contains (for each year) statistics on the primary and reference data similarity, details about the metrics such as the start/end dates of the minimum/maximum offsets, and a list of the start dates/end dates/durations for datum shifts meeting the configured duration threshold.
-   - Text file with filename `[base_filename]_metrics_detailed.txt`.
+- **Datum shift info**
+   - Lists the start date/end date/duration and value of datum shifts filtered by duration (meeting the duration threshold) configured in the `filter_by_duration` section of `config.json`.
+   - CSV file with filename `[base_filename]_[year]_datum_shift_info.csv`. This CSV report file is generated for each desired year.
 
 - **Temporal shifts summary**
    - Contains a table listing the unique temporal shifts and datum shifts found per year of data.
