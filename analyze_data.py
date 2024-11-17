@@ -211,7 +211,8 @@ def main(args):
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
     all_processed_years_df = pd.DataFrame(columns=['Year', 'Temporal shifts', 'Datum shifts', 'Time-shifted data %',
-                                                   'Initial NaN %', 'Final NaN %', 'Increased NaN %'])
+                                                   'Positive error %', 'Initial NaN %', 'Final NaN %',
+                                                   'Increased NaN %'])
 
     # Initialize series data dictionary. This will be concat-ed for every year in for loop.
     getXformDataDict = TransformData()
@@ -279,6 +280,24 @@ def main(args):
         final_nan_percentage = round((len(
             corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
 
+        # Get the annotated raw series data for current year, concat each year in common years, the corresponding time
+        # and datum shifts per data point are also listed.
+        series_data_annotated_current_year = corrector.get_time_shift_table()
+        if year in annotated_raw_data_years:
+            # Concats the current year dict and all-years dict by extending the values for each dict key.
+            series_data_concat_dict = \
+                {key: series_data_concat_dict[key] + series_data_annotated_current_year[key] for key in
+                 series_data_concat_dict}
+
+        # Get time-shifted percentage and error.
+        # Gets the time shifted cells that are not N/A or 0.
+        series_data_df = pd.DataFrame(series_data_annotated_current_year)
+        num_time_shifted = (~series_data_df['temporal_shift'].isin(['N/A', 0])).sum()
+        percent_time_shifted = num_time_shifted / len(series_data_df) * 100
+
+        error = (series_data_annotated_current_year['temporal_shift'] == 'N/A').sum()
+        error_percent = error / len(series_data_df) * 100
+
         # Add to all-years summary dataframe.
         if year in temp_corr_summary_years:
             shifts_summary_df = corrector.get_shifts_summary_df()[0]
@@ -286,22 +305,14 @@ def main(args):
                 'Year': [year],
                 'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
                 'Datum shifts': [shifts_summary_df['vertical_offset'].unique().tolist()],
-                'Time-shifted data %': stuff,
+                'Time-shifted data %': [round(percent_time_shifted, 2)],
+                'Positive error %': [round(error_percent, 2)],
                 'Initial NaN %': [initial_nan_percentage],
                 'Final NaN %': [final_nan_percentage],
                 'Increased NaN %': [final_nan_percentage - initial_nan_percentage]
             })
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
                                                ignore_index=True)
-
-        # Contains all the raw series data, concats each year in common years,
-        # with the time and datum shifts listed.
-        if year in annotated_raw_data_years:
-            series_data_annotated_current_year = corrector.get_time_shift_table()
-            #
-            series_data_concat_dict = \
-                {key: series_data_concat_dict[key] +
-                    series_data_annotated_current_year[key] for key in series_data_concat_dict}
 
         # If doing analysis on corrected data, update merged_df with corrected_df.
         if do_correction:
