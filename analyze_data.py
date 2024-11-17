@@ -337,10 +337,10 @@ def main(args):
         calculator.set_metrics(metrics)
 
         # Get table of offsets filtered by duration.
-        offsets_fbd_df = calculator.generate_duration_filtered_offsets_info()
+        offsets_duration_filtered_df = calculator.generate_duration_filtered_offsets_info()
 
         # Get table of offsets filtered by value.
-        offsets_fbv_df = calculator.generate_value_filtered_offsets_info()
+        offsets_value_filtered_df = calculator.generate_value_filtered_offsets_info()
 
         # Append year info to metrics summary.
         if year in metrics_summary_years:
@@ -349,9 +349,10 @@ def main(args):
                 "% values disagree": stats_df.loc['value disagreements', 'percent'],
                 "% total disagree": stats_df.loc['total disagreements', 'percent'],
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
+                "% time-shifted": f'{round(percent_time_shifted, 2)} (+{round(error_percent, 2)})',
                 "# DSs (FBD)": metrics['long_offsets_count'],
                 "# gaps (FBD)": metrics['long_gaps_count'],
-                "DSs list (FBD)": list(offsets_fbd_df['offset'].unique()),
+                "DSs list (FBD)": list(offsets_duration_filtered_df['offset'].unique()),
                 "# DSs (FBV)": metrics['large_offsets_count'],
                 "min DS": metrics['min_max_offsets'][1],
                 "max DS": metrics['min_max_offsets'][0]
@@ -359,15 +360,15 @@ def main(args):
 
         # Write datum shifts info (FBD) report.
         if year in datum_shift_info_duration_filtered_years:
-            offsets_fbd_df.rename(columns={"offset": "datum shift"}, inplace=True)
-            offsets_fbd_df.to_csv(f"{write_path}/{filename}_{year}_"
-                              f"datum_shift_info_fbd.csv", index=False)
+            offsets_duration_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_duration_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
+                                                f"datum_shift_info_fbd.csv", index=False)
 
         # Write datum shifts info (FBV) report.
         if year in datum_shift_info_value_filtered_years:
-            offsets_fbv_df.rename(columns={"offset": "datum shift"}, inplace=True)
-            offsets_fbv_df.to_csv(f"{write_path}/{filename}_{year}_"
-                                  f"datum_shift_info_fbv.csv", index=False)
+            offsets_value_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
+                                             f"datum_shift_info_fbv.csv", index=False)
 
     # ********************************** End processing loop **********************************
 
