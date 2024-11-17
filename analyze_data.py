@@ -347,8 +347,8 @@ def main(args):
             summary[year] = {
                 "% agree": stats_df.loc['total agreements', 'percent'],
                 "% values disagree": stats_df.loc['value disagreements', 'percent'],
-                "% total disagree": stats_df.loc['total disagreements', 'percent'],
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
+                "% total disagree": stats_df.loc['total disagreements', 'percent'],
                 "% time-shifted": f'{round(percent_time_shifted, 2)} (+{round(error_percent, 2)})',
                 "# DSs (FBD)": metrics['long_offsets_count'],
                 "# gaps (FBD)": metrics['long_gaps_count'],
@@ -409,8 +409,9 @@ def main(args):
             file.write(f"Configurations: {json.dumps(metrics_config, indent=4)}\n\n")
             file.write(f"% agree: Percentage of values that agree between datasets.\n"
                        f"% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.\n"
-                       f"% total disagree: Percentage of data that disagrees (including NaNs) between datasets.\n"
                        f"% missing: Percentage of the primary data that is missing (NaN).\n"
+                       f"% total disagree: Percentage of data that disagrees (including NaNs) between datasets.\n"
+                       f"% time-shifted: Percentage of data (with positive error) that is time-shifted.\n"
                        f"# DSs (FBD): Number of datum shifts, filtered by duration.\n"
                        f"# gaps (FBD): Number of gaps, filtered by duration.\n"
                        f"DSs list (FBD): List of unique datum shift values, filtered by duration.\n"
