@@ -268,8 +268,7 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        initial_nan_percentage = round((len(
-            merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+        initial_nan_percentage = (len(merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100
 
         corrected_df = merged_df.copy()
         corrected_df = corrector.temporal_shift_corrector(corrected_df,
@@ -277,8 +276,7 @@ def main(args):
                                                           reference_data_column_name=ref_pwl_col_name,
                                                           datetime_column_name=ref_dt_col_name)
 
-        final_nan_percentage = round((len(
-            corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100, 4)
+        final_nan_percentage = (len(corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100
 
         # Get the annotated raw series data for current year, concat each year in common years, the corresponding time
         # and datum shifts per data point are also listed.
@@ -305,11 +303,11 @@ def main(args):
                 'Year': [year],
                 'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
                 'Datum shifts': [shifts_summary_df['vertical_offset'].unique().tolist()],
-                'Time-shifted data %': [round(percent_time_shifted, 2)],
-                'Positive error %': [round(error_percent, 2)],
-                'Initial NaN %': [initial_nan_percentage],
-                'Final NaN %': [final_nan_percentage],
-                'Increased NaN %': [final_nan_percentage - initial_nan_percentage]
+                'Time-shifted data %': [round(percent_time_shifted, 4)],
+                'Positive error %': [round(error_percent, 4)],
+                'Initial NaN %': [round(initial_nan_percentage, 4)],
+                'Final NaN %': [round(final_nan_percentage, 4)],
+                'Increased NaN %': [round(final_nan_percentage - initial_nan_percentage, 4)]
             })
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
                                                ignore_index=True)
