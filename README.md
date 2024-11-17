@@ -27,7 +27,7 @@
 
 ## Introduction
 
-**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from these. Discrepancies include datum shifts and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs so we can ensure the quality of data from Lighthouse stations *not* shared by NOAA.
+**noaa-lighthouse-problem** is a project aimed at assessing the discrepancies between time series water level data from tide gauge stations shared by NOAA and Lighthouse. In coastal Texas, some stations provide data to both organizations, but we have found significant discrepancies in the data available for download from these. Discrepancies include datum shifts and temporal offsets, missing values, flatlines, and spikes. Since NOAA sets the standard for data quality, it is crucial to understand why Lighthouse data differs so we can ensure data quality of Lighthouse stations *not* shared by NOAA.
 
 The main program, `analyze_data.py`, uses class implementation from `MetricsCalculator.py` and `TransformData.py` to run a yearly comparison analysis on the water level data between NOAA and Lighthouse.
 
