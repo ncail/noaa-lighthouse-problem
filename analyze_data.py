@@ -324,14 +324,11 @@ def main(args):
         # Set metrics.
         calculator.set_metrics(metrics)
 
-        # Format metrics.
-        metrics_list = calculator.format_metrics()
-
         # Get table of offsets filtered by duration.
-        offsets_fbd_df = calculator.generate_long_offsets_info()
+        offsets_fbd_df = calculator.generate_duration_filtered_offsets_info()
 
         # Get table of offsets filtered by value.
-        offsets_fbv_df = calculator.generate_fbv_offsets_info()
+        offsets_fbv_df = calculator.generate_value_filtered_offsets_info()
 
         # Append year info to metrics summary.
         if year in metrics_summary_years:
