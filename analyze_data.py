@@ -199,9 +199,9 @@ def main(args):
         else config_report_years['metrics_summary']
     datum_shift_info_duration_filtered_years = common_years if (
             config_report_years['datum_shift_info_duration_filtered'] == ['all_years']) \
-        else config_report_years['datum_shift_info']
+        else config_report_years['datum_shift_info_duration_filtered']
     datum_shift_info_value_filtered_years = common_years if config_report_years['datum_shift_info_value_filtered'] == [
-        'all_years'] else config_report_years['datum_shift_info']
+        'all_years'] else config_report_years['datum_shift_info_value_filtered']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
@@ -290,12 +290,12 @@ def main(args):
                  series_data_concat_dict}
 
         # Get time-shifted percentage and error.
-        # Gets the time shifted cells that are not N/A or 0.
         series_data_df = pd.DataFrame(series_data_annotated_current_year)
+        # Gets the time shifted cells that are not N/A or 0.
         num_time_shifted = (~series_data_df['temporal_shift'].isin(['N/A', 0])).sum()
         percent_time_shifted = num_time_shifted / len(series_data_df) * 100
 
-        error = (series_data_annotated_current_year['temporal_shift'] == 'N/A').sum()
+        error = (series_data_df['temporal_shift'] == 'N/A').sum()
         error_percent = error / len(series_data_df) * 100
 
         # Add to all-years summary dataframe.
@@ -350,10 +350,10 @@ def main(args):
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
                 "% total disagree": stats_df.loc['total disagreements', 'percent'],
                 "% time-shifted": f'{round(percent_time_shifted, 2)} (+{round(error_percent, 2)})',
-                "# DSs (FBD)": metrics['long_offsets_count'],
-                "# gaps (FBD)": metrics['long_gaps_count'],
+                "# DSs (FBD)": metrics['duration_filtered_offsets_count'],
+                "# gaps (FBD)": metrics['duration_filtered_gaps_count'],
                 "DSs list (FBD)": list(offsets_duration_filtered_df['offset'].unique()),
-                "# DSs (FBV)": metrics['large_offsets_count'],
+                "# DSs (FBV)": metrics['value_filtered_offsets_count'],
                 "min DS": metrics['min_max_offsets'][1],
                 "max DS": metrics['min_max_offsets'][0]
             }
@@ -362,26 +362,19 @@ def main(args):
         if year in datum_shift_info_duration_filtered_years:
             offsets_duration_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
             offsets_duration_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
-                                                f"datum_shift_info_fbd.csv", index=False)
+                                                f"datum_shift_info_duration_filtered.csv", index=False)
 
         # Write datum shifts info (FBV) report.
         if year in datum_shift_info_value_filtered_years:
             offsets_value_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
             offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
-                                             f"datum_shift_info_fbv.csv", index=False)
+                                             f"datum_shift_info_value_filtered.csv", index=False)
 
     # ********************************** End processing loop **********************************
 
-    # Write datum shift info report configs to text file.
-    if datum_shift_info_duration_filtered_years or datum_shift_info_value_filtered_years:
-        filter_offsets_config = {
-            "datum_shift_info_duration_filtered_years": datum_shift_info_duration_filtered_years,
-            "datum_shift_info_value_filtered_years": datum_shift_info_value_filtered_years,
-            "filter_offsets_by_duration": config["filter_offsets_by_duration"],
-            "filter_offsets_by_value": config["filter_offsets_by_value"]
-        }
-        with open(f'{write_path}/{filename}_datum_shift_info_configs.txt', 'a') as file:
-            file.write(f"Configurations: {json.dumps(filter_offsets_config, indent=4)}")
+    # Write configs to file.
+        with open(f'{write_path}/{filename}_configs.txt', 'w') as file:
+            file.write(f"Configurations: {json.dumps(config, indent=4)}")
 
     if annotated_raw_data_years:
         # Get table of annotated series data.
@@ -395,13 +388,14 @@ def main(args):
                                     'temporal_shift': 'Temporal Shift'}))
 
         # Write time shift table to CSV.
-        series_data_annotated_df.to_csv(f"{write_path}/{filename}_"
-                                        f"annotated_raw_data.csv", index=False)
+        series_data_annotated_df.to_csv(f"{write_path}/{filename}_annotated_raw_data.csv", index=False)
 
     # Write summary file.
     metrics_config = {
+        "analysis_mode": config['analysis']['mode'],
         "filter_offsets_by_duration": config["filter_offsets_by_duration"],
         "filter_offsets_by_value": config["filter_offsets_by_value"],
+        "filter_gaps_by_duration": config['filter_gaps_by_duration'],
         "temporal_shift_correction": config["temporal_shift_correction"]
     }
     if metrics_summary_years:
@@ -412,10 +406,10 @@ def main(args):
                        f"% missing: Percentage of the primary data that is missing (NaN).\n"
                        f"% total disagree: Percentage of data that disagrees (including NaNs) between datasets.\n"
                        f"% time-shifted: Percentage of data (with positive error) that is time-shifted.\n"
-                       f"# DSs (FBD): Number of datum shifts, filtered by duration.\n"
-                       f"# gaps (FBD): Number of gaps, filtered by duration.\n"
-                       f"DSs list (FBD): List of unique datum shift values, filtered by duration.\n"
-                       f"# DSs (FBV): Number of datum shifts, filtered by value.\n"
+                       f"# DSs (FBD): Number of datum shifts (filtered by duration).\n"
+                       f"# gaps (FBD): Number of gaps (filtered by duration).\n"
+                       f"DSs list (FBD): List of unique datum shift values (filtered by duration).\n"
+                       f"# DSs (FBV): Number of datum shifts (filtered by value).\n"
                        f"min DS: Minimum datum shift value.\n"
                        f"max DS: Maximum datum shift value.\n\n")
         fp.write_table_from_nested_dict(summary, 'Year',
@@ -423,8 +417,7 @@ def main(args):
 
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:
-        all_processed_years_df.to_csv(f"{write_path}/{filename}_"
-                                      f"temporal_shifts_summary.csv", index=False)
+        all_processed_years_df.to_csv(f"{write_path}/{filename}_temporal_shifts_summary.csv", index=False)
 # End main.
 
 

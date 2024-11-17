@@ -1,0 +1,41 @@
+Configurations: {
+    "filter_offsets_by_duration": {
+        "threshold": "1 hour",
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_offsets_by_value": {
+        "threshold": 0.02,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_gaps_by_duration": {
+        "threshold": "1 days",
+        "type": "min",
+        "is_strict": false
+    },
+    "temporal_shift_correction": {
+        "number_of_intervals": 10,
+        "replace_with_nans": true
+    }
+}
+
+% agree: Percentage of values that agree between datasets.
+% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.
+% missing: Percentage of the primary data that is missing (NaN).
+% total disagree: Percentage of data that disagrees (including NaNs) between datasets.
+% time-shifted: Percentage of data (with positive error) that is time-shifted.
+# DSs (FBD): Number of datum shifts (filtered by duration).
+# gaps (FBD): Number of gaps (filtered by duration).
+DSs list (FBD): List of unique datum shift values (filtered by duration).
+# DSs (FBV): Number of datum shifts (filtered by value).
+min DS: Minimum datum shift value.
+max DS: Maximum datum shift value.
+
+Year | % agree | % values disagree | % missing | % total disagree | % time-shifted | # DSs (FBD) | # gaps (FBD) | DSs list (FBD) | # DSs (FBV) | min DS | max DS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+2007 | 97.0765 | 0.0               | 2.9235    | 2.9235           | 21.51 (+2.01)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2008 | 99.1735 | 0.0               | 0.8265    | 0.8265           | 97.72 (+0.59)  | 0           | 0            | []             | 0           | 0.0    | 0.0   

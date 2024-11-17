@@ -17,8 +17,8 @@
 
       "generate_reports_for_years": {
          "metrics_summary": [],
-         "datum_shift_info_fbd": [],
-         "datum_shift_info_fbv": [],
+         "datum_shift_info_duration_filtered": [],
+         "datum_shift_info_value_filtered": [],
          "temporal_shifts_summary": [],
          "annotated_raw_data": []
      }
@@ -27,7 +27,7 @@
    "logging": {
       "enabled": true,
       "level": "INFO",
-      "file": "app.log" 
+      "file": "app.log"
    },
 
   "filter_offsets_by_duration": {
@@ -56,11 +56,3 @@
       "replace_with_nans": true
   }
 }
-
-
-
-
-
-
-
-
