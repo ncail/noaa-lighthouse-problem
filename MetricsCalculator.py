@@ -429,6 +429,11 @@ class MetricsCalculator:
         return long_offsets_df
     # End generate_long_offsets_info.
 
+    def generate_fbv_offsets_info(self, df=None, duration_column_name=None):
+        fbv_offsets_df = self.filter_offsets_by_value(df, duration_column_name)
+
+        return fbv_offsets_df
+
     def filter_offsets_by_duration(self, df: pd.DataFrame = None, duration_column_name: str = None,
                                    **kwargs) -> pd.DataFrame:
         df, duration_column_name = self._get_valid_dataframe(df, duration_column_name, 'duration_column')

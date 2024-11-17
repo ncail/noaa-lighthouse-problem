@@ -197,7 +197,9 @@ def main(args):
     config_report_years = config['output']['generate_reports_for_years']
     metrics_summary_years = common_years if config_report_years['metrics_summary'] == ['all_years'] \
         else config_report_years['metrics_summary']
-    datum_shift_info_years = common_years if config_report_years['datum_shift_info'] == ['all_years'] \
+    datum_shift_info_fbd_years = common_years if config_report_years['datum_shift_info_fbd'] == ['all_years'] \
+        else config_report_years['datum_shift_info']
+    datum_shift_info_fbv_years = common_years if config_report_years['datum_shift_info_fbv'] == ['all_years'] \
         else config_report_years['datum_shift_info']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
@@ -207,9 +209,8 @@ def main(args):
     # Process the dataframes of common years to get statistics.
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
-    all_processed_years_df = pd.DataFrame(columns=['year', 'temporal_offsets', 'vertical_offsets',
-                                                   'initial_nan_percent', 'final_nan_percent',
-                                                   'increased_nan_percent'])
+    all_processed_years_df = pd.DataFrame(columns=['Year', 'Temporal shifts', 'Datum shifts', 'Time-shifted data %',
+                                                   'Initial NaN %', 'Final NaN %', 'Increased NaN %'])
 
     # Initialize series data dictionary. This will be concat-ed for every year in for loop.
     getXformDataDict = TransformData()
@@ -281,12 +282,13 @@ def main(args):
         if year in temp_corr_summary_years:
             shifts_summary_df = corrector.get_shifts_summary_df()[0]
             processed_year_row = pd.DataFrame({
-                'year': [year],
-                'temporal_offsets': [shifts_summary_df['temporal_shift'].unique().tolist()],
-                'vertical_offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
-                'initial_nan_percent': [initial_nan_percentage],
-                'final_nan_percent': [final_nan_percentage],
-                'increased_nan_percent': [final_nan_percentage - initial_nan_percentage]
+                'Year': [year],
+                'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
+                'Datum shifts': [shifts_summary_df['vertical_offset'].unique().tolist()],
+                'Time-shifted data %': stuff,
+                'Initial NaN %': [initial_nan_percentage],
+                'Final NaN %': [final_nan_percentage],
+                'Increased NaN %': [final_nan_percentage - initial_nan_percentage]
             })
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
                                                ignore_index=True)
@@ -325,8 +327,11 @@ def main(args):
         # Format metrics.
         metrics_list = calculator.format_metrics()
 
-        # Get table of long offsets.
-        offsets_df = calculator.generate_long_offsets_info()
+        # Get table of offsets filtered by duration.
+        offsets_fbd_df = calculator.generate_long_offsets_info()
+
+        # Get table of offsets filtered by value.
+        offsets_fbv_df = calculator.generate_fbv_offsets_info()
 
         # Append year info to metrics summary.
         if year in metrics_summary_years:
@@ -337,22 +342,36 @@ def main(args):
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
                 "# DSs (FBD)": metrics['long_offsets_count'],
                 "# gaps (FBD)": metrics['long_gaps_count'],
-                "DSs list (FBD)": list(offsets_df['offset'].unique()),
+                "DSs list (FBD)": list(offsets_fbd_df['offset'].unique()),
                 "# DSs (FBV)": metrics['large_offsets_count'],
                 "min DS": metrics['min_max_offsets'][1],
                 "max DS": metrics['min_max_offsets'][0]
             }
 
-        # Write detailed metrics report.
-        if year in datum_shift_info_years:
-            # MetricsCalculator.write_stats(stats_df, write_path, f"{filename}_metrics_detailed", year)
-            # MetricsCalculator.write_metrics_to_file(metrics_list, write_path, f"{filename}_metrics_detailed")
-            offsets_df.rename(columns={"offset": "datum shift"}, inplace=True)
-            offsets_df.to_csv(f"{write_path}/{filename}_{year}_"
-                              f"datum_shift_info.csv", index=False)
-            # MetricsCalculator.write_offsets_to_file(offsets_dict, write_path, f"{filename}_metrics_detailed")
+        # Write datum shifts info (FBD) report.
+        if year in datum_shift_info_fbd_years:
+            offsets_fbd_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_fbd_df.to_csv(f"{write_path}/{filename}_{year}_"
+                              f"datum_shift_info_fbd.csv", index=False)
+
+        # Write datum shifts info (FBV) report.
+        if year in datum_shift_info_fbv_years:
+            offsets_fbv_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_fbv_df.to_csv(f"{write_path}/{filename}_{year}_"
+                                  f"datum_shift_info_fbv.csv", index=False)
 
     # ********************************** End processing loop **********************************
+
+    # Write datum shift info report configs to text file.
+    if datum_shift_info_fbd_years or datum_shift_info_fbv_years:
+        filter_offsets_config = {
+            "datum_shift_info_fbd_years": config['generate_reports_for_years']['datum_shift_info_fbd'],
+            "datum_shift_info_fbv_years": config['generate_reports_for_years']['datum_shift_info_fbv'],
+            "filter_offsets_by_duration": config["filter_offsets_by_duration"],
+            "filter_offsets_by_value": config["filter_offsets_by_value"]
+        }
+        with open(f'{write_path}/{filename}_datum_shift_info_configs.txt', 'a') as file:
+            file.write(f"Configurations: {json.dumps(filter_offsets_config, indent=4)}")
 
     if annotated_raw_data_years:
         # Get table of annotated series data.
