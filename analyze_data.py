@@ -197,10 +197,11 @@ def main(args):
     config_report_years = config['output']['generate_reports_for_years']
     metrics_summary_years = common_years if config_report_years['metrics_summary'] == ['all_years'] \
         else config_report_years['metrics_summary']
-    datum_shift_info_fbd_years = common_years if config_report_years['datum_shift_info_fbd'] == ['all_years'] \
+    datum_shift_info_duration_filtered_years = common_years if (
+            config_report_years['datum_shift_info_duration_filtered'] == ['all_years']) \
         else config_report_years['datum_shift_info']
-    datum_shift_info_fbv_years = common_years if config_report_years['datum_shift_info_fbv'] == ['all_years'] \
-        else config_report_years['datum_shift_info']
+    datum_shift_info_value_filtered_years = common_years if config_report_years['datum_shift_info_value_filtered'] == [
+        'all_years'] else config_report_years['datum_shift_info']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
@@ -346,13 +347,13 @@ def main(args):
             }
 
         # Write datum shifts info (FBD) report.
-        if year in datum_shift_info_fbd_years:
+        if year in datum_shift_info_duration_filtered_years:
             offsets_fbd_df.rename(columns={"offset": "datum shift"}, inplace=True)
             offsets_fbd_df.to_csv(f"{write_path}/{filename}_{year}_"
                               f"datum_shift_info_fbd.csv", index=False)
 
         # Write datum shifts info (FBV) report.
-        if year in datum_shift_info_fbv_years:
+        if year in datum_shift_info_value_filtered_years:
             offsets_fbv_df.rename(columns={"offset": "datum shift"}, inplace=True)
             offsets_fbv_df.to_csv(f"{write_path}/{filename}_{year}_"
                                   f"datum_shift_info_fbv.csv", index=False)
@@ -360,10 +361,10 @@ def main(args):
     # ********************************** End processing loop **********************************
 
     # Write datum shift info report configs to text file.
-    if datum_shift_info_fbd_years or datum_shift_info_fbv_years:
+    if datum_shift_info_duration_filtered_years or datum_shift_info_value_filtered_years:
         filter_offsets_config = {
-            "datum_shift_info_fbd_years": config['generate_reports_for_years']['datum_shift_info_fbd'],
-            "datum_shift_info_fbv_years": config['generate_reports_for_years']['datum_shift_info_fbv'],
+            "datum_shift_info_duration_filtered_years": datum_shift_info_duration_filtered_years,
+            "datum_shift_info_value_filtered_years": datum_shift_info_value_filtered_years,
             "filter_offsets_by_duration": config["filter_offsets_by_duration"],
             "filter_offsets_by_value": config["filter_offsets_by_value"]
         }
