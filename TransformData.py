@@ -431,6 +431,7 @@ class TransformData:
             'temporal_shift': [try_shift],
             'vertical_offset': [vert_offset]
         })
+        self.shifts_summary_df[0] = self.shifts_summary_df[0].dropna(axis=1, how='all')
         self.shifts_summary_df[0] = pd.concat([self.shifts_summary_df[0], summary_row], ignore_index=True)
 
         # return self.shifts_summary_df.copy()

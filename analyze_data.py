@@ -6,12 +6,14 @@ from MetricsCalculator import MetricsCalculator
 from TransformData import TransformData
 
 # Imports continued...
+import os
 import sys
 import glob
 import pandas as pd
 import json
 import logging
 import datetime
+import time
 
 
 def custom_logger(user_level, file):
@@ -48,17 +50,26 @@ def custom_logger(user_level, file):
     return logger
 
 
-# ***************************************************************************
-# *************************** PROGRAM START *********************************
-# ***************************************************************************
+''' ***********************************************************************************************************
+    ********************************************** PROGRAM START **********************************************
+    *********************************************************************************************************** '''
 def main(args):
+    program_start_time = time.perf_counter()
 
     # Store loaded configs.
     config = helpers.load_configs(args.config)
 
-    # Get all program configurations. Some configurations can be overridden by command line
-    # arguments.
+    # Configure logger.
+    logging_enabled = args.logging and config['logging']['enabled']
+    logging_level = config['logging']['level']
+    logging_file = config['logging']['file']
+    logger = custom_logger(logging_level, logging_file)
+    if not logging_enabled:
+        logging.disable(logging.CRITICAL)  # Disables all logging.
 
+    logger.info(f"Program started with logging level: {logging_level}")
+
+    # Get program configurations: allow config to be overridden by cmdl args.
     # Get data paths.
     config_refdir = config['data']['paths']['refdir']
     config_primarydir = config['data']['paths']['primarydir']
@@ -70,15 +81,8 @@ def main(args):
     filename = helpers.get_filename(args, config_filename)
     config_path = config['output']['path']
     write_path = helpers.get_output_path(args, config_path)
-
-    # Configure logger.
-    logging_enabled = args.logging and config['logging']['enabled']
-    if logging_enabled:  # Get custom logger -- writes to both console and file.
-        logging_level = config['logging']['level']
-        logging_file = config['logging']['file']
-        logger = custom_logger(logging_level, logging_file)
-    else:
-        logging.disable(logging.CRITICAL)  # Disables all logging.
+    if not os.path.exists(write_path):
+        os.makedirs(write_path)
 
     # Get mode of analysis.
     analysis = args.mode if args.mode else config['analysis']['mode']
@@ -93,14 +97,13 @@ def main(args):
               "or paths do not exist. Exiting program.")
         sys.exit()
 
+    logger.info("Program configured")
+
     # Get all csv files from primary path.
     primary_csv_files = glob.glob(f"{primary_path}/*.csv")
 
     # Get all csv files from ref path.
     ref_csv_files = glob.glob(f"{ref_path}/*.csv")
-
-    # Initialize a flag pointer to check if read_file() is successful.
-    flag_ptr = [False]
 
     # Read primary files into dataframes.
     primary_df_arr = []
@@ -117,6 +120,8 @@ def main(args):
         df = pd.read_csv(ref_file, parse_dates=[column_names[0]])
         ref_df_arr.append(df)
     # End for.
+
+    logger.info("Data files read into dataframes")
 
     # Assume position of datetime columns.
     primary_dt_col_pos = 0
@@ -162,9 +167,14 @@ def main(args):
     getXformDataDict = TransformData()
     series_data_concat_dict = getXformDataDict.get_time_shift_table()
 
-    # ********************************** Start processing loop **********************************
-
+    ''' ***********************************************************************************************************
+        ********************************************* PROCESSING LOOP *********************************************
+        *********************************************************************************************************** '''
+    logger.info("Processing loop start")
+    processing_loop_start_time = time.perf_counter()
     for year in common_years:
+        logger.info(f"Processing year {common_years.index(year) + 1}/{len(common_years)}")
+        process_year_start_time = time.perf_counter()
 
         # Instantiate an objects to get metrics and process offsets. Set configs.
         calculator = MetricsCalculator(user_config=config)
@@ -192,7 +202,7 @@ def main(args):
         datetimes_list = pd.date_range(
             start=datetime.datetime(year=year, month=1, day=1),
             end=datetime.datetime(year=year, month=12, day=31, hour=23, minute=54),
-            freq='6T'  # Frequency of 6 minutes
+            freq=datetime.timedelta(minutes=6)  # Frequency of 6 minutes
         ).tolist()
         datetimes_col = pd.DataFrame({'datetime': datetimes_list})
 
@@ -227,11 +237,19 @@ def main(args):
 
         initial_nan_percentage = (len(merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100
 
+        correction_start_time = time.perf_counter()
+        logger.info(f"Temporal correction for year ({common_years.index(year) + 1}) start")
+
         corrected_df = merged_df.copy()
         corrected_df = corrector.temporal_shift_corrector(corrected_df,
                                                           primary_data_column_name=primary_pwl_col_name,
                                                           reference_data_column_name=ref_pwl_col_name,
                                                           datetime_column_name=ref_dt_col_name)
+
+        correction_end_time = time.perf_counter()
+        correction_duration = correction_end_time - correction_start_time
+        logger.info(f"Temporal correction algorithm for year ({common_years.index(year) + 1}) finished in "
+                    f"{correction_duration:.2f} seconds")
 
         final_nan_percentage = (len(corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100
 
@@ -266,6 +284,7 @@ def main(args):
                 'Final NaN %': [round(final_nan_percentage, 4)],
                 'Increased NaN %': [round(final_nan_percentage - initial_nan_percentage, 4)]
             })
+            all_processed_years_df = all_processed_years_df.dropna(axis=1, how='all')
             all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
                                                ignore_index=True)
 
@@ -325,11 +344,21 @@ def main(args):
             offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
                                              f"datum_shift_info_value_filtered.csv", index=False)
 
-    # ********************************** End processing loop **********************************
+        process_year_end_time = time.perf_counter()
+        process_year_duration = process_year_end_time - process_year_start_time
+        logger.info(f"Year ({common_years.index(year) + 1}) processed in {process_year_duration:.2f} seconds")
+    # End processing loop.
+    processing_loop_end_time = time.perf_counter()
+    processing_loop_duration = processing_loop_end_time - processing_loop_start_time
+    logger.info(f"Processing loop finished in {processing_loop_duration:.2f} seconds")
 
+    ''' ***********************************************************************************************************
+        ************************************************* RESULTS *************************************************
+        *********************************************************************************************************** '''
+    logger.info("Writing results")
     # Write configs to file.
-        with open(f'{write_path}/{filename}_configs.txt', 'w') as file:
-            file.write(f"Configurations: {json.dumps(config, indent=4)}")
+    with open(f'{write_path}/{filename}_configs.txt', 'w') as file:
+        file.write(f"Configurations: {json.dumps(config, indent=4)}")
 
     if annotated_raw_data_years:
         # Get table of annotated series data.
@@ -368,18 +397,19 @@ def main(args):
                        f"min DS: Minimum datum shift value.\n"
                        f"max DS: Maximum datum shift value.\n\n")
         helpers.write_table_from_nested_dict(summary, 'Year',
-                                        f'{write_path}/{filename}_metrics_summary.txt')
+                                             f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write temporal offset correction summary for all years.
     if temp_corr_summary_years:
         all_processed_years_df.to_csv(f"{write_path}/{filename}_temporal_shifts_summary.csv", index=False)
+
+    program_end_time = time.perf_counter()
+    program_duration = program_end_time - program_start_time
+    logger.info("Program end")
+    logger.info(f"Program finished in {program_duration:.2f} seconds")
 # End main.
 
 
 if __name__ == "__main__":
     main_args = helpers.parse_arguments()
     main(main_args)
-
-# ***************************************************************************
-# *************************** PROGRAM END ***********************************
-# ***************************************************************************

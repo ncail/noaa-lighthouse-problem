@@ -1,0 +1,3 @@
+Year,Temporal shifts,Datum shifts,Time-shifted data %,Positive error %,Initial NaN %,Final NaN %,Increased NaN %
+2012,"[-1, 'N/A', 0]","[0.0, 'N/A', 0.005, -0.002]",98.5712,1.3787,0.2994,1.6735,1.3741
+2013,"[-1, 'N/A']","[0.0, -0.001, 'N/A']",99.7945,0.2055,1.2534,1.46,0.2066

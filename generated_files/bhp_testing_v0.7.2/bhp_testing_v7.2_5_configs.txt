@@ -1,0 +1,65 @@
+Configurations: {
+    "data": {
+        "paths": {
+            "refdir": "data/NOAA/bobHallPier/preprocessed",
+            "primarydir": "data/lighthouse/Bob Hall Pier/preprocessed"
+        }
+    },
+    "analysis": {
+        "mode": "corrected",
+        "years": [
+            2012,
+            2013
+        ]
+    },
+    "output": {
+        "base_filename": "bhp_testing_v7.2_5",
+        "path": "generated_files/bhp_testing_v7.2",
+        "generate_reports_for_years": {
+            "metrics_summary": [
+                2012,
+                2013
+            ],
+            "datum_shift_info_duration_filtered": [
+                2012,
+                2013
+            ],
+            "datum_shift_info_value_filtered": [
+                2012,
+                2013
+            ],
+            "temporal_shifts_summary": [
+                2012,
+                2013
+            ],
+            "annotated_raw_data": []
+        }
+    },
+    "logging": {
+        "enabled": true,
+        "level": "INFO",
+        "file": "app.log"
+    },
+    "filter_offsets_by_duration": {
+        "threshold": "1 hour",
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_offsets_by_value": {
+        "threshold": 0.02,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_gaps_by_duration": {
+        "threshold": "1 days",
+        "type": "min",
+        "is_strict": false
+    },
+    "temporal_shift_correction": {
+        "number_of_intervals": 10,
+        "replace_with_nans": true
+    }
+}
