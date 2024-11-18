@@ -7,6 +7,7 @@ import helpers
 import os
 import sys
 import glob
+import pandas as pd
 
 
 def main(args):
@@ -70,19 +71,23 @@ def main(args):
     if not os.path.exists(output_path_primary):
         os.makedirs(output_path_primary)
     for primary_df in primary_df_arr:
-        helpers.clean_dataframe(primary_df, primary_df.columns[primary_dt_col_pos],
-                                primary_df.columns[primary_pwl_col_pos])
-        years = primary_df[primary_df.columns[primary_dt_col_pos]].dt.year
-        primary_df.to_csv(f'{output_path_primary}/{int(years[0])}.csv', index=False)
+        cleaned_df = helpers.clean_dataframe(primary_df, primary_df.columns[primary_dt_col_pos],
+                                             primary_df.columns[primary_pwl_col_pos])
+        years = cleaned_df[cleaned_df.columns[primary_dt_col_pos]].dt.year
+
+        if not pd.isna(years[0]):
+            cleaned_df.to_csv(f'{output_path_primary}/{int(years[0])}.csv', index=False)
     # End for.
 
     # Clean and output ref dataframes.
     if not os.path.exists(output_path_ref):
         os.makedirs(output_path_ref)
     for ref_df in ref_df_arr:
-        helpers.clean_dataframe(ref_df, ref_df.columns[ref_dt_col_pos], ref_df.columns[ref_pwl_col_pos])
-        years = ref_df[ref_df.columns[ref_dt_col_pos]].dt.year
-        ref_df.to_csv(f'{output_path_ref}/{int(years[0])}.csv', index=False)
+        cleaned_df = helpers.clean_dataframe(ref_df, ref_df.columns[ref_dt_col_pos], ref_df.columns[ref_pwl_col_pos])
+        years = cleaned_df[cleaned_df.columns[ref_dt_col_pos]].dt.year
+
+        if not pd.isna(years[0]):
+            cleaned_df.to_csv(f'{output_path_ref}/{int(years[0])}.csv', index=False)
     # End for.
 # End main.
 

@@ -160,19 +160,15 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
 
     # Convert to datetime and numeric. coerce changes invalid values
     # to NaT/NaN.
-    try:
-        df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
-        df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
-    except Exception as e:
-        error[0] += str(e)
+    df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
+    df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
 
     if bwl_col_name is not None:
         df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
     if harmwl_col_name is not None:
         df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
 
-    if df[datetime_col_name].isna().all() or df[pwl_col_name].isna().all():
-        error[0] += "dataframe has column with only NaT or NaN. "
+    return df
 # End clean_dataframe.
 
 

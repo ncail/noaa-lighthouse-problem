@@ -104,17 +104,17 @@ def main(args):
     # Read primary files into dataframes.
     primary_df_arr = []
     for primary_file in primary_csv_files:
-        df = helpers.read_file_to_df(primary_file, flag=flag_ptr)
-        if flag_ptr[0]:
-            primary_df_arr.append(df)
+        column_names = pd.read_csv(primary_file, nrows=0).columns.tolist()
+        df = pd.read_csv(primary_file, parse_dates=[column_names[0]])
+        primary_df_arr.append(df)
     # End for.
 
     # Read ref files into dataframes.
     ref_df_arr = []
     for ref_file in ref_csv_files:
-        df = helpers.read_file_to_df(ref_file, flag=flag_ptr)
-        if flag_ptr[0]:
-            ref_df_arr.append(df)
+        column_names = pd.read_csv(ref_file, nrows=0).columns.tolist()
+        df = pd.read_csv(ref_file, parse_dates=[column_names[0]])
+        ref_df_arr.append(df)
     # End for.
 
     # Assume position of datetime columns.
@@ -340,7 +340,7 @@ def main(args):
         "temporal_shift_correction": config["temporal_shift_correction"]
     }
     if metrics_summary_years:
-        with open(f'{write_path}/{filename}_metrics_summary.txt', 'a') as file:
+        with open(f'{write_path}/{filename}_metrics_summary.txt', 'w') as file:
             file.write(f"Configurations: {json.dumps(metrics_config, indent=4)}\n\n")
             file.write(f"% agree: Percentage of values that agree between datasets.\n"
                        f"% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.\n"
@@ -363,7 +363,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main_args = parse_arguments()
+    main_args = helpers.parse_arguments()
     main(main_args)
 
 # ***************************************************************************
