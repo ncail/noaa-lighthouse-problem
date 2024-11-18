@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 import json
+import datetime
+import argparse
 
 # Opt into future behavior for pandas. Encouraged by FutureWarning message
 # for pd.replace(): "Downcasting behavior in 'replace' is deprecated and
@@ -9,7 +11,70 @@ import json
 pd.set_option('future.no_silent_downcasting', True)
 
 
-""" ******************* Function implementation below ******************* """
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Parse arguments from user.")
+    parser.add_argument('--config', type=str,
+                        help='Path to configuration file', default='config.json')
+    parser.add_argument('--filename', type=str,
+                        help='Name of the file to write results to', default=None)
+    parser.add_argument('--refdir', type=str,
+                        help='Path to directory of reference data', default=None)
+    parser.add_argument('--primarydir', type=str,
+                        help='Path to directory of primary data', default=None)
+    parser.add_argument('--output', type=str,
+                        help='Path to write results text file(s) in', default='generated_files')
+    parser.add_argument('--years', type=int, nargs='+',
+                        help='Years to include in the analysis')
+    parser.add_argument('--logging-off', dest='logging', action='store_false',
+                        help="Opt out of logging")
+    parser.set_defaults(logging=True)
+    parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
+                        help='Type of analysis')
+    return parser.parse_args()
+
+
+def get_filename(user_args, configs_filename):
+    if user_args.filename:  # Let cmdl args overwrite config.
+        return user_args.filename
+    elif configs_filename:
+        return configs_filename
+    else:  # Default case if both cmdl arg and config are empty.
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        return f"output_{timestamp}"
+
+
+def get_data_paths(user_args, configs_refdir, configs_primarydir, flag=[False]):
+    # Allow cmdl args to overwrite config.
+    refdir = user_args.refdir if user_args.refdir \
+        else configs_refdir
+    primarydir = user_args.primarydir if user_args.primarydir \
+        else configs_primarydir
+
+    # Set flag for if paths exist.
+    if os.path.exists(refdir) and os.path.exists(primarydir):
+        flag[0] = True
+    else:
+        flag[0] = False
+
+    return refdir, primarydir
+
+
+def get_output_path(user_args, configs_path):
+    if user_args.output != 'generated_files':
+        return user_args.output
+    elif configs_path:
+        return configs_path
+    else:
+        return user_args.output
+
+
+def load_configs(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            user_config = json.load(file)
+    except FileNotFoundError:
+        print(f"Error: Config file '{file_path}' not found.")
+    return user_config
 
 
 def read_file_to_df(file, index_limit=None, flag=[False], error=[""]):
@@ -59,22 +124,6 @@ def end_file_index(filename):
 # End end_file_index().
 
 
-def get_year_from_user(prompt):
-    while True:
-        try:
-            # Asking for the user's input with a custom prompt.
-            year = int(input(prompt))
-
-            # Check if the year is a valid positive number.
-            if year <= 0:
-                print("Please enter a positive number for the year.")
-            else:
-                return year  # Return the year if the input is valid.
-        except ValueError:
-            print("Please enter a valid number for the year.")
-# End get_year_from_user.
-
-
 def split_by_year(df, datetime_col_name):
     # Case if column name is not assigned.
     if datetime_col_name is None:
@@ -82,12 +131,10 @@ def split_by_year(df, datetime_col_name):
 
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
 
-    # Get an array of unique years from dt.year which extracts the year
-    # components from the datetime objects in the datetime column of
-    # the dataframe.
+    # Get an array of unique years from dt.year.
     years = df[datetime_col_name].dt.year.unique()
 
-    # Split dataframe by year. For each year, filter df using boolean
+    # Split dataframe by year: for each year, filter df using boolean
     # mask [df[datetime_col_name].dt.year == year] to create a new
     # dataframe containing only the rows where the year (.dt.year) matches
     # the current 'year'. Append these dataframes to a list.

@@ -1,83 +1,50 @@
-# Import file_data_functions.py as da (file processing).
-import file_data_functions as fp
+# Import helpers.
+import helpers
 
 # Import classes.
 from MetricsCalculator import MetricsCalculator
 from TransformData import TransformData
 
 # Imports continued...
-import argparse
-import os
 import sys
-import datetime
 import glob
 import pandas as pd
 import json
 import logging
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Parse arguments from user.")
-    parser.add_argument('--config', type=str,
-                        help='Path to configuration file', default='config.json')
-    parser.add_argument('--filename', type=str,
-                        help='Name of the file to write results to', default=None)
-    parser.add_argument('--refdir', type=str,
-                        help='Path to directory of reference data', default=None)
-    parser.add_argument('--primarydir', type=str,
-                        help='Path to directory of primary data', default=None)
-    parser.add_argument('--output', type=str,
-                        help='Path to write results text file(s) in', default='generated_files')
-    parser.add_argument('--years', type=int, nargs='+',
-                        help='Years to include in the analysis')
-    parser.add_argument('--logging-off', dest='logging', action='store_false',
-                        help="Opt out of logging")
-    parser.set_defaults(logging=True)
-    parser.add_argument('--mode', type=str, choices=['raw', 'corrected'],
-                        help='Type of analysis')
-    return parser.parse_args()
+def custom_logger(user_level, file):
+    level_map = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARNING': logging.WARNING,
+        'ERROR': logging.ERROR,
+        'CRITICAL': logging.CRITICAL
+    }
+    level = level_map.get(user_level.upper(), logging.INFO)  # Default level is INFO if user_level is invalid.
 
+    # Create a custom logger.
+    logger = logging.getLogger(__name__)  # Name of logger is module it is created in ('analyze_data').
+    logger.setLevel(logging.DEBUG)  # Log all levels DEBUG and above.
 
-def get_filename(user_args, configs_filename):
-    if user_args.filename:
-        return user_args.filename
-    elif configs_filename:
-        return configs_filename
-    else:
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        return f"output_{timestamp}"
+    # Create handlers.
+    console_handler = logging.StreamHandler()  # For logging to the console.
+    file_handler = logging.FileHandler(file)  # For logging to a file.
 
+    # Set levels for handlers.
+    console_handler.setLevel(level)
+    file_handler.setLevel(level)
 
-def get_data_paths(user_args, configs_refdir, configs_primarydir, flag=[False]):
-    refdir = user_args.refdir if user_args.refdir \
-        else configs_refdir
-    primarydir = user_args.primarydir if user_args.primarydir \
-        else configs_primarydir
+    # Create formatters.
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
 
-    if os.path.exists(refdir) and os.path.exists(primarydir):
-        flag[0] = True
-    else:
-        flag[0] = False
+    # Add handlers to the logger.
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
 
-    return refdir, primarydir
-
-
-def get_output_path(user_args, configs_path):
-    if user_args.output != 'generated_files':
-        return user_args.output
-    elif configs_path:
-        return configs_path
-    else:
-        return user_args.output
-
-
-def load_configs(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            user_config = json.load(file)
-    except FileNotFoundError:
-        print(f"Error: Config file '{file_path}' not found.")
-    return user_config
+    return logger
 
 
 # ***************************************************************************
@@ -86,7 +53,7 @@ def load_configs(file_path):
 def main(args):
 
     # Store loaded configs.
-    config = load_configs(args.config)
+    config = helpers.load_configs(args.config)
 
     # Get all program configurations. Some configurations can be overridden by command line
     # arguments.
@@ -95,21 +62,22 @@ def main(args):
     config_refdir = config['data']['paths']['refdir']
     config_primarydir = config['data']['paths']['primarydir']
     args_flag_ptr = [False]
-    paths = get_data_paths(args, config_refdir, config_primarydir, flag=args_flag_ptr)
+    paths = helpers.get_data_paths(args, config_refdir, config_primarydir, flag=args_flag_ptr)
 
     # Get output configurations.
     config_filename = config['output']['base_filename']
-    filename = get_filename(args, config_filename)
+    filename = helpers.get_filename(args, config_filename)
     config_path = config['output']['path']
-    write_path = get_output_path(args, config_path)
+    write_path = helpers.get_output_path(args, config_path)
 
-    # Get logging configs.
-    if config['logging']['enabled']:
-        logging.basicConfig(
-            filename=config['logging']['file'],
-            level=config['logging']['level'],
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
+    # Configure logger.
+    logging_enabled = args.logging and config['logging']['enabled']
+    if logging_enabled:  # Get custom logger -- writes to both console and file.
+        logging_level = config['logging']['level']
+        logging_file = config['logging']['file']
+        logger = custom_logger(logging_level, logging_file)
+    else:
+        logging.disable(logging.CRITICAL)  # Disables all logging.
 
     # Get mode of analysis.
     analysis = args.mode if args.mode else config['analysis']['mode']
@@ -127,60 +95,35 @@ def main(args):
     # Get all csv files from primary path.
     primary_csv_files = glob.glob(f"{primary_path}/*.csv")
 
-    # Ignore csv files for harmonic water level (harmwl) from ref path.
-    pattern = f"{ref_path}/*_*_water_level.csv"
-    ref_csv_files = glob.glob(pattern)
+    # Get all csv files from ref path.
+    ref_csv_files = glob.glob(f"{ref_path}/*.csv")
 
-    # Check that files matching the pattern were found.
-    if not ref_csv_files:
-        print("Failed to match files to ref filename pattern. Exiting program.")
-        sys.exit()
-
-    # Initialize a flag pointer to check if da.read_file() is successful.
+    # Initialize a flag pointer to check if read_file() is successful.
     flag_ptr = [False]
 
-    # Read and split up the primary files.
+    # Read primary files into dataframes.
     primary_df_arr = []
     for primary_file in primary_csv_files:
-
-        # Read the file into a dataframe.
-        df = fp.read_file_to_df(primary_file, flag=flag_ptr)
-
-        # If read was successful, split into yearly data and append to primary_df_arr.
+        df = helpers.read_file_to_df(primary_file, flag=flag_ptr)
         if flag_ptr[0]:
-            split_df = fp.split_by_year(df, df.columns[0])
-            primary_df_arr.extend(split_df)
+            primary_df_arr.append(df)
     # End for.
 
-    # Send ref data into dataframes. The files are already split by year.
+    # Read ref files into dataframes.
     ref_df_arr = []
     for ref_file in ref_csv_files:
-
-        df = fp.read_file_to_df(ref_file, flag=flag_ptr)
-
-        if flag_ptr[0] is True:
+        df = helpers.read_file_to_df(ref_file, flag=flag_ptr)
+        if flag_ptr[0]:
             ref_df_arr.append(df)
     # End for.
 
-    # Assume position of datetime and water level columns.
+    # Assume position of datetime columns.
     primary_dt_col_pos = 0
-    primary_pwl_col_pos = 1
     ref_dt_col_pos = 0
-    ref_pwl_col_pos = 1
-
-    # Clean primary dataframes.
-    for primary_df in primary_df_arr:
-        fp.clean_dataframe(primary_df, primary_df.columns[primary_dt_col_pos], primary_df.columns[primary_pwl_col_pos])
-    # End for.
-
-    # Clean ref dataframes.
-    for ref_df in ref_df_arr:
-        fp.clean_dataframe(ref_df, ref_df.columns[ref_dt_col_pos], ref_df.columns[ref_pwl_col_pos])
-    # End for.
 
     # Make sure only common years are compared in the analysis.
-    primary_dfs_dict = fp.get_df_dictionary(primary_df_arr, primary_dt_col_pos)
-    ref_dfs_dict = fp.get_df_dictionary(ref_df_arr, ref_dt_col_pos)
+    primary_dfs_dict = helpers.get_df_dictionary(primary_df_arr, primary_dt_col_pos)
+    ref_dfs_dict = helpers.get_df_dictionary(ref_df_arr, ref_dt_col_pos)
     common_years = set(primary_dfs_dict.keys()) & set(ref_dfs_dict.keys())
 
     # Modify common_years to only include years from configurations.
@@ -410,7 +353,7 @@ def main(args):
                        f"# DSs (FBV): Number of datum shifts (filtered by value).\n"
                        f"min DS: Minimum datum shift value.\n"
                        f"max DS: Maximum datum shift value.\n\n")
-        fp.write_table_from_nested_dict(summary, 'Year',
+        helpers.write_table_from_nested_dict(summary, 'Year',
                                         f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write temporal offset correction summary for all years.
