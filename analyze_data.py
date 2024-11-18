@@ -11,6 +11,7 @@ import glob
 import pandas as pd
 import json
 import logging
+import datetime
 
 
 def custom_logger(user_level, file):
@@ -186,22 +187,35 @@ def main(args):
             if col not in ref_col_names:
                 ref_df.drop(columns=col, inplace=True)
 
-        # Merge the dataframes on the datetimes. Any missing datetimes in one of the dfs
-        # will result in the addition of a NaN in the other.
-        # merged_df = pd.merge(primary_df, ref_df, how='outer', left_on=primary_dt_col_name,
-        #                      right_on=ref_dt_col_name, suffixes=('_primary', '_reference'))
+        # To merge the ref and primary dfs, do two left joins on the expected datetimes.
+        # Create the datetime column manually.
+        datetimes_list = pd.date_range(
+            start=datetime.datetime(year=year, month=1, day=1),
+            end=datetime.datetime(year=year, month=12, day=31, hour=23, minute=54),
+            freq='6T'  # Frequency of 6 minutes
+        ).tolist()
+        datetimes_col = pd.DataFrame({'datetime': datetimes_list})
 
-        # Set datetime column as index and use join() to reduce time complexity of merging to O(n).
-        # (Note if index was not sorted, then pandas would perform a sort, resulting in O(nlogn) time complexity.)
-        # Set the datetime columns as the index.
+        # Do the left joins.
+        datetimes_col.set_index('datetime', inplace=True)
         primary_df.set_index(primary_col_names[0], inplace=True)
         ref_df.set_index(ref_col_names[0], inplace=True)
 
-        # Perform an outer join, specifying suffixes.
-        merged_df = ref_df.join(primary_df, how='outer', lsuffix='_primary', rsuffix='_reference')
+        merged_df = datetimes_col.join(ref_df, how='left')
+        merged_df = merged_df.join(primary_df, how='left', lsuffix='_primary', rsuffix='_reference')
 
         # Reset the index to get datetime column back as a regular column.
         merged_df.reset_index(inplace=True)
+
+        # # Perform outer join on datetime values.
+        # primary_df.set_index(primary_col_names[0], inplace=True)
+        # ref_df.set_index(ref_col_names[0], inplace=True)
+#
+        # # Perform an outer join, specifying suffixes.
+        # merged_df = ref_df.join(primary_df, how='outer', lsuffix='_primary', rsuffix='_reference')
+#
+        # # Reset the index to get datetime column back as a regular column.
+        # merged_df.reset_index(inplace=True)
 
         # Reassign columns.
         ref_dt_col_name = merged_df.columns[0]
