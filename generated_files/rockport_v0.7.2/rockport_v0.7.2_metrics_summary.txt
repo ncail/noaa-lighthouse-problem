@@ -1,0 +1,67 @@
+Configurations: {
+    "analysis_mode": "corrected",
+    "filter_offsets_by_duration": {
+        "threshold": "1 hour",
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_offsets_by_value": {
+        "threshold": 0.02,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_gaps_by_duration": {
+        "threshold": "1 days",
+        "type": "min",
+        "is_strict": false
+    },
+    "temporal_shift_correction": {
+        "number_of_intervals": 10,
+        "replace_with_nans": true
+    }
+}
+
+% agree: Percentage of values that agree between datasets.
+% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.
+% missing: Percentage of the primary data that is missing (NaN).
+% total disagree: Percentage of data that disagrees (including NaNs) between datasets.
+% time-shifted: Percentage of data (with positive error) that is time-shifted.
+# DSs (FBD): Number of datum shifts (filtered by duration).
+# gaps (FBD): Number of gaps (filtered by duration).
+DSs list (FBD): List of unique datum shift values (filtered by duration).
+# DSs (FBV): Number of datum shifts (filtered by value).
+min DS: Minimum datum shift value.
+max DS: Maximum datum shift value.
+
+Year | % agree | % values disagree | % missing | % total disagree | % time-shifted | # DSs (FBD) | # gaps (FBD) | DSs list (FBD) | # DSs (FBV) | min DS | max DS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+1996 | 98.3208 | 0.0               | 1.6792    | 1.6792           | 0.0 (+0.23)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+1997 | 99.2237 | 0.0               | 0.7763    | 0.7763           | 0.0 (+0.27)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+1998 | 99.129  | 0.0               | 0.871     | 0.871            | 0.0 (+0.53)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+1999 | 70.7306 | 28.8037           | 0.4658    | 29.2694          | 0.0 (+0.34)    | 2           | 0            | [-0.008]       | 0           | -0.008 | 0.0   
+2000 | 94.6995 | 5.1161            | 0.1844    | 5.3005           | 0.0 (+0.09)    | 3           | 0            | [-0.008]       | 0           | -0.008 | 0.0   
+2001 | 71.9224 | 26.4372           | 1.6404    | 28.0776          | 0.0 (+1.63)    | 4           | 0            | [-0.003]       | 0           | -0.003 | 0.0   
+2002 | 82.1758 | 15.855            | 1.9692    | 17.8242          | 0.0 (+0.99)    | 10          | 0            | [-0.003]       | 0           | -0.003 | 0.0   
+2003 | 99.4326 | 0.0               | 0.5674    | 0.5674           | 0.0 (+0.14)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2004 | 99.2532 | 0.0               | 0.7468    | 0.7468           | 0.0 (+0.08)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2005 | 99.7112 | 0.0               | 0.2888    | 0.2888           | 0.0 (+0.29)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2006 | 97.7032 | 0.0               | 2.2968    | 2.2968           | 0.0 (+2.19)    | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2007 | 98.1164 | 0.1986            | 1.6849    | 1.8836           | 39.7 (+1.56)   | 2           | 0            | [0.013]        | 0           | 0.0    | 0.013 
+2008 | 97.9986 | 0.0               | 2.0014    | 2.0014           | 96.8 (+0.92)   | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2009 | 97.4829 | 0.0               | 2.5171    | 2.5171           | 97.13 (+2.49)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2010 | 97.774  | 0.0               | 2.226     | 2.226            | 97.86 (+2.14)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2011 | 96.7352 | 0.3756            | 2.8893    | 3.2648           | 97.18 (+2.77)  | 1           | 0            | [0.002]        | 0           | 0.0    | 0.002 
+2012 | 75.7753 | 22.7607           | 1.464     | 24.2247          | 98.4 (+1.39)   | 21          | 0            | [-0.002]       | 0           | -0.002 | 0.0   
+2013 | 96.5674 | 2.1142            | 1.3185    | 3.4326           | 98.22 (+1.18)  | 2           | 0            | [0.001]        | 0           | 0.0    | 0.001 
+2014 | 98.395  | 0.0               | 1.605     | 1.605            | 98.32 (+1.39)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2015 | 21.1484 | 75.1279           | 7.161     | 78.8516          | 99.5 (+0.5)    | 135         | 0            | [0.006, 0.001] | 0           | 0.0    | 0.006 
+2016 | 97.796  | 0.0               | 2.204     | 2.204            | 99.81 (+0.19)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2017 | 99.8927 | 0.0               | 35.0822   | 0.1073           | 99.92 (+0.08)  | 0           | 0            | []             | 0           | 0.0    | 0.0   
+2019 | 0.0     | 0.0               | 100.0     | 100.0            | 0.0 (+100.0)   | 0           | 0            | []             | 0           | nan    | nan   
+2020 | 0.0     | 0.0               | 100.0     | 100.0            | 0.0 (+100.0)   | 0           | 0            | []             | 0           | nan    | nan   
+2021 | 0.0     | 0.0               | 100.0     | 100.0            | 0.0 (+100.0)   | 0           | 0            | []             | 0           | nan    | nan   
+2022 | 0.0     | 0.0183            | 99.9817   | 100.0            | 0.02 (+99.98)  | 1           | 0            | [-0.015]       | 0           | -0.015 | -0.015
+2023 | 0.0     | 0.0               | 100.0     | 100.0            | 0.0 (+100.0)   | 0           | 0            | []             | 0           | nan    | nan   
