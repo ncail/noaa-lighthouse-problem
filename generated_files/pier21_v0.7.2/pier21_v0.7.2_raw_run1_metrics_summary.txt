@@ -1,0 +1,44 @@
+Configurations: {
+    "analysis_mode": "raw",
+    "filter_offsets_by_duration": {
+        "threshold": "1 hour",
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_offsets_by_value": {
+        "threshold": 0.02,
+        "use_abs": true,
+        "type": "min",
+        "is_strict": false,
+        "nonzero": true
+    },
+    "filter_gaps_by_duration": {
+        "threshold": "1 days",
+        "type": "min",
+        "is_strict": false
+    },
+    "temporal_shift_correction": {
+        "number_of_intervals": 10,
+        "replace_with_nans": true
+    }
+}
+
+% agree: Percentage of values that agree between datasets.
+% values disagree: Percentage of values that disagree (excluding NaNs) between datasets.
+% missing: Percentage of the primary data that is missing (NaN).
+% total disagree: Percentage of data that disagrees (including NaNs) between datasets.
+% time-shifted: Percentage of data (with positive error) that is time-shifted.
+# DSs (FBD): Number of datum shifts (filtered by duration).
+# gaps (FBD): Number of gaps (filtered by duration).
+DSs list (FBD): List of unique datum shift values (filtered by duration).
+# DSs (FBV): Number of datum shifts (filtered by value).
+min DS: Minimum datum shift value.
+max DS: Maximum datum shift value.
+
+Year | % agree | % values disagree | % missing | % total disagree | % time-shifted | # DSs (FBD) | # gaps (FBD) | DSs list (FBD)  | # DSs (FBV) | min DS | max DS
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+2005 | 93.0491 | 2.7934            | 4.1575    | 6.9509           | 0.0 (+10.6)    | 1           | 0            | [-0.016]        | 1015        | -3.406 | 0.239 
+2007 | 71.9235 | 27.9395           | 0.137     | 28.0765          | 0.0 (+19.09)   | 756         | 0            | [-0.001, 0.001] | 37          | -4.57  | 0.073 
+2009 | 58.2363 | 41.6005           | 0.1632    | 41.7637          | 0.0 (+43.15)   | 1           | 0            | [0.019]         | 4366        | -0.197 | 0.123 
+2017 | 0.0947  | 2.8356            | 97.0696   | 99.9053          | 2.91 (+97.09)  | 0           | 0            | []              | 339         | -7.947 | 26.852

@@ -10,6 +10,7 @@ import os
 import sys
 import glob
 import pandas as pd
+import numpy as np
 import json
 import logging
 import datetime
@@ -217,16 +218,6 @@ def main(args):
         # Reset the index to get datetime column back as a regular column.
         merged_df.reset_index(inplace=True)
 
-        # # Perform outer join on datetime values.
-        # primary_df.set_index(primary_col_names[0], inplace=True)
-        # ref_df.set_index(ref_col_names[0], inplace=True)
-#
-        # # Perform an outer join, specifying suffixes.
-        # merged_df = ref_df.join(primary_df, how='outer', lsuffix='_primary', rsuffix='_reference')
-#
-        # # Reset the index to get datetime column back as a regular column.
-        # merged_df.reset_index(inplace=True)
-
         # Reassign columns.
         ref_dt_col_name = merged_df.columns[0]
         ref_pwl_col_name = merged_df.columns[1]
@@ -272,8 +263,8 @@ def main(args):
         error_percent = error / len(series_data_df) * 100
 
         # Add to all-years summary dataframe.
+        shifts_summary_df = corrector.get_shifts_summary_df()[0]
         if year in temp_corr_summary_years:
-            shifts_summary_df = corrector.get_shifts_summary_df()[0]
             processed_year_row = pd.DataFrame({
                 'Year': [year],
                 'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
@@ -297,18 +288,25 @@ def main(args):
                                                           merged_df[ref_pwl_col_name], size)
 
         # Get offset runs dataframe.
-        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
-                                                  merged_df[ref_pwl_col_name],
-                                                  merged_df[ref_dt_col_name], size)
+        # run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
+        #                                           merged_df[ref_pwl_col_name],
+        #                                           merged_df[ref_dt_col_name], size)
 
-        # Set the dataframe.
-        calculator.set_runs_dataframe(run_data_df)
+        # Set column names in calculator to match those in shifts_summary_df from TransformData.
+        calculator.set_column_names(shifts_summary_df.columns[2], shifts_summary_df.columns[4],
+                                    shifts_summary_df.columns[0], shifts_summary_df.columns[1])
+
+        # Set the dataframe in calculator so metrics can be calculated.
+        # Using shifts_summary_df from TransformDate is preferable to using runs_df from MetricsCalculator because
+        # the latter assumes gaps are interruptions to vertical offsets while the former does not.
+        shifts_summary_df.replace('N/A', np.nan, inplace=True)
+        calculator.set_runs_dataframe(shifts_summary_df)
 
         # Calculate metrics.
         metrics = calculator.calculate_metrics()
 
         # Set metrics.
-        calculator.set_metrics(metrics)
+        # calculator.set_metrics(metrics)
 
         # Get table of offsets filtered by duration.
         offsets_duration_filtered_df = calculator.generate_duration_filtered_offsets_info()
@@ -333,14 +331,23 @@ def main(args):
             }
 
         # Write datum shifts info (FBD) report.
+        reorder_columns = [shifts_summary_df.columns[4], shifts_summary_df.columns[0], shifts_summary_df.columns[1],
+                           shifts_summary_df.columns[2]]
         if year in datum_shift_info_duration_filtered_years:
-            offsets_duration_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_duration_filtered_df = offsets_duration_filtered_df[reorder_columns]  # Automatically drops the
+            # temporal_shift column from shifts_summary_df.
+            offsets_duration_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
+                                                         "date", "end_date": "end date"}, inplace=True)
+
             offsets_duration_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
                                                 f"datum_shift_info_duration_filtered.csv", index=False)
 
         # Write datum shifts info (FBV) report.
         if year in datum_shift_info_value_filtered_years:
-            offsets_value_filtered_df.rename(columns={"offset": "datum shift"}, inplace=True)
+            offsets_value_filtered_df = offsets_value_filtered_df[reorder_columns]
+            offsets_value_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
+                                                      "date", "end_date": "end date"}, inplace=True)
+
             offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
                                              f"datum_shift_info_value_filtered.csv", index=False)
 
