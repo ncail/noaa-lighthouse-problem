@@ -40,7 +40,7 @@ class TransformData:
 
         self.time_shift_table = {
             'temporal_shift': [],
-            'datum_shift': [],
+            'vertical_offset': [],
             'date_time': [],
             'primary_water_level': [],
             'reference_water_level': []
@@ -410,7 +410,7 @@ class TransformData:
                 vert_offset_current = 'N/A'
 
             self.time_shift_table['temporal_shift'].append(try_shift)
-            self.time_shift_table['datum_shift'].append(vert_offset_current)
+            self.time_shift_table['vertical_offset'].append(vert_offset_current)
             self.time_shift_table['date_time'].append(df[ref_dt_col_name].iloc[func_index])
             self.time_shift_table['primary_water_level'].append(str(df[primary_wl_col_name].iloc[func_index]))
             self.time_shift_table['reference_water_level'].append(df[ref_wl_col_name].iloc[func_index])

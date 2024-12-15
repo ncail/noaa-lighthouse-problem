@@ -147,11 +147,11 @@ def main(args):
     config_report_years = config['output']['generate_reports_for_years']
     metrics_summary_years = common_years if config_report_years['metrics_summary'] == ['all_years'] \
         else config_report_years['metrics_summary']
-    datum_shift_info_duration_filtered_years = common_years if (
-            config_report_years['datum_shift_info_duration_filtered'] == ['all_years']) \
-        else config_report_years['datum_shift_info_duration_filtered']
-    datum_shift_info_value_filtered_years = common_years if config_report_years['datum_shift_info_value_filtered'] == [
-        'all_years'] else config_report_years['datum_shift_info_value_filtered']
+    vert_offset_info_duration_filtered_years = common_years if (
+            config_report_years['vertical_offset_info_duration_filtered'] == ['all_years']) \
+        else config_report_years['vertical_offset_info_duration_filtered']
+    vert_offset_info_value_filtered_years = common_years if config_report_years['vertical_offset_info_value_filtered'] == [
+        'all_years'] else config_report_years['vertical_offset_info_value_filtered']
     temp_corr_summary_years = common_years if config_report_years['temporal_shifts_summary'] == ['all_years'] \
         else config_report_years['temporal_shifts_summary']
     annotated_raw_data_years = common_years if config_report_years['annotated_raw_data'] == ['all_years'] \
@@ -160,7 +160,7 @@ def main(args):
     # Process the dataframes of common years to get statistics.
     # Initialize summary and temporal offsets summary dataframe.
     summary = {}
-    all_processed_years_df = pd.DataFrame(columns=['Year', 'Temporal shifts', 'Datum shifts', 'Time-shifted data %',
+    all_processed_years_df = pd.DataFrame(columns=['Year', 'Temporal shifts', 'Vertical offsets', 'Time-shifted data %',
                                                    'Positive error %', 'Initial NaN %', 'Final NaN %',
                                                    'Increased NaN %'])
 
@@ -245,7 +245,7 @@ def main(args):
         final_nan_percentage = (len(corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100
 
         # Get the annotated raw series data for current year, concat each year in common years, the corresponding time
-        # and datum shifts per data point are also listed.
+        # and vertical offsets per data point are also listed.
         series_data_annotated_current_year = corrector.get_time_shift_table()
         if year in annotated_raw_data_years:
             # Concats the current year dict and all-years dict by extending the values for each dict key.
@@ -268,7 +268,7 @@ def main(args):
             processed_year_row = pd.DataFrame({
                 'Year': [year],
                 'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
-                'Datum shifts': [shifts_summary_df['vertical_offset'].unique().tolist()],
+                'Vertical offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
                 'Time-shifted data %': [round(percent_time_shifted, 4)],
                 'Positive error %': [round(error_percent, 4)],
                 'Initial NaN %': [round(initial_nan_percentage, 4)],
@@ -330,26 +330,26 @@ def main(args):
                 "max DS": metrics['min_max_offsets'][0]
             }
 
-        # Write datum shifts info (FBD) report.
+        # Write vertical offsets info (FBD) report.
         reorder_columns = [shifts_summary_df.columns[4], shifts_summary_df.columns[0], shifts_summary_df.columns[1],
                            shifts_summary_df.columns[2]]
-        if year in datum_shift_info_duration_filtered_years:
+        if year in vert_offset_info_duration_filtered_years:
             offsets_duration_filtered_df = offsets_duration_filtered_df[reorder_columns]  # Automatically drops the
             # temporal_shift column from shifts_summary_df.
             offsets_duration_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
                                                          "date", "end_date": "end date"}, inplace=True)
 
             offsets_duration_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
-                                                f"datum_shift_info_duration_filtered.csv", index=False)
+                                                f"vertical_offset_info_duration_filtered.csv", index=False)
 
-        # Write datum shifts info (FBV) report.
-        if year in datum_shift_info_value_filtered_years:
+        # Write vertical offsets info (FBV) report.
+        if year in vert_offset_info_value_filtered_years:
             offsets_value_filtered_df = offsets_value_filtered_df[reorder_columns]
             offsets_value_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
                                                       "date", "end_date": "end date"}, inplace=True)
 
             offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
-                                             f"datum_shift_info_value_filtered.csv", index=False)
+                                             f"vertical_offset_info_value_filtered.csv", index=False)
 
         process_year_end_time = time.perf_counter()
         process_year_duration = process_year_end_time - process_year_start_time
@@ -371,12 +371,13 @@ def main(args):
         # Get table of annotated series data.
         series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
 
-        reorder_columns = ['date_time', 'primary_water_level', 'reference_water_level', 'datum_shift', 'temporal_shift']
+        reorder_columns = ['date_time', 'primary_water_level', 'reference_water_level', 'vertical_offset',
+                           'temporal_shift']
         series_data_annotated_df = series_data_annotated_df[reorder_columns]
         series_data_annotated_df = (series_data_annotated_df.rename(columns={
                                     'date_time': 'Date Time', 'primary_water_level': 'Primary Water Level',
-                                    'reference_water_level': 'Reference Water Level', 'datum_shift': 'Datum Shift',
-                                    'temporal_shift': 'Temporal Shift'}))
+                                    'reference_water_level': 'Reference Water Level', 'vertical_offset': 'Vertical '
+                                    'Offset', 'temporal_shift': 'Temporal Shift'}))
 
         # Write time shift table to CSV.
         series_data_annotated_df.to_csv(f"{write_path}/{filename}_annotated_raw_data.csv", index=False)
@@ -397,12 +398,12 @@ def main(args):
                        f"% missing: Percentage of the primary data that is missing (NaN).\n"
                        f"% total disagree: Percentage of data that disagrees (including NaNs) between datasets.\n"
                        f"% time-shifted: Percentage of data (with positive error) that is time-shifted.\n"
-                       f"# DSs (FBD): Number of datum shifts (filtered by duration).\n"
+                       f"# VOs (FBD): Number of vertical offsets (filtered by duration).\n"
                        f"# gaps (FBD): Number of gaps (filtered by duration).\n"
-                       f"DSs list (FBD): List of unique datum shift values (filtered by duration).\n"
-                       f"# DSs (FBV): Number of datum shifts (filtered by value).\n"
-                       f"min DS: Minimum datum shift value.\n"
-                       f"max DS: Maximum datum shift value.\n\n")
+                       f"VOs list (FBD): List of unique vertical offset values (filtered by duration).\n"
+                       f"# VOs (FBV): Number of vertical offsets (filtered by value).\n"
+                       f"min VO: Minimum vertical offset value.\n"
+                       f"max VO: Maximum vertical offset value.\n\n")
         helpers.write_table_from_nested_dict(summary, 'Year',
                                              f'{write_path}/{filename}_metrics_summary.txt')
 
