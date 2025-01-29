@@ -43,18 +43,20 @@ def get_filename(user_args, configs_filename):
         return f"output_{timestamp}"
 
 
-def get_data_paths(user_args, configs_refdir, configs_primarydir, flag=[False]):
+def get_data_paths(user_args, configs_refdir, configs_primarydir, flag=[True]):
     # Allow cmdl args to overwrite config.
     refdir = user_args.refdir if user_args.refdir \
         else configs_refdir
     primarydir = user_args.primarydir if user_args.primarydir \
         else configs_primarydir
 
-    # Set flag for if paths exist.
-    if os.path.exists(refdir) and os.path.exists(primarydir):
-        flag[0] = True
-    else:
-        flag[0] = False
+    # Set flag for if paths exist, for whichever paths have been entered.
+    if refdir:
+        if not os.path.exists(refdir):
+            flag[0] = False
+    if primarydir:
+        if not os.path.exists(primarydir):
+            flag[0] = False
 
     return refdir, primarydir
 
