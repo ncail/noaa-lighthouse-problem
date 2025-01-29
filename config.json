@@ -23,8 +23,8 @@
 
       "generate_reports_for_years": {
          "metrics_summary": [],
-         "datum_shift_info_duration_filtered": [],
-         "datum_shift_info_value_filtered": [],
+         "vertical_offset_info_duration_filtered": [],
+         "vertical_offset_info_value_filtered": [],
          "temporal_shifts_summary": [],
          "annotated_raw_data": []
      }
