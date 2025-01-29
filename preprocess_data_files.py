@@ -29,6 +29,9 @@ def main(args):
     dt_col_pos = [config['data']['columns']['ref_dt_pos'], config['data']['columns']['primary_dt_pos']]
     pwl_col_pos = [config['data']['columns']['ref_wl_pos'], config['data']['columns']['primary_wl_pos']]
 
+    # Get header information.
+    isHeader = [config['data']['headers']['ref'], config['data']['headers']['primary']]
+
     # Loop over paths if they were entered. paths contains refdir, then primarydir, so uses the column positions in
     # this order.
     for loop in range(2):
@@ -39,16 +42,20 @@ def main(args):
             # Get all csv files from primary path.
             csv_files = glob.glob(f"{paths[loop]}/*.csv")
 
-            # Initialize a flag pointer to check if read_file() is successful.
-            flag_ptr = [False]
+            # Get header info.
+            if isHeader[loop]:
+                df_first = pd.read_csv(csv_files[0])
+                column_names = df_first.columns
 
             # Read files to a concatd dataframe, then split by year.
             df_list = []
-            for file in csv_files:
-                df_from_file = helpers.read_file_to_df(file, flag=flag_ptr)
+            for file in csv_files[1:]:
+                df_from_file = pd.read_csv(file, header=None)
 
-                if flag_ptr[0]:
-                    df_list.append(df_from_file)
+                if isHeader[loop]:
+                    df_from_file.columns = column_names
+
+                df_list.append(df_from_file)
             # End for.
 
             df_concat = pd.concat(df_list, ignore_index=True)

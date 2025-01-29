@@ -144,8 +144,8 @@ def split_by_year(df, datetime_col_name):
 # End split_by_year.
 
 
-def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
-                    bwl_col_name=None, error=[""]):
+def clean_dataframe(df, datetime_col_name, pwl_col_name):
+    cols = [datetime_col_name, pwl_col_name]
 
     # Replace missing values with NaN.
     df.replace([-999, -99, 99, 'NA', 'RM'], np.nan, inplace=True)
@@ -155,10 +155,10 @@ def clean_dataframe(df, datetime_col_name, pwl_col_name, harmwl_col_name=None,
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name], errors='coerce')
     df[pwl_col_name] = pd.to_numeric(df[pwl_col_name], errors='coerce')
 
-    if bwl_col_name is not None:
-        df[bwl_col_name] = pd.to_numeric(df[bwl_col_name], errors='coerce')
-    if harmwl_col_name is not None:
-        df[harmwl_col_name] = pd.to_numeric(df[harmwl_col_name], errors='coerce')
+    # Drop other columns.
+    for col in df.columns:
+        if col not in cols:
+            df.drop(columns=col, inplace=True)
 
     return df
 # End clean_dataframe.
