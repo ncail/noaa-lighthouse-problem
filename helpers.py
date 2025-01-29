@@ -127,30 +127,20 @@ def end_file_index(filename):
 
 
 def split_by_year(df, datetime_col_name):
-    # Case if column name is not assigned.
+    # Do nothing if column name is not assigned.
     if datetime_col_name is None:
         return df
 
     df[datetime_col_name] = pd.to_datetime(df[datetime_col_name])
 
-    # Get an array of unique years from dt.year.
-    years = df[datetime_col_name].dt.year.unique()
-
-    # Split dataframe by year: for each year, filter df using boolean
-    # mask [df[datetime_col_name].dt.year == year] to create a new
-    # dataframe containing only the rows where the year (.dt.year) matches
-    # the current 'year'. Append these dataframes to a list.
-    data_by_year = []
-    for year in years:
-        data_by_year.append(df[df[datetime_col_name].dt.year == year].reset_index(drop=True))
-    # End for.
+    dfs_by_year = {year: group.reset_index(drop=True) for year, group in df.groupby(df[datetime_col_name].dt.year)}
 
     # Or use dictionary comprehension and return a dictionary where the
     # keys are the years and the items are the corresponding dataframes.
     # data_by_year = {year: df[df[date_col_name].dt.year == year] for year in years}
 
     # Return the list.
-    return data_by_year
+    return dfs_by_year
 # End split_by_year.
 
 

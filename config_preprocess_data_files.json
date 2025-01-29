@@ -1,8 +1,8 @@
 {
   "data": {
     "paths": {
-      "refdir": "data/NOAA/pier21/preprocessed",
-      "primarydir": "data/lighthouse/Pier 21/preprocessed"
+      "refdir": "",
+      "primarydir": "data/lighthouse/nesscan_fix_full_history_12172024/BobHall/BobHall"
     },
     "columns": {
       "primary_dt_pos": 1,

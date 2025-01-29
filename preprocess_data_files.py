@@ -43,25 +43,25 @@ def main(args):
             flag_ptr = [False]
 
             # Read files to a concatd dataframe, then split by year.
-            df = pd.DataFrame()
+            df_list = []
             for file in csv_files:
                 df_from_file = helpers.read_file_to_df(file, flag=flag_ptr)
 
                 if flag_ptr[0]:
-                    df = pd.concat([df, df_from_file])
+                    df_list.append(df_from_file)
             # End for.
 
-            split_df_arr = helpers.split_by_year(df, df.columns[0])
+            df_concat = pd.concat(df_list, ignore_index=True)
+            split_df_dict = helpers.split_by_year(df_concat, df_concat.columns[dt_col_pos[loop]])
 
-            # Clean and output primary dataframes.
+            # Clean and output dataframes to csv.
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
-            for df in split_df_arr:
+            for year, df in split_df_dict.items():
                 cleaned_df = helpers.clean_dataframe(df, df.columns[dt_col_pos[loop]], df.columns[pwl_col_pos[loop]])
-                years = cleaned_df[cleaned_df.columns[dt_col_pos[loop]]].dt.year
 
-                if not pd.isna(years[0]):
-                    cleaned_df.to_csv(f'{output_path}/{int(years[0])}.csv', index=False)
+                if not pd.isna(year):
+                    cleaned_df.to_csv(f'{output_path}/{year}.csv', index=False)
             # End for.
         # End if.
     # End for.
