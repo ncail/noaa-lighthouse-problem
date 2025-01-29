@@ -44,7 +44,6 @@ def main(args):
 
             # Read files to a concatd dataframe, then split by year.
             df = pd.DataFrame()
-            df_arr = []
             for file in csv_files:
                 df_from_file = helpers.read_file_to_df(file, flag=flag_ptr)
 
@@ -52,19 +51,19 @@ def main(args):
                     df = pd.concat([df, df_from_file])
             # End for.
 
-            split_df = helpers.split_by_year(df, df.columns[0])
-            df_arr.extend(split_df)
+            split_df_arr = helpers.split_by_year(df, df.columns[0])
 
             # Clean and output primary dataframes.
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
-            for df in df_arr:
+            for df in split_df_arr:
                 cleaned_df = helpers.clean_dataframe(df, df.columns[dt_col_pos[loop]], df.columns[pwl_col_pos[loop]])
                 years = cleaned_df[cleaned_df.columns[dt_col_pos[loop]]].dt.year
 
                 if not pd.isna(years[0]):
                     cleaned_df.to_csv(f'{output_path}/{int(years[0])}.csv', index=False)
             # End for.
+        # End if.
     # End for.
 # End main.
 
