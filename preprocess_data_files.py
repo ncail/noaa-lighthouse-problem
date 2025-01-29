@@ -25,39 +25,42 @@ def main(args):
         print("args_flag_ptr is False. Path(s) do not exist. Exiting program.")
         sys.exit()
 
-    # Loop over paths if they were entered.
-    for path in paths:
-        if path:
+    # Get positions of datetime and water level columns in order of: ref, primary.
+    dt_col_pos = [config['data']['columns']['ref_dt_pos'], config['data']['columns']['primary_dt_pos']]
+    pwl_col_pos = [config['data']['columns']['ref_wl_pos'], config['data']['columns']['primary_wl_pos']]
+
+    # Loop over paths if they were entered. paths contains refdir, then primarydir, so uses the column positions in
+    # this order.
+    for loop in range(2):
+        if paths[loop]:
             # Output path.
-            output_path = f'{path}/preprocessed'
+            output_path = f'{paths[loop]}/preprocessed'
 
             # Get all csv files from primary path.
-            csv_files = glob.glob(f"{path}/*.csv")
+            csv_files = glob.glob(f"{paths[loop]}/*.csv")
 
             # Initialize a flag pointer to check if read_file() is successful.
             flag_ptr = [False]
 
-            # Read and split up the files.
+            # Read files to a concatd dataframe, then split by year.
+            df = pd.DataFrame()
             df_arr = []
             for file in csv_files:
-                df = helpers.read_file_to_df(file, flag=flag_ptr)
+                df_from_file = helpers.read_file_to_df(file, flag=flag_ptr)
 
-                # If read was successful, split into yearly data and append to primary_df_arr.
                 if flag_ptr[0]:
-                    split_df = helpers.split_by_year(df, df.columns[0])
-                    df_arr.extend(split_df)
+                    df = pd.concat([df, df_from_file])
             # End for.
 
-            # Assume position of datetime and water level columns.
-            dt_col_pos = 0
-            pwl_col_pos = 1
+            split_df = helpers.split_by_year(df, df.columns[0])
+            df_arr.extend(split_df)
 
             # Clean and output primary dataframes.
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
             for df in df_arr:
-                cleaned_df = helpers.clean_dataframe(df, df.columns[dt_col_pos], df.columns[pwl_col_pos])
-                years = cleaned_df[cleaned_df.columns[dt_col_pos]].dt.year
+                cleaned_df = helpers.clean_dataframe(df, df.columns[dt_col_pos[loop]], df.columns[pwl_col_pos[loop]])
+                years = cleaned_df[cleaned_df.columns[dt_col_pos[loop]]].dt.year
 
                 if not pd.isna(years[0]):
                     cleaned_df.to_csv(f'{output_path}/{int(years[0])}.csv', index=False)
