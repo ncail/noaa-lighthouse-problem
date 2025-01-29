@@ -29,7 +29,7 @@ def main(args):
     dt_col_pos = [config['data']['columns']['ref_dt_pos'], config['data']['columns']['primary_dt_pos']]
     pwl_col_pos = [config['data']['columns']['ref_wl_pos'], config['data']['columns']['primary_wl_pos']]
 
-    # Get header information.
+    # Get header information in order of ref, primary.
     isHeader = [config['data']['headers']['ref'], config['data']['headers']['primary']]
 
     # Loop over paths if they were entered. paths contains refdir, then primarydir, so uses the column positions in
