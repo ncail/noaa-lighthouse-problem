@@ -1,0 +1,14 @@
+{
+  "data": {
+    "paths": {
+      "refdir": "data/NOAA/pier21/preprocessed",
+      "primarydir": "data/lighthouse/Pier 21/preprocessed"
+    },
+    "columns": {
+      "primary_dt_pos": 1,
+      "primary_wl_pos": 2,
+      "ref_dt_pos": 0,
+      "ref_wl_pos": 1
+    }
+  }
+}
