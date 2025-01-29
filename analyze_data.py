@@ -74,7 +74,7 @@ def main(args):
     # Get data paths.
     config_refdir = config['data']['paths']['refdir']
     config_primarydir = config['data']['paths']['primarydir']
-    args_flag_ptr = [False]
+    args_flag_ptr = [True]
     paths = helpers.get_data_paths(args, config_refdir, config_primarydir, flag=args_flag_ptr)
 
     # Get output configurations.
