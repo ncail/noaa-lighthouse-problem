@@ -135,9 +135,8 @@ def split_by_year(df, datetime_col_name):
 
     dfs_by_year = {year: group.reset_index(drop=True) for year, group in df.groupby(df[datetime_col_name].dt.year)}
 
-    # Or use dictionary comprehension and return a dictionary where the
-    # keys are the years and the items are the corresponding dataframes.
-    # data_by_year = {year: df[df[date_col_name].dt.year == year] for year in years}
+    for year in dfs_by_year.keys():
+        dfs_by_year[year] = dfs_by_year[year].sort_values(by=datetime_col_name)
 
     # Return the list.
     return dfs_by_year
