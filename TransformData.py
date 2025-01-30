@@ -26,15 +26,15 @@ class TransformData:
             'datetime_column_name': 'dt_col'
         }
 
-        self.config = default_config.copy()
+        self.config = default_config
         if user_config is not None:
-            self.set_configs(user_config.copy())
+            self.set_configs(user_config)
 
         self.dataframe = pd.DataFrame()
         if df is not None:
             self.set_dataframe(df)
 
-        self.col_config = default_col_config.copy()
+        self.col_config = default_col_config
         if col_names is not None:
             self.set_column_names(col_names)
 
@@ -68,15 +68,15 @@ class TransformData:
             is_set[0] = False
 
         if is_set[0]:
-            self.dataframe[self.col_config['primary_data_column_name']] = primary_column.copy()
-            self.dataframe[self.col_config['reference_data_column_name']] = reference_column.copy()
+            self.dataframe[self.col_config['primary_data_column_name']] = primary_column
+            self.dataframe[self.col_config['reference_data_column_name']] = reference_column
 
         if datetime_column is not None:
-            self.dataframe[self.col_config['datetime_data_column_name']] = datetime_column.copy()
+            self.dataframe[self.col_config['datetime_data_column_name']] = datetime_column
     # End set_data.
 
     def set_dataframe(self, dataframe: pd.DataFrame, user_col_config: dict = None, **kwargs) -> None:
-        self.dataframe = dataframe.copy()
+        self.dataframe = dataframe
         self.set_column_names(user_col_config, **kwargs)
     # End set_dataframe.
 
