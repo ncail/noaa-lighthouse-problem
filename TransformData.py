@@ -102,31 +102,31 @@ class TransformData:
     # End get_configs.
 
     def get_col_config(self) -> dict:
-        return self.col_config.copy()
+        return self.col_config
     # End get_col_configs.
 
     def get_dataframe(self) -> pd.DataFrame:
-        return self.dataframe.copy()
+        return self.dataframe
     # End get_dataframe.
 
     def get_data_column(self, column_name: str):
         if column_name in self.dataframe.columns:
-            return self.dataframe[column_name].copy()
+            return self.dataframe[column_name]
         return None
     # End get_data_column.
 
     def get_shifts_summary_df(self):
-        return self.shifts_summary_df.copy()
+        return self.shifts_summary_df
 
     def get_time_shift_table(self):
-        return self.time_shift_table.copy()
+        return self.time_shift_table
 
     def get_temporal_processing_string(self):
         return self.temporal_processing_string
 
     @staticmethod
     def get_temporal_processing_summary_dataframe():
-        return pd.DataFrame(columns=['start_index', 'end_index', 'temporal_shift', 'vertical_offset']).copy()
+        return pd.DataFrame(columns=['start_index', 'end_index', 'temporal_shift', 'vertical_offset'])
 
     # ******************************************************************************
     # ***************************** DATA PROCESSING ********************************
@@ -150,11 +150,11 @@ class TransformData:
                     raise ValueError("Incorrect data provided to temporal_shift_corrector, and no pre-set data found. "
                                      "Must either be passed a dataframe, or a primary and reference data Series.")
             else:
-                df = self.dataframe.copy()
+                df = self.dataframe
                 if len(primary_col) == len(reference_col) == len(datetime_col):
-                    df[primary_col_name] = primary_col.copy()
-                    df[reference_col_name] = reference_col.copy()
-                    df[ref_dt_col_name] = datetime_col.copy()
+                    df[primary_col_name] = primary_col
+                    df[reference_col_name] = reference_col
+                    df[ref_dt_col_name] = datetime_col
                 else:
                     raise ValueError(f"Length mismatch: primary_col Series has {len(primary_col)} rows and "
                                      f"reference_col Series has {len(reference_col)} rows.")
@@ -304,8 +304,10 @@ class TransformData:
         if insert_nans:
             corrected_df.loc[start_index:end_fill_index, primary_col_name] = np.nan
         else:
-            corrected_df.loc[start_index:end_fill_index, primary_col_name] = \
-                df_copy.loc[start_index:end_fill_index, primary_col_name].copy()
+            corrected_df.loc[start_index:end_fill_index, primary_col_name].update(df_copy.loc[
+                                                                                  start_index:end_fill_index,
+                                                                                  primary_col_name])
+
 
         return corrected_df, end_fill_index + 1
     # End uncorrectable case.
