@@ -281,7 +281,7 @@ def main(args):
 
         # If doing analysis on corrected data, update merged_df with corrected_df.
         if do_correction:
-            merged_df = corrected_df.copy()
+            merged_df = corrected_df
 
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
