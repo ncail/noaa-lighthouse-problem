@@ -305,9 +305,7 @@ class TransformData:
             corrected_df.loc[start_index:end_fill_index, primary_col_name] = np.nan
         else:
             corrected_df.loc[start_index:end_fill_index, primary_col_name] = \
-                corrected_df.loc[start_index:end_fill_index, primary_col_name].combine_first(
-                    df_copy.loc[start_index:end_fill_index, primary_col_name]
-                )
+                df_copy.loc[start_index:end_fill_index, primary_col_name].copy()
 
         return corrected_df, end_fill_index + 1
     # End uncorrectable case.
