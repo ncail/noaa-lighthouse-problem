@@ -372,7 +372,7 @@ class TransformData:
         return df_copy, shift_val_index
     
     def _apply_temporal_shift(self, df_copy, merged_df, primary_col_name, try_shift):
-        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift).copy()
+        df_copy[primary_col_name] = merged_df[primary_col_name].shift(try_shift)
         return df_copy
     
     def _record_corrected_values(self, df_copy, corrected_df, primary_col_name, ref_col_name,
