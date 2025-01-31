@@ -378,9 +378,11 @@ def main(args):
                                     'date_time': 'Date Time', 'primary_water_level': 'Primary Water Level',
                                     'reference_water_level': 'Reference Water Level', 'vertical_offset': 'Vertical '
                                     'Offset', 'temporal_shift': 'Temporal Shift'}))
+        annotated_data_per_year = helpers.split_by_year(series_data_annotated_df, 'Date Time')
 
         # Write time shift table to CSV.
-        series_data_annotated_df.to_csv(f"{write_path}/{filename}_annotated_raw_data.csv", index=False)
+        for df, year in zip(annotated_data_per_year, annotated_data_per_year.keys()):
+            df.to_csv(f"{write_path}/{filename}_annotated_raw_data.csv", index=False)
 
     # Write summary file.
     metrics_config = {
