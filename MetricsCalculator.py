@@ -95,7 +95,7 @@ class MetricsCalculator:
         if self.run_data_df is None:
             return None
         else:
-            return self.run_data_df.copy()
+            return self.run_data_df
     # End get_runs_dataframe.
 
     def get_metrics(self):
