@@ -190,7 +190,7 @@ class MetricsCalculator:
     # End get_comparison_stats.
 
     def generate_runs_df(self, offset_column: pd.Series, reference_column: pd.Series,
-                         ref_dates: pd.Series, size: int, create_df: bool = True):
+                         ref_dates: pd.Series, size: int, gaps_are_interruptions: bool = False):
         offsets = self.get_discrepancies(offset_column, reference_column, size)
 
         start_indices = []
@@ -203,13 +203,23 @@ class MetricsCalculator:
         for index in range(1, size):
             current_value = offsets[index]
 
-            # Check if current value is different from previous value.
-            if current_value != previous_value and not (pd.isna(current_value) and pd.isna(previous_value)):
-                end_index = index - 1
-                start_indices.append(start_index)
-                end_indices.append(end_index)
-                run_values.append(previous_value)
-                start_index = end_index
+            if gaps_are_interruptions:
+                # Check if current value is different from previous value.
+                if current_value != previous_value and not (pd.isna(current_value) and pd.isna(previous_value)):
+                    end_index = index - 1
+                    start_indices.append(start_index)
+                    end_indices.append(end_index)
+                    run_values.append(previous_value)
+                    start_index = end_index
+            else:
+                # Ignore NaNs when checking for changes in value.
+                if not pd.isna(current_value):
+                    if current_value != previous_value:
+                        end_index = index - 1
+                        start_indices.append(start_index)
+                        end_indices.append(end_index)
+                        run_values.append(previous_value)
+                        start_index = end_index
 
             previous_value = current_value
         # End for.
@@ -219,19 +229,15 @@ class MetricsCalculator:
         end_indices.append(size - 1)
         run_values.append(previous_value)
 
-        if create_df is True:
-            # Create the dataframe.
-            summary_df = pd.DataFrame()
-            summary_df['offset'] = run_values
-            summary_df['start date'] = ref_dates.iloc[start_indices].tolist()
-            summary_df['end date'] = ref_dates.iloc[end_indices].tolist()
-            summary_df['duration'] = summary_df['end date'] - summary_df['start date']
+        # Create the dataframe.
+        summary_df = pd.DataFrame()
+        summary_df['offset'] = run_values
+        summary_df['start date'] = ref_dates.iloc[start_indices].tolist()
+        summary_df['end date'] = ref_dates.iloc[end_indices].tolist()
+        summary_df['duration'] = summary_df['end date'] - summary_df['start date']
 
-            return summary_df
-
-        else:
-            return start_indices, end_indices, run_values
-    # End get_run_data.
+        return summary_df
+    # End generate_runs_df.
 
     @staticmethod
     def get_discrepancies(offset_column: pd.Series, reference_column: pd.Series,
