@@ -49,6 +49,7 @@ def custom_logger(user_level, file):
     logger.addHandler(file_handler)
 
     return logger
+# End custom_logger()
 
 
 ''' ***********************************************************************************************************
@@ -88,6 +89,9 @@ def main(args):
     # Get mode of analysis.
     analysis = args.mode if args.mode else config['analysis']['mode']
     do_correction = True if analysis == "corrected" else False
+
+    # Get whether to include gaps in runs of vertical offsets, or treat independently.
+    include_gaps = config['analysis']['gaps_are_interruptions']
 
     # Check that get_data_paths succeeded.
     if args_flag_ptr[0] is True:
@@ -226,87 +230,94 @@ def main(args):
         # Get size of merged dataframe.
         size = len(merged_df)
 
-        initial_nan_percentage = (len(merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100
-
-        correction_start_time = time.perf_counter()
-        logger.info(f"Temporal correction for year ({common_years.index(year) + 1}) start")
-
-        corrected_df = merged_df.copy()
-        corrected_df = corrector.temporal_shift_corrector(corrected_df,
-                                                          primary_data_column_name=primary_pwl_col_name,
-                                                          reference_data_column_name=ref_pwl_col_name,
-                                                          datetime_column_name=ref_dt_col_name)
-
-        correction_end_time = time.perf_counter()
-        correction_duration = correction_end_time - correction_start_time
-        logger.info(f"Temporal correction algorithm for year ({common_years.index(year) + 1}) finished in "
-                    f"{correction_duration:.2f} seconds")
-
-        final_nan_percentage = (len(corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100
-
-        # Get the annotated raw series data for current year, concat each year in common years, the corresponding time
-        # and vertical offsets per data point are also listed.
-        series_data_annotated_current_year = corrector.get_time_shift_table()
-        if year in annotated_raw_data_years:
-            # Concats the current year dict and all-years dict by extending the values for each dict key.
-            series_data_concat_dict = \
-                {key: series_data_concat_dict[key] + series_data_annotated_current_year[key] for key in
-                 series_data_concat_dict}
-
-        # Get time-shifted percentage and error.
-        series_data_df = pd.DataFrame(series_data_annotated_current_year)
-        # Gets the time shifted cells that are not N/A or 0.
-        num_time_shifted = (~series_data_df['temporal_shift'].isin(['N/A', 0])).sum()
-        percent_time_shifted = num_time_shifted / len(series_data_df) * 100
-
-        error = (series_data_df['temporal_shift'] == 'N/A').sum()
-        error_percent = error / len(series_data_df) * 100
-
-        # Add to all-years summary dataframe.
-        shifts_summary_df = corrector.get_shifts_summary_df()[0]
-        if year in temp_corr_summary_years:
-            processed_year_row = pd.DataFrame({
-                'Year': [year],
-                'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
-                'Vertical offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
-                'Time-shifted data %': [round(percent_time_shifted, 4)],
-                'Positive error %': [round(error_percent, 4)],
-                'Initial NaN %': [round(initial_nan_percentage, 4)],
-                'Final NaN %': [round(final_nan_percentage, 4)],
-                'Increased NaN %': [round(final_nan_percentage - initial_nan_percentage, 4)]
-            })
-            all_processed_years_df = all_processed_years_df.dropna(axis=1, how='all')
-            all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
-                                               ignore_index=True)
-
-        # If doing analysis on corrected data, update merged_df with corrected_df.
+        ''' *******************************************************************************************************
+            ********************************************* TEMPORAL CORRECTION *************************************
+            ******************************************************************************************************* '''
         if do_correction:
+            initial_nan_percentage = (len(merged_df[merged_df[primary_pwl_col_name].isna()]) / size) * 100
+
+            correction_start_time = time.perf_counter()
+            logger.info(f"Temporal correction for year ({common_years.index(year) + 1}) start")
+
+            corrected_df = merged_df.copy()
+            corrected_df = corrector.temporal_shift_corrector(corrected_df,
+                                                              primary_data_column_name=primary_pwl_col_name,
+                                                              reference_data_column_name=ref_pwl_col_name,
+                                                              datetime_column_name=ref_dt_col_name)
+
+            correction_end_time = time.perf_counter()
+            correction_duration = correction_end_time - correction_start_time
+            logger.info(f"Temporal correction algorithm for year ({common_years.index(year) + 1}) finished in "
+                        f"{correction_duration:.2f} seconds")
+
+            # If doing analysis on corrected data, update merged_df with corrected_df.
             merged_df = corrected_df
+
+            final_nan_percentage = (len(corrected_df[corrected_df[primary_pwl_col_name].isna()]) / size) * 100
+
+            # Get the annotated raw series data for current year, concat each year in common years, the corresponding
+            # time and vertical offsets per data point are also listed.
+            series_data_annotated_current_year = corrector.get_time_shift_table()
+            if year in annotated_raw_data_years:
+                # Concats the current year dict and all-years dict by extending the values for each dict key.
+                series_data_concat_dict = \
+                    {key: series_data_concat_dict[key] + series_data_annotated_current_year[key] for key in
+                     series_data_concat_dict}
+
+            # Get time-shifted percentage and error.
+            series_data_df = pd.DataFrame(series_data_annotated_current_year)
+            # Gets the time shifted cells that are not N/A or 0.
+            num_time_shifted = (~series_data_df['temporal_shift'].isin(['N/A', 0])).sum()
+            percent_time_shifted = num_time_shifted / len(series_data_df) * 100
+
+            error = (series_data_df['temporal_shift'] == 'N/A').sum()
+            error_percent = error / len(series_data_df) * 100
+
+            # Add to all-years summary dataframe.
+            shifts_summary_df = corrector.get_shifts_summary_df()[0]
+            if year in temp_corr_summary_years:
+                processed_year_row = pd.DataFrame({
+                    'Year': [year],
+                    'Temporal shifts': [shifts_summary_df['temporal_shift'].unique().tolist()],
+                    'Vertical offsets': [shifts_summary_df['vertical_offset'].unique().tolist()],
+                    'Time-shifted data %': [round(percent_time_shifted, 4)],
+                    'Positive error %': [round(error_percent, 4)],
+                    'Initial NaN %': [round(initial_nan_percentage, 4)],
+                    'Final NaN %': [round(final_nan_percentage, 4)],
+                    'Increased NaN %': [round(final_nan_percentage - initial_nan_percentage, 4)]
+                })
+                all_processed_years_df = all_processed_years_df.dropna(axis=1, how='all')
+                all_processed_years_df = pd.concat([all_processed_years_df, processed_year_row],
+                                                   ignore_index=True)
+        # End if(do_correction).
 
         # Get comparison table.
         stats_df = MetricsCalculator.get_comparison_stats(merged_df[primary_pwl_col_name],
                                                           merged_df[ref_pwl_col_name], size)
 
+        # Add gap_interrupts_vertical_offsets bool to config.
+        # If mode == 'raw' do not run temporal correction algorithm.
+        # Add to metrics calculator, parameter to generate runs df including gaps as part of a VA.
+
         # Get offset runs dataframe.
-        # run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
-        #                                           merged_df[ref_pwl_col_name],
-        #                                           merged_df[ref_dt_col_name], size)
+        run_data_df = calculator.generate_runs_df(merged_df[primary_pwl_col_name],
+                                                  merged_df[ref_pwl_col_name],
+                                                  merged_df[ref_dt_col_name], size,
+                                                  gaps_are_interruptions=include_gaps)
+        calculator.set_runs_dataframe(run_data_df)
 
         # Set column names in calculator to match those in shifts_summary_df from TransformData.
-        calculator.set_column_names(shifts_summary_df.columns[2], shifts_summary_df.columns[4],
-                                    shifts_summary_df.columns[0], shifts_summary_df.columns[1])
+        # calculator.set_column_names(shifts_summary_df.columns[2], shifts_summary_df.columns[4],
+        #                             shifts_summary_df.columns[0], shifts_summary_df.columns[1])
 
         # Set the dataframe in calculator so metrics can be calculated.
         # Using shifts_summary_df from TransformDate is preferable to using runs_df from MetricsCalculator because
         # the latter assumes gaps are interruptions to vertical offsets while the former does not.
-        shifts_summary_df.replace('N/A', np.nan, inplace=True)
-        calculator.set_runs_dataframe(shifts_summary_df)
+        # shifts_summary_df.replace('N/A', np.nan, inplace=True)
+        # calculator.set_runs_dataframe(shifts_summary_df)
 
         # Calculate metrics.
         metrics = calculator.calculate_metrics()
-
-        # Set metrics.
-        # calculator.set_metrics(metrics)
 
         # Get table of offsets filtered by duration.
         offsets_duration_filtered_df = calculator.generate_duration_filtered_offsets_info()
@@ -315,13 +326,19 @@ def main(args):
         offsets_value_filtered_df = calculator.generate_value_filtered_offsets_info()
 
         # Append year info to metrics summary.
+        if not do_correction:
+            percent_time_shifted_rounded = 'N/A'
+            error_percent_rounded = 'N/A'
+        else:
+            percent_time_shifted_rounded = round(percent_time_shifted, 2)
+            error_percent_rounded = round(error_percent, 2)
         if year in metrics_summary_years:
             summary[year] = {
                 "% agree": stats_df.loc['total agreements', 'percent'],
                 "% values disagree": stats_df.loc['value disagreements', 'percent'],
                 "% missing": stats_df.loc['missing (primary)', 'percent'],
                 "% total disagree": stats_df.loc['total disagreements', 'percent'],
-                "% time-shifted": f'{round(percent_time_shifted, 2)} (+{round(error_percent, 2)})',
+                "% time-shifted": f'{percent_time_shifted_rounded} (+{error_percent_rounded})',
                 "# DSs (FBD)": metrics['duration_filtered_offsets_count'],
                 "# gaps (FBD)": metrics['duration_filtered_gaps_count'],
                 "DSs list (FBD)": list(offsets_duration_filtered_df['offset'].unique()),
@@ -331,23 +348,21 @@ def main(args):
             }
 
         # Write vertical offsets info (FBD) report.
-        reorder_columns = [shifts_summary_df.columns[4], shifts_summary_df.columns[0], shifts_summary_df.columns[1],
-                           shifts_summary_df.columns[2]]
+        # reorder_columns = [shifts_summary_df.columns[4], shifts_summary_df.columns[0], shifts_summary_df.columns[1],
+        #                    shifts_summary_df.columns[2]]
         if year in vert_offset_info_duration_filtered_years:
-            offsets_duration_filtered_df = offsets_duration_filtered_df[reorder_columns]  # Automatically drops the
+            # offsets_duration_filtered_df = offsets_duration_filtered_df[reorder_columns]  # Automatically drops the
             # temporal_shift column from shifts_summary_df.
-            offsets_duration_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
-                                                         "date", "end_date": "end date"}, inplace=True)
-
+            # offsets_duration_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
+            #                                              "date", "end_date": "end date"}, inplace=True)
             offsets_duration_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
                                                 f"vertical_offset_info_duration_filtered.csv", index=False)
 
         # Write vertical offsets info (FBV) report.
         if year in vert_offset_info_value_filtered_years:
-            offsets_value_filtered_df = offsets_value_filtered_df[reorder_columns]
-            offsets_value_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
-                                                      "date", "end_date": "end date"}, inplace=True)
-
+            # offsets_value_filtered_df = offsets_value_filtered_df[reorder_columns]
+            # offsets_value_filtered_df.rename(columns={"vertical_offset": "vertical offset", "start_date": "start "
+            #                                           "date", "end_date": "end date"}, inplace=True)
             offsets_value_filtered_df.to_csv(f"{write_path}/{filename}_{year}_"
                                              f"vertical_offset_info_value_filtered.csv", index=False)
 
@@ -411,8 +426,9 @@ def main(args):
                                              f'{write_path}/{filename}_metrics_summary.txt')
 
     # Write temporal offset correction summary for all years.
-    if temp_corr_summary_years:
-        all_processed_years_df.to_csv(f"{write_path}/{filename}_temporal_shifts_summary.csv", index=False)
+    if do_correction:
+        if temp_corr_summary_years:
+            all_processed_years_df.to_csv(f"{write_path}/{filename}_temporal_shifts_summary.csv", index=False)
 
     program_end_time = time.perf_counter()
     program_duration = program_end_time - program_start_time
