@@ -8,7 +8,8 @@
 
   "analysis": {
       "mode": "raw",
-      "years": ["all_years"]
+      "years": ["all_years"],
+      "gaps_are_interruptions": false
   },
 
    "output": {

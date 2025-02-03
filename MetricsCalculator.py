@@ -435,8 +435,8 @@ class MetricsCalculator:
         return duration_filtered_offsets_df
     # End generate_duration_filtered_offsets_info.
 
-    def generate_value_filtered_offsets_info(self, df=None, duration_column_name=None):
-        value_filtered_offsets_df = self.filter_offsets_by_value(df, duration_column_name)
+    def generate_value_filtered_offsets_info(self, df=None, offsets_column_name=None):
+        value_filtered_offsets_df = self.filter_offsets_by_value(df, offsets_column_name)
 
         return value_filtered_offsets_df
 

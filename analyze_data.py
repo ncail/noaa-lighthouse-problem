@@ -382,23 +382,25 @@ def main(args):
     with open(f'{write_path}/{filename}_configs.txt', 'w') as file:
         file.write(f"Configurations: {json.dumps(config, indent=4)}")
 
-    if annotated_raw_data_years:
-        # Get table of annotated series data.
-        series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
+    if do_correction:
+        if annotated_raw_data_years:
+            # Get table of annotated series data.
+            series_data_annotated_df = pd.DataFrame(series_data_concat_dict)
 
-        reorder_columns = ['date_time', 'primary_water_level', 'reference_water_level', 'vertical_offset',
-                           'temporal_shift']
-        series_data_annotated_df = series_data_annotated_df[reorder_columns]
-        series_data_annotated_df = (series_data_annotated_df.rename(columns={
-                                    'date_time': 'Date Time', 'primary_water_level': 'Primary Water Level',
-                                    'reference_water_level': 'Reference Water Level', 'vertical_offset': 'Vertical '
-                                    'Offset', 'temporal_shift': 'Temporal Shift'}))
-        annotated_data_per_year = helpers.split_by_year(series_data_annotated_df, 'Date Time')
+            reorder_columns = ['date_time', 'primary_water_level', 'reference_water_level', 'vertical_offset',
+                               'temporal_shift']
+            series_data_annotated_df = series_data_annotated_df[reorder_columns]
+            series_data_annotated_df = (series_data_annotated_df.rename(columns={
+                                        'date_time': 'Date Time', 'primary_water_level': 'Primary Water Level',
+                                        'reference_water_level': 'Reference Water Level', 'vertical_offset': 'Vertical '
+                                        'Offset', 'temporal_shift': 'Temporal Shift'}))
+            annotated_data_per_year = helpers.split_by_year(series_data_annotated_df, 'Date Time')
 
-        # Write time shift table to CSV.
-        for df, year in zip(annotated_data_per_year, annotated_data_per_year.keys()):
-            if year in annotated_raw_data_years:
-                df.to_csv(f"{write_path}/{filename}_{year}_annotated_raw_data.csv", index=False)
+            # Write time shift table to CSV.
+            for df, year in zip(annotated_data_per_year, annotated_data_per_year.keys()):
+                if year in annotated_raw_data_years:
+                    df.to_csv(f"{write_path}/{filename}_{year}_annotated_raw_data.csv", index=False)
+    # End if.
 
     # Write summary file.
     metrics_config = {
