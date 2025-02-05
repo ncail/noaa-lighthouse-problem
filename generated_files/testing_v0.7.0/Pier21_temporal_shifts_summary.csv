@@ -1,3 +1,0 @@
-year,temporal_offsets,vertical_offsets,initial_nan_percent,final_nan_percent,increased_nan_percent
-2015,"[-1, 'N/A']","[0.003, 'N/A', 0.004, 0.0]",0.7066,0.7078,0.0011999999999999789
-2023,"[-1, 'N/A', -2]","[0.01, 'N/A', 0.002, -0.008, 0.021, 0.001, 0.0]",2.3904,2.3938,0.0034000000000000696
