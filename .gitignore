@@ -2,7 +2,6 @@ data/
 bfg-1.14.0.jar
 .idea/
 __pycache__/
-generated_files/correction_reports/
+generated_files/
 my_config.json
 app.log
-integrate_nesscan_fix.py
