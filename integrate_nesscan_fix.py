@@ -12,9 +12,9 @@ import helpers
 station = "rockport"
 
 # Specify write path.
-# duplicates_path = f'generated_files/nesscan-fixed_duplicates'
-# if not os.path.exists(duplicates_path):
-#     os.makedirs(duplicates_path)
+duplicates_path = f'generated_files/nesscan-fixed_duplicates'
+if not os.path.exists(duplicates_path):
+    os.makedirs(duplicates_path)
 
 fixed_lh_file_path = f'data/lighthouse/{station}_nesscan_fixed'
 if not os.path.exists(fixed_lh_file_path):
@@ -71,27 +71,27 @@ for year in common_years:
     lh_df = lh_dfs[year]
     nesscan_df = nesscan_dfs[year]
 
-    # Find and write duplicates.
-    duplicates = nesscan_df[nesscan_df.duplicated(subset=cols[0], keep=False)]
+    # Identify total and partial duplicates.
+    # Total: same datetime and water level.
+    # Partial: same datetime, different water level.
+    total_duplicates = nesscan_df.duplicated(subset=[cols[0], cols[1]], keep=False)
+    partial_duplicates = nesscan_df.duplicated(subset=cols[0], keep=False) & ~total_duplicates
 
-    # Print the duplicates, write to file. Update: in the nesscan-fixed data, the files highly overlap the dates
-    # printed to the output file (e.g. 1993 output contains days from 1992, also present in the 1992 file) so just
-    # remove duplicates, it is impossible to tell what is a systemic duplicate if the output is like this.
-    # print(duplicates)
-    # write_header = not Path(f"{duplicates_path}/{station}.csv").exists()
-    # duplicates.to_csv(f"{duplicates_path}/{station}.csv", index=False, header=write_header, mode='a')
+    # Send partial duplicates to CSV.
+    partial_duplicates_df = nesscan_df[partial_duplicates]
+    partial_duplicates_df.to_csv(f"{duplicates_path}/{station}_partial_duplicates.csv", mode='a', index=False)
 
     # Ensure there are no duplicate datetime values in nesscan_df. Keep the first instance.
-    nesscan_df = nesscan_df.drop_duplicates(subset=cols[0], keep='first')
-
-    lh_df.set_index('dt', inplace=True)
-    nesscan_df.set_index('dt', inplace=True)
-
-    lh_df.update(nesscan_df)  # Updates df1 values with df2 where dt matches
-
-    lh_df.reset_index(inplace=True)
-
-    lh_df.to_csv(f"{fixed_lh_file_path}/{year}.csv", index=False)
+    # nesscan_df = nesscan_df.drop_duplicates(subset=cols[0], keep='first')
+#
+    # lh_df.set_index('dt', inplace=True)
+    # nesscan_df.set_index('dt', inplace=True)
+#
+    # lh_df.update(nesscan_df)  # Updates df1 values with df2 where dt matches.
+#
+    # lh_df.reset_index(inplace=True)
+#
+    # lh_df.to_csv(f"{fixed_lh_file_path}/{year}.csv", index=False)
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************
 # ***************************************************************************
