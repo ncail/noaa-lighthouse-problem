@@ -397,7 +397,7 @@ def main(args):
             annotated_data_per_year = helpers.split_by_year(series_data_annotated_df, 'Date Time')
 
             # Write time shift table to CSV.
-            for df, year in zip(annotated_data_per_year, annotated_data_per_year.keys()):
+            for year, df in annotated_data_per_year.items():
                 if year in annotated_raw_data_years:
                     df.to_csv(f"{write_path}/{filename}_{year}_annotated_raw_data.csv", index=False)
     # End if.
