@@ -9,7 +9,7 @@ import helpers
 # ***************************************************************************
 
 # Specify station (as given in data/lighthouse directory).
-station = "rockport"
+station = "portIsabel"
 
 # Specify write path.
 duplicates_path = f'generated_files/nesscan-fixed_duplicates'
@@ -79,19 +79,20 @@ for year in common_years:
 
     # Send partial duplicates to CSV.
     partial_duplicates_df = nesscan_df[partial_duplicates]
-    partial_duplicates_df.to_csv(f"{duplicates_path}/{station}_partial_duplicates.csv", mode='a', index=False)
+    partial_duplicates_df.to_csv(f"{duplicates_path}/{station}_partial_duplicates.csv", mode='a',
+                                 header=False, index=False)
 
     # Ensure there are no duplicate datetime values in nesscan_df. Keep the first instance.
-    # nesscan_df = nesscan_df.drop_duplicates(subset=cols[0], keep='first')
-#
-    # lh_df.set_index('dt', inplace=True)
-    # nesscan_df.set_index('dt', inplace=True)
-#
-    # lh_df.update(nesscan_df)  # Updates df1 values with df2 where dt matches.
-#
-    # lh_df.reset_index(inplace=True)
-#
-    # lh_df.to_csv(f"{fixed_lh_file_path}/{year}.csv", index=False)
+    nesscan_df = nesscan_df.drop_duplicates(subset=cols[0], keep='first')
+
+    lh_df.set_index('dt', inplace=True)
+    nesscan_df.set_index('dt', inplace=True)
+
+    lh_df.update(nesscan_df)  # Updates df1 values with df2 where dt matches.
+
+    lh_df.reset_index(inplace=True)
+
+    lh_df.to_csv(f"{fixed_lh_file_path}/{year}.csv", index=False)
 # ***************************************************************************
 # *************************** PROGRAM END ***********************************
 # ***************************************************************************
