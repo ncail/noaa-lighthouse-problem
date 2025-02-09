@@ -7,31 +7,33 @@ import matplotlib.ticker as ticker
 import datetime
 
 # Config mode: 1 - offset value hist, 2 - offset duration hist.
-mode = 1
+mode = 2
 
 # Config station: bhp, pIsabel, pier21, rockport (as in path)
-station = 'bhp'
-station_fig_title = 'Bob Hall Pier'
+station = 'rockport'
+station_fig_title = 'Rockport'
+
+# Config step size for VO value (step_size_val), duration (num_bins, because its log scale) histogram.
+step_size_val = 0.1
+# step_size_dur = np.timedelta64(60, 'm').astype(int)  # minutes
+num_bins = 20
 
 # Read vertical offset csv into dfs.
-offsets_tables_path = f'generated_files/eval_vertical_offsets_nesscan-fixed/{station}_v0.7.5'
+offsets_tables_path = (f'generated_files/eval_vertical_offsets_nesscan-fixed/'
+                       f'vertical_offsets_gaps_are_interruptions/{station}_v0.7.5')
 offsets_files = glob.glob(f'{offsets_tables_path}/*.csv')
 
-datetimes_list = pd.date_range(
-            start=datetime.datetime(year=year, month=1, day=1),
-            end=datetime.datetime(year=year, month=12, day=31, hour=23, minute=54),
-            freq=datetime.timedelta(minutes=6)  # Frequency of 6 minutes
-            ).tolist()
-
-station_offsets = pd.Series()
-station_durations = pd.Series()
+# station_df['offset'] = pd.Series()
+# station_df['duration'] = pd.Series()
+station_df = pd.DataFrame()
 full_dataset = []
 for file in offsets_files:
-    df = pd.read_csv(file, parse_dates='start date')
+    df = pd.read_csv(file, parse_dates=['start date'])
     df['duration'] = pd.to_timedelta(df['duration'])
 
-    station_offsets.append(df['offset'])
-    station_durations.append(df['duration'])
+    # pd.concat([station_df['offset'], df['offset']])
+    # pd.concat([station_df['duration'], df['duration']])
+    station_df = pd.concat([station_df, df])
 
     current_year = df['start date'].dt.year[0]
     datetime_list_current_year = pd.date_range(
@@ -39,16 +41,17 @@ for file in offsets_files:
             end=datetime.datetime(year=current_year, month=12, day=31, hour=23, minute=54),
             freq=datetime.timedelta(minutes=6)  # Frequency of 6 minutes
             ).tolist()
-    full_dataset.append(datetime_list_current_year)
+    full_dataset.extend(datetime_list_current_year)
 # End for.
 
 # Get size of dataset and percent offset.
 dataset_size = len(full_dataset)
-percent_offset = len(station_offsets) / dataset_size * 100
+offset_info_size = len(station_df['offset'])
+percent_offset = offset_info_size / dataset_size * 100
 
 # Convert columns to numpy series.
-offsets_arr = station_offsets.to_numpy()
-durations_arr = station_durations.to_numpy()
+offsets_arr = station_df['offset'].to_numpy()
+durations_arr = station_df['duration'].to_numpy()
 
 # Generate the offset values histogram.
 if mode == 1:
@@ -56,8 +59,7 @@ if mode == 1:
     offsets_arr = -offsets_arr
 
     # Define bin edges with precision.
-    step_size = 0.001
-    bin_edges = np.arange(offsets_arr.min() - step_size, offsets_arr.max() + step_size, step_size)
+    bin_edges = np.arange(offsets_arr.min() - step_size_val, offsets_arr.max() + step_size_val, step_size_val)
 
     # Compute histogram values.
     counts, bin_edges = np.histogram(offsets_arr, bins=bin_edges)
@@ -67,10 +69,10 @@ if mode == 1:
     n, bins, patches = ax.hist(offsets_arr, bins=bin_edges, edgecolor='black')
 
     # Label each bar with its value.
-    for i in range(len(bin_edges) - 1):
-        bin_center = (bin_edges[i] + bin_edges[i + 1]) / 2
-        if counts[i] > 0:
-            ax.text(bin_center, counts[i], f'{bin_center:.3f}', ha='center', va='bottom')
+    # for i in range(len(bin_edges) - 1):
+    #     bin_center = (bin_edges[i] + bin_edges[i + 1]) / 2
+    #     if counts[i] > 0:
+    #         ax.text(bin_center, counts[i], f'{bin_center:.3f}', ha='center', va='bottom')
 
     # x-axis rounds to millimeters.
     ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.3f'))
@@ -80,27 +82,79 @@ if mode == 1:
 
     # Add labels and titles.
     ax.set_xlabel('Vertical Offset Value (LH - NOAA, m)', fontsize=18)
-    plt.suptitle(f"{station_fig_title}: Frequency of Datum Shifts", fontsize=22)
+    plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
     ax.set_ylabel('Number of Occurrences', fontsize=18)
-    ax.set_title(f'For shifts with duration >= 1 hour', fontsize=18)
+    # ax.set_title(f'For offsets with duration >= 1 hour', fontsize=18)  # Dataset is filtered by 6-minutes.
+    ax.set_title(f'(Treating missing values as interruptions to offsets)', fontsize=18)
     ax.tick_params(axis='both', which='major', labelsize=14)
 # End mode 1.
 
 if mode == 2:
-    
+    # Convert to minutes for convenience.
+    durations_arr_minutes = durations_arr.astype('timedelta64[m]').astype(int)  # arange() in next line uses int.
+
+    # Define bin edges with precision.
+    # bin_edges = np.arange(durations_arr_minutes.min() - step_size_dur, durations_arr_minutes.max() + step_size_dur,
+    # step_size_dur)
+
+    # Compute histogram values.
+    # counts, bin_edges = np.histogram(durations_arr_minutes, bins=bin_edges)
+
+    # Create the histogram.
+    fig, ax = plt.subplots()
+    # n, bins, patches = ax.hist(durations_arr_minutes, bins=bin_edges, edgecolor='black')
+
+    # Label each bar with its value.
+    # for i in range(len(bin_edges) - 1):
+    #     bin_center = (bin_edges[i] + bin_edges[i + 1]) / 2
+    #     if counts[i] > 0:
+    #         ax.text(bin_center, counts[i], f'{bin_center:.3f}', ha='center', va='bottom')
+
+    # Define the bin edges using logspace.
+    min_val = np.log10(durations_arr_minutes.min())  # log(min duration)
+    max_val = np.log10(durations_arr_minutes.max())  # log(max duration)
+
+    bin_edges = np.logspace(min_val, max_val, num=num_bins)
+
+    # Plot histogram with log bins.
+    ax.hist(durations_arr_minutes, bins=bin_edges, edgecolor='black', log=True)
+    ax.set_xscale('log')
+
+    benchmarks = {
+        60: '1 hour',
+        1440: '1 day',
+        10080: '1 week',
+        43200: '1 month',
+        525600: '1 year'
+    }
+
+    for minute_val, time_descriptor in benchmarks.items():
+        plt.axvline(x=minute_val, label=time_descriptor, color='green', linestyle='--')
+        plt.text(minute_val, 100, time_descriptor, ha='right', va='bottom')
+
+    # Add labels and titles.
+    ax.set_xlabel('Duration Value (minutes)', fontsize=18)
+    plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
+    ax.set_ylabel('Number of Occurrences', fontsize=18)
+    # ax.set_title(f'For offsets with duration >= 1 hour', fontsize=18)  # Dataset is filtered by 6-minutes.
+    ax.set_title(f'(Treating missing values as interruptions to offsets)', fontsize=18)
+    ax.tick_params(axis='both', which='major', labelsize=14)
 # End mode 2.
 
 # Add note about the total datum-shifted percentage.
-longest_duration = durations_arr.max()
-days = longest_duration.days
-hours = longest_duration.seconds // 3600
-minutes = (longest_duration.seconds % 3600) // 60
+longest_offset_index = np.argmax(durations_arr)
+longest_offset = offsets_arr[longest_offset_index]
+longest_duration = durations_arr[longest_offset_index]
+
+# Convert to days, hours, and minutes.
+days = longest_duration.astype('timedelta64[D]').astype(int)
+hours = (longest_duration - np.timedelta64(days, 'D')).astype('timedelta64[h]').astype(int)
+minutes = (longest_duration - np.timedelta64(days, 'D') - np.timedelta64(hours, 'h')).astype('timedelta64[m]').astype(int)
+
 formatted_longest_duration = f"{days} days {hours} hours {minutes} minutes"
 
-longest_datum_shift = filtered_nonzero_df['vertical_offset'][filtered_nonzero_df['duration'] ==
-                                                             longest_duration].values[0]
-long_shift_note = (f'Longest datum shift is\n'
-                   f'{str(longest_datum_shift)} m, {formatted_longest_duration} long')
+long_shift_note = (f'Longest vertical offset is\n'
+                   f'{str(longest_offset)} m, {formatted_longest_duration} long')
 
 xcoord = 0.05
 ycoord = 0.95
