@@ -6,33 +6,38 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import datetime
 
+
+''' ***********************************************************************************************************
+    ************************************************* CONFIG **************************************************
+    *********************************************************************************************************** '''
 # Config mode: 1 - offset value hist, 2 - offset duration hist.
 mode = 2
 
 # Config station: bhp, pIsabel, pier21, rockport (as in path)
-station = 'rockport'
-station_fig_title = 'Rockport'
+station = 'pier21'
 
-# Config step size for VO value (step_size_val), duration (num_bins, because its log scale) histogram.
-step_size_val = 0.1
-# step_size_dur = np.timedelta64(60, 'm').astype(int)  # minutes
+# Config vertical offsets data path.
+offsets_tables_path = (f'generated_files/eval_vertical_offsets_nesscan-fixed/'
+                       f'vertical_offsets/{station}_v0.7.5/outliers_removed')
+station_fig_title = 'Pier 21 (outliers removed)'
+
+# Config MODE 1 step size for VO value (step_size_val), MODE 2 duration (num_bins, because its log scale) histogram.
+step_size_val = 0.02
 num_bins = 20
 
+
+''' ***********************************************************************************************************
+    ******************************************* PROCESSING START **********************************************
+    *********************************************************************************************************** '''
 # Read vertical offset csv into dfs.
-offsets_tables_path = (f'generated_files/eval_vertical_offsets_nesscan-fixed/'
-                       f'vertical_offsets_gaps_are_interruptions/{station}_v0.7.5')
 offsets_files = glob.glob(f'{offsets_tables_path}/*.csv')
 
-# station_df['offset'] = pd.Series()
-# station_df['duration'] = pd.Series()
 station_df = pd.DataFrame()
 full_dataset = []
 for file in offsets_files:
     df = pd.read_csv(file, parse_dates=['start date'])
     df['duration'] = pd.to_timedelta(df['duration'])
 
-    # pd.concat([station_df['offset'], df['offset']])
-    # pd.concat([station_df['duration'], df['duration']])
     station_df = pd.concat([station_df, df])
 
     current_year = df['start date'].dt.year[0]
@@ -51,13 +56,11 @@ percent_offset = offset_info_size / dataset_size * 100
 
 # Convert columns to numpy series.
 offsets_arr = station_df['offset'].to_numpy()
+offsets_arr = -offsets_arr  # Get negative of offsets (so the values represent LH - NOAA).
 durations_arr = station_df['duration'].to_numpy()
 
 # Generate the offset values histogram.
 if mode == 1:
-    # Get negative of offsets (so the values represent LH - NOAA).
-    offsets_arr = -offsets_arr
-
     # Define bin edges with precision.
     bin_edges = np.arange(offsets_arr.min() - step_size_val, offsets_arr.max() + step_size_val, step_size_val)
 
@@ -149,7 +152,8 @@ longest_duration = durations_arr[longest_offset_index]
 # Convert to days, hours, and minutes.
 days = longest_duration.astype('timedelta64[D]').astype(int)
 hours = (longest_duration - np.timedelta64(days, 'D')).astype('timedelta64[h]').astype(int)
-minutes = (longest_duration - np.timedelta64(days, 'D') - np.timedelta64(hours, 'h')).astype('timedelta64[m]').astype(int)
+minutes = (longest_duration - np.timedelta64(days, 'D') -
+           np.timedelta64(hours, 'h')).astype('timedelta64[m]').astype(int)
 
 formatted_longest_duration = f"{days} days {hours} hours {minutes} minutes"
 
