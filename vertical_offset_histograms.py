@@ -11,26 +11,26 @@ import datetime
     ************************************************* CONFIG **************************************************
     *********************************************************************************************************** '''
 # Config mode: 1 - offset value hist, 2 - offset duration hist.
-mode = 1
+mode = 2
 
 # Mode 1 configs.
 is_abs = True
 high_pass_filter = 0.02
 
 # Config station: bhp, pIsabel, pier21, rockport (as in path)
-station = 'bhp'
+station = 'rockport'
 
 # Config vertical offsets data path.
 offsets_tables_path = (f'generated_files/eval_vertical_offsets_nesscan-fixed/'
                        f'vertical_offsets/{station}_v0.7.5/outliers_removed')
-station_fig_title = 'Bob Hall Pier (outliers removed)'
+station_fig_title = 'Rockport (outliers & datum shift removed)'
 
 # Output path.
 output = f'generated_files/eval_vertical_offsets_nesscan-fixed/histograms'
 
 # Config MODE 1 step size for VO value (step_size_val), MODE 2 duration (num_bins, because its log scale) histogram.
 step_size_val = 0.02
-num_bins = 20
+num_bins = 9
 
 
 ''' ***********************************************************************************************************
@@ -57,9 +57,15 @@ for file in offsets_files:
     full_dataset.extend(datetime_list_current_year)
 # End for.
 
-# Apply high pass filter.
+# Apply vertical offsets configs.
+if is_abs:
+    station_df['offset'] = np.abs(station_df['offset'])
+
 if high_pass_filter:
     station_df = station_df[station_df['offset'] > high_pass_filter]
+
+if station == 'rockport':
+    station_df = station_df[station_df['offset'] < 6.000]
 
 # Get size of dataset and percent offset.
 dataset_size = len(full_dataset)
@@ -68,11 +74,9 @@ percent_offset = offset_info_size / dataset_size * 100
 
 # Convert columns to numpy series.
 offsets_arr = station_df['offset'].to_numpy()
-offsets_arr = -offsets_arr  # Get negative of offsets (so the values represent LH - NOAA).
 
-# Apply vertical offsets configs.
-if is_abs:
-    offsets_arr = np.abs(offsets_arr)
+if not is_abs:
+    offsets_arr = -offsets_arr  # Get negative of offsets (so the values represent LH - NOAA).
 
 # Durations array.
 durations_arr = station_df['duration'].to_numpy()
@@ -106,7 +110,10 @@ if mode == 1:
         ax.set_xlabel('Vertical Offset Absolute Value, m', fontsize=18)
     else:
         ax.set_xlabel('Vertical Offset Value (LH - NOAA, m)', fontsize=18)
-    plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets (>0.02 m)", fontsize=22)
+    if high_pass_filter:
+        plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets (>{high_pass_filter} m)", fontsize=22)
+    else:
+        plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
     ax.set_ylabel('Number of Occurrences', fontsize=18)
     # ax.set_title(f'For offsets with duration >= 1 hour', fontsize=18)  # Dataset is filtered by 6-minutes.
     ax.set_title(f'(Excluding missing values. Step size={step_size_val})', fontsize=18)
@@ -157,11 +164,13 @@ if mode == 2:
         plt.text(minute_val, 100, time_descriptor, ha='right', va='bottom')
 
     # Add labels and titles.
+    if high_pass_filter:
+        plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets (>{high_pass_filter} m)", fontsize=22)
+    else:
+        plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
+    ax.set_title(f'(Excluding missing values)', fontsize=18)
     ax.set_xlabel('Duration Value (minutes)', fontsize=18)
-    plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
     ax.set_ylabel('Number of Occurrences', fontsize=18)
-    # ax.set_title(f'For offsets with duration >= 1 hour', fontsize=18)  # Dataset is filtered by 6-minutes.
-    ax.set_title(f'(Treating missing values as interruptions to offsets)', fontsize=18)
     ax.tick_params(axis='both', which='major', labelsize=14)
 # End mode 2.
 
@@ -199,7 +208,7 @@ if mode == 1:
     mode_str = 'offset_value'
 elif mode == 2:
     mode_str = 'offset_duration'
-plt.savefig(f'{output}/{current_timestamp}_{mode_str}_plot.png', bbox_inches='tight')
+plt.savefig(f'{output}/{station}_{current_timestamp}_{mode_str}_plot.png', bbox_inches='tight')
 
 plt.show()
 
