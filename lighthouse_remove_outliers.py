@@ -9,12 +9,13 @@ import numpy as np
     *********************************************************************************************************** '''
 
 station = 'portIsabel'
+abs_cutoff = 3
 
-cleaned_data_path = f'data/lighthouse/{station}_nesscan_fixed/outliers_removed'
+lighthouse_files_path = f"data/lighthouse/{station}_nesscan_fixed"
+
+cleaned_data_path = f'data/lighthouse/{station}_nesscan_fixed/outliers_removed_{abs_cutoff}m'
 if not os.path.exists(cleaned_data_path):
     os.makedirs(cleaned_data_path)
-
-abs_cutoff = 3
 
 write_medians = True
 medians_output_path = f'generated_files/medians/'
@@ -25,7 +26,6 @@ if not os.path.exists(medians_output_path):
     ******************************************* PROCESSING START **********************************************
     *********************************************************************************************************** '''
 # Read preprocessed nesscan-fixed yearly files into dfs.
-lighthouse_files_path = f"data/lighthouse/{station}_nesscan_fixed"
 lighthouse_files = glob.glob(f"{lighthouse_files_path}/*.csv")
 
 yearly_median = {}
