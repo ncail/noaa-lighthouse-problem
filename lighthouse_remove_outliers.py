@@ -1,3 +1,11 @@
+"""
+Computes the yearly median for a Lighthouse station's data.
+Classifies outliers as values `abs_cutoff` (in config section) above and below the median per year of data.
+Replaces these outliers with NaN, and sends this cleaned data to CSV.
+Includes configurable option to write the year:median dictionary to CSV as well.
+"""
+
+
 # Imports.
 import os
 import glob
