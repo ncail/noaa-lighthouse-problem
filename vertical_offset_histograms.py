@@ -1,4 +1,5 @@
 # Imports
+import os
 import glob
 import pandas as pd
 import numpy as np
@@ -11,22 +12,26 @@ import datetime
     ************************************************* CONFIG **************************************************
     *********************************************************************************************************** '''
 # Config mode: 1 - offset value hist, 2 - offset duration hist.
-mode = 2
+mode = 1
 
 # Mode 1 configs.
 is_abs = True
-high_pass_filter = 0.02
+high_pass_filter = 0
 
 # Config station: bhp, pIsabel, pier21, rockport (as in path)
-station = 'rockport'
+station = 'pier21'
+years = [2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]
 
 # Config vertical offsets data path.
-offsets_tables_path = (f'generated_files/eval_vertical_offsets_nesscan-fixed/'
-                       f'vertical_offsets/{station}_v0.7.5/outliers_removed')
-station_fig_title = 'Rockport (outliers & datum shift removed)'
+offsets_tables_path = (f'generated_files/nesscan_fixed_12172024/eval_vertical_offsets_nesscan-fixed/vertical_offsets'
+                       f'/pier21_v0.7.5/all_offsets')
+station_fig_title = 'Pier 21 (december nesscan fix)'
+year_str = '2006-2023'
 
 # Output path.
-output = f'generated_files/eval_vertical_offsets_nesscan-fixed/histograms'
+output = f'generated_files/pier21_reprocessed_03312025/histograms'
+if not os.path.exists(output):
+    os.makedirs(output)
 
 # Config MODE 1 step size for VO value (step_size_val), MODE 2 duration (num_bins, because its log scale) histogram.
 step_size_val = 0.02
@@ -44,15 +49,21 @@ station_df = pd.DataFrame()
 full_dataset = []
 for file in offsets_files:
     df = pd.read_csv(file, parse_dates=['start date'])
+
+    # If years is not empty (if empty, do all years), check if current year is in years, else skip
+    current_year = df['start date'].dt.year[0]
+    if years:
+        if current_year not in years:
+            continue
+
     df['duration'] = pd.to_timedelta(df['duration'])
 
     station_df = pd.concat([station_df, df])
 
-    current_year = df['start date'].dt.year[0]
     datetime_list_current_year = pd.date_range(
             start=datetime.datetime(year=current_year, month=1, day=1),
             end=datetime.datetime(year=current_year, month=12, day=31, hour=23, minute=54),
-            freq=datetime.timedelta(minutes=6)  # Frequency of 6 minutes
+            freq='6min'  # Frequency of 6 minutes
             ).tolist()
     full_dataset.extend(datetime_list_current_year)
 # End for.
@@ -68,8 +79,8 @@ if station == 'rockport':
     station_df = station_df[station_df['offset'] < 6.000]
 
 # Get size of dataset and percent offset.
-dataset_size = len(full_dataset)
-offset_info_size = len(station_df['offset'])
+dataset_size = pd.to_timedelta(len(full_dataset)*6, unit='minutes')
+offset_info_size = station_df['duration'].sum()
 percent_offset = offset_info_size / dataset_size * 100
 
 # Convert columns to numpy series.
@@ -90,7 +101,7 @@ if mode == 1:
     counts, bin_edges = np.histogram(offsets_arr, bins=bin_edges)
 
     # Create the histogram.
-    fig, ax = plt.subplots(figsize=(10,6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     n, bins, patches = ax.hist(offsets_arr, bins=bin_edges, edgecolor='black')
 
     # Label each bar with its value.
@@ -116,7 +127,7 @@ if mode == 1:
         plt.suptitle(f"{station_fig_title}: Frequency of Vertical Offsets", fontsize=22)
     ax.set_ylabel('Number of Occurrences', fontsize=18)
     # ax.set_title(f'For offsets with duration >= 1 hour', fontsize=18)  # Dataset is filtered by 6-minutes.
-    ax.set_title(f'(Excluding missing values. Step size={step_size_val})', fontsize=18)
+    ax.set_title(f'(Excluding missing values. Step size={step_size_val}). Years: {year_str}', fontsize=18)
     ax.tick_params(axis='both', which='major', labelsize=14)
 # End mode 1.
 
@@ -132,7 +143,7 @@ if mode == 2:
     # counts, bin_edges = np.histogram(durations_arr_minutes, bins=bin_edges)
 
     # Create the histogram.
-    fig, ax = plt.subplots(figsize=(10,6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     # n, bins, patches = ax.hist(durations_arr_minutes, bins=bin_edges, edgecolor='black')
 
     # Label each bar with its value.
