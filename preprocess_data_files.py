@@ -20,6 +20,11 @@ def main(args):
     args_flag_ptr = [True]
     paths = helpers.get_data_paths(args, config_refdir, config_primarydir, flag=args_flag_ptr)
 
+    # Get output path.
+    output_path = config['output_path']
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
     # Check that get_data_paths succeeded.
     if args_flag_ptr[0] is False:
         print("args_flag_ptr is False. Path(s) do not exist. Exiting program.")
@@ -36,9 +41,6 @@ def main(args):
     # this order.
     for loop in range(2):
         if paths[loop]:
-            # Output path.
-            output_path = f'{paths[loop]}/preprocessed'
-
             # Get all csv files from primary path.
             csv_files = glob.glob(f"{paths[loop]}/*.csv")
 

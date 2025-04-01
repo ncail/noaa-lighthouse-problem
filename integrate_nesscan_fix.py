@@ -9,20 +9,22 @@ import helpers
 # ***************************************************************************
 
 # Specify station (as given in data/lighthouse directory).
-station = "portIsabel"
+station = "pier21"
 
 # Specify write path.
-duplicates_path = f'generated_files/nesscan-fixed_duplicates'
+duplicates_path = f'generated_files/nesscan-fixed_pier21_reprocessed_03312025/duplicates'
+duplicates_file_path = f'{duplicates_path}/pier21_reprocessed_03312025_partial_duplicates.csv'
 if not os.path.exists(duplicates_path):
     os.makedirs(duplicates_path)
 
-fixed_lh_file_path = f'data/lighthouse/{station}_nesscan_fixed'
+# This is where the data integrated with the fix will go.
+fixed_lh_file_path = f'data/lighthouse/pier21_reprocessed_03312025/Pier21-BN/pier21_integrate_preprocessed_nesscan_fix'
 if not os.path.exists(fixed_lh_file_path):
     os.makedirs(fixed_lh_file_path)
 
 # Get lighthouse and nesscan_fixed data files.
 lighthouse_files_path = f"data/lighthouse/{station}/preprocessed"
-nesscan_files_path = f"data/lighthouse/nesscan_fix_full_history_12172024/{station}/{station}/preprocessed"
+nesscan_files_path = f"data/lighthouse/pier21_reprocessed_03312025/Pier21-BN/preprocessed"
 lighthouse_files = glob.glob(f"{lighthouse_files_path}/*.csv")
 nesscan_files = glob.glob(f"{nesscan_files_path}/*.csv")
 
@@ -79,7 +81,7 @@ for year in common_years:
 
     # Send partial duplicates to CSV.
     partial_duplicates_df = nesscan_df[partial_duplicates]
-    partial_duplicates_df.to_csv(f"{duplicates_path}/{station}_partial_duplicates.csv", mode='a',
+    partial_duplicates_df.to_csv(f"{duplicates_file_path}", mode='a',
                                  header=False, index=False)
 
     # Ensure there are no duplicate datetime values in nesscan_df. Keep the first instance.

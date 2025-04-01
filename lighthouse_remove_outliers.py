@@ -16,17 +16,20 @@ import numpy as np
     ************************************************* CONFIG **************************************************
     *********************************************************************************************************** '''
 
-station = 'portIsabel'
-abs_cutoff = 3
+station = 'rockport'
+abs_cutoff = 4
 
-lighthouse_files_path = f"data/lighthouse/{station}_nesscan_fixed"
+lighthouse_files_path = f"data/lighthouse/rockport_nesscan_fixed/raw"
 
-cleaned_data_path = f'data/lighthouse/{station}_nesscan_fixed/outliers_removed_{abs_cutoff}m'
+cleaned_data_path = (f'data/lighthouse/rockport_nesscan_fixed/outliers_removed'
+                     f'_{abs_cutoff}m')
 if not os.path.exists(cleaned_data_path):
     os.makedirs(cleaned_data_path)
 
-write_medians = True
-medians_output_path = f'generated_files/medians/'
+write_medians = False
+medians_output_path = f'generated_files/pier21_reprocessed_03312025/medians'
+medians_output_file_path = (f'generated_files/pier21_reprocessed_03312025/medians'
+                            f'/pier21_reprocessed_03312025_yearly_medians.csv')
 if not os.path.exists(medians_output_path):
     os.makedirs(medians_output_path)
 
@@ -74,7 +77,7 @@ if write_medians:
     median_df.reset_index(inplace=True)
 
     median_df.columns = ['year', 'median']
-    median_df.to_csv(f'{medians_output_path}/{station}_medians.csv', index=False)
+    median_df.to_csv(f'{medians_output_file_path}', index=False)
 # End if.
 
 
