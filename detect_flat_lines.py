@@ -23,8 +23,9 @@ import helpers
     ************************************************* CONFIG **************************************************
     *********************************************************************************************************** '''
 # Config station: bobHallPier, portIsabel, pier21, rockport (as in path).
-station = 'bobHallPier'
-lighthouse_data_path = f'data/lighthouse/{station}_nesscan_fixed/raw'
+station = 'rockport'
+lighthouse_data_path = (f'data/lighthouse/time_series_integrated_with_122024_nesscan_fix/'
+                        f'rockport_with_122024_nesscan_fix_raw')
 
 # Identical values method (step 1)
 duration = 10  # one hour
@@ -32,28 +33,41 @@ duration = 10  # one hour
 # tolerance method (step 2)
 window_size = 30
 tolerance = 0.01
-do_plots = False
 
+current_timestamp = datetime.datetime.now().strftime('%H%M%S_%m%d%Y')
+
+write_flats = False
 output_flat_lines = f'generated_files/detection_removal_processes/flat_lines_records'
-output_flat_lines_file_name = f'{output_flat_lines}/{station}_flat_line_records_03312025.csv'
-output_flat_line_plots = f'generated_files/detection_removal_processes/flat_lines_plots/{station}/3_hr_1_cm'
+output_flat_lines_file_name = f'{output_flat_lines}/{station}_flat_line_records_{current_timestamp}.csv'
+
+do_plots = False
+output_flat_line_plots = f'generated_files/detection_removal_processes/flat_lines_plots/{station}/3_hr_1_cm_{current_timestamp}'
+
+write_99s = False
 output_range_99 = f'generated_files/detection_removal_processes/range_99s'
-ninenine_filename = f'{output_range_99}/{station}_range_99_post_FLR_03312025.csv'
-output_cleaned_data = f'data/lighthouse/nesscan_fixed_removed_flat_lines_03312025/{station}'
+ninenine_filename = f'{output_range_99}/{station}_range_99_{current_timestamp}.csv'
+
+write_cleaned_data = False
+output_cleaned_data = f'data/lighthouse/nesscan_fixed_removed_flat_lines/{station}_{current_timestamp}'
+
+write_log = True
+output_stats_log = f'generated_files/detection_removal_processes/flat_line_removal_stats'
+output_stats_log_filename = f'{output_stats_log}/stats_and_parameter_log.txt'
 
 ''' ***********************************************************************************************************
     ******************************************* PROCESSING START **********************************************
     *********************************************************************************************************** '''
-current_timestamp = datetime.datetime.now().strftime('%H%M%S_%m%d%Y')
 
-if not os.path.exists(output_flat_lines):
+if not os.path.exists(output_flat_lines) and write_flats:
     os.makedirs(output_flat_lines)
-if not os.path.exists(output_flat_line_plots):
+if not os.path.exists(output_flat_line_plots) and do_plots:
     os.makedirs(output_flat_line_plots)
-if not os.path.exists(output_range_99):
+if not os.path.exists(output_range_99) and write_99s:
     os.makedirs(output_range_99)
-if not os.path.exists(output_cleaned_data):
+if not os.path.exists(output_cleaned_data) and write_cleaned_data:
     os.makedirs(output_cleaned_data)
+if not os.path.exists(output_stats_log) and write_log:
+    os.makedirs(output_stats_log)
 
 data_files = glob.glob(f'{lighthouse_data_path}/*.csv')
 
@@ -68,6 +82,12 @@ station_df = station_df.reset_index(drop=True)  # Reset index from 0. This allow
 
 val_col = station_df.columns[1]
 dt_col = station_df.columns[0]
+
+# Standard deviation.
+stdev_pre = np.nanstd(station_df[val_col].to_numpy())
+
+# NaN percentage.
+initial_nan_percentage = (len(station_df[station_df[val_col].isna()]) / len(station_df)) * 100
 
 """ ****************************** Identical value method for detecting flat lines ****************************** """
 # Detect where values stay the same.
@@ -88,11 +108,6 @@ flat_regions = {i: np.flatnonzero(labels == i) for i in valid_labels if i > 0}
 
 # Save to df.
 flat_df_identical_method = pd.concat([station_df.iloc[indices] for i, indices in flat_regions.items()])
-
-# Save identical-value flat lines to CSV.
-if not os.path.exists(output_flat_lines_file_name):
-    flat_df_identical_method.to_csv(output_flat_lines_file_name, index=False)
-# End if.
 
 # Remove the flat lines.
 for indices in flat_regions.values():
@@ -172,16 +187,58 @@ if do_plots:
     # End for.
 # End if do_plots.
 
-# Store flat line data.
+# Store flat line data from tolerance method.
 flat_df_tolerance_method = station_df.loc[all_flat_indices]
+
+# Save identical-value and tolerance-method flat lines to CSV.
+if write_flats:
+    flat_regions_df = pd.concat([flat_df_tolerance_method, flat_df_identical_method]).sort_values(by=[dt_col])
+    flat_regions_df.to_csv(output_flat_lines_file_name, index=False)
+# End if.
 
 # Remove flat lines using tolerance method.
 station_df.loc[all_flat_indices, val_col] = np.nan
 
 """ **************************************************** Results *************************************************** """
-# Compare lengths of dfs. Print data in tolerance method not in identical values method.
-print(f'number of flat regions by tolerance method: {len(flat_plotting_df)}\n'
-      f'number of flat regions by identical values method: {len(valid_labels)}')
+# Get avg and median length of flat regions.
+identical_flat_lengths = [len(indices) for indices in flat_regions.values()]
+average_length_id = np.mean(identical_flat_lengths)
+median_length_id = np.median(identical_flat_lengths)
+
+tolerance_flat_lengths = pd.Series(flat_plotting_df['end_index'] - flat_plotting_df['start_index']).to_numpy()
+average_length_tol = np.mean(tolerance_flat_lengths)
+median_length_tol = np.median(tolerance_flat_lengths)
+
+# Standard deviation.
+stdev_post = np.nanstd(station_df[val_col].to_numpy())
+
+# Final NaN percentage.
+final_nan_percentage = (len(station_df[station_df[val_col].isna()]) / len(station_df)) * 100
+
+# Increased NaN percentage.
+increased_nan_percentage = final_nan_percentage - initial_nan_percentage
+
+# Write stats and parameter log to file.
+if write_log:
+    with open(f'{output_stats_log_filename}', 'a') as file:
+        file.write(f'Time: {current_timestamp}\n'
+                   f'Data path: {lighthouse_data_path}\n'
+                   f'Parameters:\n'
+                   f'\tIdentical value method:\n'
+                   f'\t\tDuration: {duration} points\n'
+                   f'\tTolerance method:\n'
+                   f'\t\tDuration: {window_size} points\n'
+                   f'\t\tTolerance: {tolerance} m\n'
+                   f'Number of flat regions removed by identical values method: {len(valid_labels)}\n'
+                   f'Remaining flat regions removed by tolerance method:        {len(flat_plotting_df)}\n'
+                   f'Increased NaN percentage after flat line removal:          {increased_nan_percentage:.2f}%\n'
+                   f'Average flat region length by identical values method:     {average_length_id:.2f} points\n'
+                   f'Median flat region length by identical values method:      {median_length_id:.2f} points\n'
+                   f'Average flat region length by tolerance method:            {average_length_tol:.2f} points\n'
+                   f'Median flat region length by tolerance method:             {median_length_tol:.2f} points\n'
+                   f'Standard deviation before flat line removal:               {stdev_pre:.2f}\n'
+                   f'Standard deviation after flat line removal:                {stdev_post:.2f}\n'
+                   f'\n\n')
 # Number of flat regions removed by each method
 # Average, median of length of flat regions, for each method
 # Standard deviation of the dataset before and after removal
@@ -205,7 +262,7 @@ for year, df in df_dict.items():
 # End for.
 
 # Send ranges to CSV.
-if not os.path.exists(ninenine_filename):
+if write_99s:
     yearly_range_99_df = pd.DataFrame.from_dict(yearly_range_99, orient='index')
 
     # Reset index to turn Year into a column.
@@ -215,7 +272,7 @@ if not os.path.exists(ninenine_filename):
 # End if.
 
 # Write cleaned data to CSV.
-for year, df in df_dict.items():
-    filename = f'{output_cleaned_data}/{year}.csv'
-    if not os.path.exists(filename):
+if write_cleaned_data:
+    for year, df in df_dict.items():
+        filename = f'{output_cleaned_data}/{year}.csv'
         df.to_csv(filename, index=False)
