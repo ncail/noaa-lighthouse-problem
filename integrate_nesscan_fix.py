@@ -9,22 +9,24 @@ import helpers
 # ***************************************************************************
 
 # Specify station (as given in data/lighthouse directory).
-station = "pier21"
+station = "rockport"
 
 # Specify write path.
-duplicates_path = f'generated_files/nesscan-fixed_pier21_reprocessed_03312025/duplicates'
-duplicates_file_path = f'{duplicates_path}/pier21_reprocessed_03312025_partial_duplicates.csv'
+duplicates_path = f'generated_files/rockport_reprocessed_04012025/duplicates'
+duplicates_file_path = f'{duplicates_path}/rockport_reprocessed_04012025_partial_duplicates.csv'
 if not os.path.exists(duplicates_path):
     os.makedirs(duplicates_path)
 
 # This is where the data integrated with the fix will go.
-fixed_lh_file_path = f'data/lighthouse/pier21_reprocessed_03312025/Pier21-BN/pier21_integrate_preprocessed_nesscan_fix'
+fixed_lh_file_path = (f'data/lighthouse/rockport_reprocessed_04012025/Rockport-BN'
+                      f'/rockport_integrate_preprocessed_04012025_nesscan_fix')
 if not os.path.exists(fixed_lh_file_path):
     os.makedirs(fixed_lh_file_path)
 
 # Get lighthouse and nesscan_fixed data files.
-lighthouse_files_path = f"data/lighthouse/{station}/preprocessed"
-nesscan_files_path = f"data/lighthouse/pier21_reprocessed_03312025/Pier21-BN/preprocessed"
+lighthouse_files_path = f"data/lighthouse/preprocessed_data/rockport_preprocessed"
+nesscan_files_path = (f"data/lighthouse/rockport_reprocessed_04012025/Rockport-BN"
+                      f"/rockport_preprocessed_04012025_nesscan_fix")
 lighthouse_files = glob.glob(f"{lighthouse_files_path}/*.csv")
 nesscan_files = glob.glob(f"{nesscan_files_path}/*.csv")
 

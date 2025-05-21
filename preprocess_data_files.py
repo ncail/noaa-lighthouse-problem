@@ -52,8 +52,11 @@ def main(args):
             # Read files to a concatd dataframe, then split by year.
             df_list = []
             for file in csv_files:
-                df_from_file = pd.read_csv(file, header=None)
-
+                try:
+                    df_from_file = pd.read_csv(file, header=None)
+                except pd.errors.EmptyDataError:
+                    print(f"<{file}> is empty. Skipping to next file.")
+                    continue
                 if isHeader[loop]:
                     df_from_file.columns = column_names
 

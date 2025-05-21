@@ -1,8 +1,9 @@
 {
+  "output_path": "data/lighthouse/rockport_reprocessed_04012025/Rockport-BN/rockport_preprocessed_04012025_nesscan_fix",
   "data": {
     "paths": {
       "refdir": "",
-      "primarydir": "data/lighthouse/nesscan_fix_full_history_12172024/bobHallPier/bobHallPier"
+      "primarydir": "data/lighthouse/rockport_reprocessed_04012025/Rockport-BN"
     },
     "columns": {
       "primary_dt_pos": 1,
